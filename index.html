@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>London 2026 — Hugh & Betty</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
   :root {
     --bg:        #0d0f14;
@@ -524,6 +525,74 @@
     border-bottom: 1px solid var(--border);
     letter-spacing: 0.03em;
   }
+
+  /* ── TABS ── */
+  .tab-nav {
+    display: flex;
+    gap: 8px;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px 20px 0;
+  }
+  .tab-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    padding: 10px 22px;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 700;
+    font-family: var(--font-sans);
+    transition: color 0.15s, background 0.15s;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--gold); background: var(--surface); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── MAP ── */
+  .map-section {
+    padding: 8px 0 40px;
+    border-top: 1px solid var(--border);
+    margin-top: 8px;
+  }
+  #trip-map {
+    height: 420px;
+    width: 100%;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+  }
+  @media (max-width: 600px) { #trip-map { height: 300px; } }
+  .map-legend {
+    display: flex;
+    gap: 18px;
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--muted);
+    flex-wrap: wrap;
+  }
+  .map-legend span { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+
+  @keyframes locFlash {
+    0%, 100% { background: transparent; }
+    30%, 70% { background: rgba(201,168,76,0.18); }
+  }
+  .loc-highlight { animation: locFlash 1.8s ease; border-radius: 6px; }
+
+  .gallery-placeholder {
+    padding: 64px 0;
+  }
+  .gallery-placeholder p.body {
+    color: var(--sub);
+    max-width: 560px;
+    margin-top: 12px;
+    font-size: 14px;
+  }
 </style>
 </head>
 <body>
@@ -536,7 +605,14 @@
   <hr class="hero-rule">
 </div>
 
+<nav class="tab-nav">
+  <button class="tab-btn active" id="btn-itinerary" onclick="showTab('itinerary')">Itinerary + Map</button>
+  <button class="tab-btn" id="btn-gallery" onclick="showTab('gallery')">Photo Gallery</button>
+</nav>
+
 <div class="container">
+
+<div class="tab-panel active" id="tab-itinerary">
 
 <!-- OVERVIEW -->
 <section class="overview">
@@ -575,6 +651,17 @@
   </div>
 </section>
 
+<!-- MAP -->
+<section class="map-section">
+  <p class="section-label">Trip Map — click a pin to jump to that day</p>
+  <div id="trip-map"></div>
+  <div class="map-legend">
+    <span><span class="legend-dot" style="background:#4a9e7f"></span> Confirmed</span>
+    <span><span class="legend-dot" style="background:#e05c4b"></span> Pending / not booked</span>
+    <span><span class="legend-dot" style="background:#5b9bd5"></span> Free time / no reservation</span>
+  </div>
+</section>
+
 <!-- DAY PAGES -->
 <section class="days-section">
   <div class="days-section-header">
@@ -582,7 +669,7 @@
   </div>
 
   <!-- MON 29 JUN -->
-  <details class="day-block" open>
+  <details class="day-block" id="day-29-jun" open>
     <summary class="day-header">
       <div class="day-date-strip">
         <div class="day-name">Monday</div>
@@ -601,13 +688,13 @@
     <div class="day-body">
       <div class="tz-note">UK times (BST) · Cayman Islands times (EST, UTC−5) shown in grey</div>
       <table class="schedule">
-        <tr><td class="sch-time-uk">7:30am</td><td class="sch-time-cay">1:30am</td><td class="sch-act"><div class="sch-act-title">Land at Heathrow Terminal 5</div></td></tr>
+        <tr id="loc-heathrow-t5"><td class="sch-time-uk">7:30am</td><td class="sch-time-cay">1:30am</td><td class="sch-act"><div class="sch-act-title">Land at Heathrow Terminal 5</div></td></tr>
         <tr><td class="sch-time-uk">8:00am</td><td class="sch-time-cay">2:00am</td><td class="sch-act"><div class="sch-act-title">Customs &amp; Immigration</div></td></tr>
-        <tr><td class="sch-time-uk">9:00am</td><td class="sch-time-cay">3:00am</td><td class="sch-act"><div class="sch-act-title">Transfer to The Clermont Victoria</div></td></tr>
-        <tr><td class="sch-time-uk">10:45am</td><td class="sch-time-cay">4:45am</td><td class="sch-act"><div class="sch-act-title">Peggy Porschen Belgravia — Morning Tea <span class="badge badge-ok">CONFIRMED</span></div><div class="sch-alt">Alt: Ole &amp; Steen nearby</div></td></tr>
+        <tr id="loc-clermont-victoria"><td class="sch-time-uk">9:00am</td><td class="sch-time-cay">3:00am</td><td class="sch-act"><div class="sch-act-title">Transfer to The Clermont Victoria</div></td></tr>
+        <tr id="loc-peggy-porschen"><td class="sch-time-uk">10:45am</td><td class="sch-time-cay">4:45am</td><td class="sch-act"><div class="sch-act-title">Peggy Porschen Belgravia — Morning Tea <span class="badge badge-ok">CONFIRMED</span></div><div class="sch-alt">Alt: Ole &amp; Steen nearby</div></td></tr>
         <tr><td class="sch-time-uk">12:00pm</td><td class="sch-time-cay">6:00am</td><td class="sch-act"><div class="sch-act-title">Check in / rest</div></td></tr>
-        <tr><td class="sch-time-uk">2:00pm</td><td class="sch-time-cay">8:00am</td><td class="sch-act"><div class="sch-act-title">Walk: Bank of England · St Paul's · Leadenhall Market · London Bridge</div><div class="sch-alt">Alt: Hyde Park · Belgravia · Chelsea</div></td></tr>
-        <tr><td class="sch-time-uk">7:00pm</td><td class="sch-time-cay">1:00pm</td><td class="sch-act"><div class="sch-act-title">Dinner — <a href="https://sketch.london" target="_blank">Sketch, The Gallery</a> <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
+        <tr id="loc-south-bank-walk"><td class="sch-time-uk">2:00pm</td><td class="sch-time-cay">8:00am</td><td class="sch-act"><div class="sch-act-title">Walk: Bank of England · St Paul's · Leadenhall Market · London Bridge</div><div class="sch-alt">Alt: Hyde Park · Belgravia · Chelsea</div></td></tr>
+        <tr id="loc-sketch"><td class="sch-time-uk">7:00pm</td><td class="sch-time-cay">1:00pm</td><td class="sch-act"><div class="sch-act-title">Dinner — <a href="https://sketch.london" target="_blank">Sketch, The Gallery</a> <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
       </table>
       <div class="sun-strip">
         <span>🌅 Sunrise 4:47am</span>
@@ -634,7 +721,7 @@
   </details>
 
   <!-- TUE 30 JUN -->
-  <details class="day-block">
+  <details class="day-block" id="day-30-jun">
     <summary class="day-header">
       <div class="day-date-strip">
         <div class="day-name">Tuesday</div>
@@ -656,13 +743,13 @@
       <div class="tz-note">UK times (BST) · Cayman Islands times (EST, UTC−5) shown in grey</div>
       <table class="schedule">
         <tr><td class="sch-time-uk">9:30am</td><td class="sch-time-cay">3:30am</td><td class="sch-act"><div class="sch-act-title">Uber to Kew</div></td></tr>
-        <tr><td class="sch-time-uk">10:00am</td><td class="sch-time-cay">4:00am</td><td class="sch-act"><div class="sch-act-title"><a href="https://www.kew.org" target="_blank">Royal Botanic Gardens, Kew</a> — eTickets in email <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
+        <tr id="loc-kew-gardens"><td class="sch-time-uk">10:00am</td><td class="sch-time-cay">4:00am</td><td class="sch-act"><div class="sch-act-title"><a href="https://www.kew.org" target="_blank">Royal Botanic Gardens, Kew</a> — eTickets in email <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
         <tr><td class="sch-time-uk">10:30am</td><td class="sch-time-cay">4:30am</td><td class="sch-act"><div class="sch-act-title">Breakfast: The Botanical Brasserie at Kew <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
         <tr><td class="sch-time-uk">12:00pm</td><td class="sch-time-cay">6:00am</td><td class="sch-act"><div class="sch-act-title">Kew Gardens — The Pagoda &amp; Great Broad Walk</div></td></tr>
         <tr><td class="sch-time-uk">1:00pm</td><td class="sch-time-cay">7:00am</td><td class="sch-act"><div class="sch-act-title">Uber to Petersham</div></td></tr>
-        <tr><td class="sch-time-uk">1:30pm</td><td class="sch-time-cay">7:30am</td><td class="sch-act"><div class="sch-act-title"><a href="https://www.petershamnurseries.com" target="_blank">Petersham Nurseries Restaurant</a> — Lunch <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
+        <tr id="loc-petersham-nurseries"><td class="sch-time-uk">1:30pm</td><td class="sch-time-cay">7:30am</td><td class="sch-act"><div class="sch-act-title"><a href="https://www.petershamnurseries.com" target="_blank">Petersham Nurseries Restaurant</a> — Lunch <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
         <tr><td class="sch-time-uk">3:30pm</td><td class="sch-time-cay">9:30am</td><td class="sch-act"><div class="sch-act-title">Walk along Richmond riverside</div><div class="sch-alt">Alt: Hampton Court Palace</div></td></tr>
-        <tr><td class="sch-time-uk">6:30pm</td><td class="sch-time-cay">12:30pm</td><td class="sch-act"><div class="sch-act-title">Dinner: Peggy Jean, Richmond <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
+        <tr id="loc-peggy-jean-richmond"><td class="sch-time-uk">6:30pm</td><td class="sch-time-cay">12:30pm</td><td class="sch-act"><div class="sch-act-title">Dinner: Peggy Jean, Richmond <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
       </table>
       <div class="sun-strip">
         <span>🌅 Sunrise 4:47am</span>
@@ -693,7 +780,7 @@
   </details>
 
   <!-- WED 1 JUL -->
-  <details class="day-block">
+  <details class="day-block" id="day-01-jul">
     <summary class="day-header">
       <div class="day-date-strip">
         <div class="day-name">Wednesday</div>
@@ -714,12 +801,12 @@
     <div class="day-body">
       <div class="tz-note">UK times (BST) · Cayman Islands times (EST, UTC−5) shown in grey</div>
       <table class="schedule">
-        <tr><td class="sch-time-uk">9:30am</td><td class="sch-time-cay">3:30am</td><td class="sch-act"><div class="sch-act-title">Churchill War Rooms — DigiTicket on phone <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
-        <tr><td class="sch-time-uk">12:00pm</td><td class="sch-time-cay">6:00am</td><td class="sch-act"><div class="sch-act-title">Lunch — <a href="https://ambassadorsclubhouse.com" target="_blank">Ambassadors Clubhouse</a>, Heddon Street <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
+        <tr id="loc-churchill-war-rooms"><td class="sch-time-uk">9:30am</td><td class="sch-time-cay">3:30am</td><td class="sch-act"><div class="sch-act-title">Churchill War Rooms — DigiTicket on phone <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
+        <tr id="loc-ambassadors-clubhouse"><td class="sch-time-uk">12:00pm</td><td class="sch-time-cay">6:00am</td><td class="sch-act"><div class="sch-act-title">Lunch — <a href="https://ambassadorsclubhouse.com" target="_blank">Ambassadors Clubhouse</a>, Heddon Street <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
         <tr><td class="sch-time-uk">1:30pm</td><td class="sch-time-cay">7:30am</td><td class="sch-act"><div class="sch-act-title">Travel to Dominion Theatre, Tottenham Court Road</div></td></tr>
-        <tr><td class="sch-time-uk">2:30pm</td><td class="sch-time-cay">8:30am</td><td class="sch-act"><div class="sch-act-title">🎭 Devil Wears Prada — Dominion Theatre <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
+        <tr id="loc-dominion-theatre"><td class="sch-time-uk">2:30pm</td><td class="sch-time-cay">8:30am</td><td class="sch-act"><div class="sch-act-title">🎭 Devil Wears Prada — Dominion Theatre <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
         <tr><td class="sch-time-uk">5:15pm</td><td class="sch-time-cay">11:15am</td><td class="sch-act"><div class="sch-act-title">Travel to Sky Garden (allow 45 min)</div></td></tr>
-        <tr><td class="sch-time-uk">6:45pm</td><td class="sch-time-cay">12:45pm</td><td class="sch-act"><div class="sch-act-title"><a href="https://skygarden.london" target="_blank">Fenchurch Restaurant, Sky Garden</a> <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
+        <tr id="loc-sky-garden"><td class="sch-time-uk">6:45pm</td><td class="sch-time-cay">12:45pm</td><td class="sch-act"><div class="sch-act-title"><a href="https://skygarden.london" target="_blank">Fenchurch Restaurant, Sky Garden</a> <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
       </table>
       <div class="sun-strip">
         <span>🌅 Sunrise 4:48am</span>
@@ -748,7 +835,7 @@
   </details>
 
   <!-- THU 2 JUL -->
-  <details class="day-block">
+  <details class="day-block" id="day-02-jul">
     <summary class="day-header">
       <div class="day-date-strip">
         <div class="day-name">Thursday</div>
@@ -766,13 +853,13 @@
     <div class="day-body">
       <div class="tz-note">UK times (BST) · Cayman Islands times (EST, UTC−5) shown in grey</div>
       <table class="schedule">
-        <tr><td class="sch-time-uk">9:30am</td><td class="sch-time-cay">3:30am</td><td class="sch-act"><div class="sch-act-title"><a href="https://designmuseum.org" target="_blank">Design Museum</a>, Kensington</div></td></tr>
+        <tr id="loc-design-museum"><td class="sch-time-uk">9:30am</td><td class="sch-time-cay">3:30am</td><td class="sch-act"><div class="sch-act-title"><a href="https://designmuseum.org" target="_blank">Design Museum</a>, Kensington</div></td></tr>
         <tr><td class="sch-time-uk">11:00am</td><td class="sch-time-cay">5:00am</td><td class="sch-act"><div class="sch-act-title">Walk / taxi to <a href="https://www.harrods.com" target="_blank">Harrods</a></div></td></tr>
-        <tr><td class="sch-time-uk">12:00pm</td><td class="sch-time-cay">6:00am</td><td class="sch-act"><div class="sch-act-title">Lunch: The Georgian at Harrods <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
+        <tr id="loc-harrods"><td class="sch-time-uk">12:00pm</td><td class="sch-time-cay">6:00am</td><td class="sch-act"><div class="sch-act-title">Lunch: The Georgian at Harrods <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
         <tr><td class="sch-time-uk">2:00pm</td><td class="sch-time-cay">8:00am</td><td class="sch-act"><div class="sch-act-title">Back to hotel / rest</div></td></tr>
-        <tr><td class="sch-time-uk">3:00pm</td><td class="sch-time-cay">9:00am</td><td class="sch-act"><div class="sch-act-title">Little Venice — Regent's Canal walk</div></td></tr>
+        <tr id="loc-little-venice"><td class="sch-time-uk">3:00pm</td><td class="sch-time-cay">9:00am</td><td class="sch-act"><div class="sch-act-title">Little Venice — Regent's Canal walk</div></td></tr>
         <tr><td class="sch-time-uk">5:00pm</td><td class="sch-time-cay">11:00am</td><td class="sch-act"><div class="sch-act-title">Hampstead — Coffee Cup café</div></td></tr>
-        <tr><td class="sch-time-uk">5:30pm</td><td class="sch-time-cay">11:30am</td><td class="sch-act"><div class="sch-act-title">The Hill Garden &amp; Pergola, Hampstead<div class="sch-alt">Free entry · NW3 7EX · Tue–Sun</div></div></td></tr>
+        <tr id="loc-hampstead-hill-garden"><td class="sch-time-uk">5:30pm</td><td class="sch-time-cay">11:30am</td><td class="sch-act"><div class="sch-act-title">The Hill Garden &amp; Pergola, Hampstead<div class="sch-alt">Free entry · NW3 7EX · Tue–Sun</div></div></td></tr>
         <tr><td class="sch-time-uk">7:00pm</td><td class="sch-time-cay">1:00pm</td><td class="sch-act"><div class="sch-act-title">Parliament Hill — sunset views</div></td></tr>
         <tr><td class="sch-time-uk">8:00pm</td><td class="sch-time-cay">2:00pm</td><td class="sch-act"><div class="sch-act-title">Dinner — no reservation; see reference page for suggestions</div></td></tr>
       </table>
@@ -802,7 +889,7 @@
   </details>
 
   <!-- FRI 3 JUL -->
-  <details class="day-block">
+  <details class="day-block" id="day-03-jul">
     <summary class="day-header">
       <div class="day-date-strip">
         <div class="day-name">Friday</div>
@@ -824,7 +911,7 @@
       <table class="schedule">
         <tr><td class="sch-time-uk">8:15am</td><td class="sch-time-cay">2:15am</td><td class="sch-act"><div class="sch-act-title">Depart for London Paddington</div></td></tr>
         <tr><td class="sch-time-uk">8:51am</td><td class="sch-time-cay">2:51am</td><td class="sch-act"><div class="sch-act-title">GWR departs London Paddington → Moreton-in-Marsh <span class="badge badge-ok">CONFIRMED</span></div><div class="sch-alt">1st Class · ticket in GWR app</div></td></tr>
-        <tr><td class="sch-time-uk">10:18am</td><td class="sch-time-cay">4:18am</td><td class="sch-act"><div class="sch-act-title">Arrive Moreton-in-Marsh · meet Cotswolds Drive</div></td></tr>
+        <tr id="loc-moreton-in-marsh"><td class="sch-time-uk">10:18am</td><td class="sch-time-cay">4:18am</td><td class="sch-act"><div class="sch-act-title">Arrive Moreton-in-Marsh · meet Cotswolds Drive</div></td></tr>
         <tr><td class="sch-time-uk">All Day</td><td class="sch-time-cay">—</td><td class="sch-act"><div class="sch-act-title">Private Cotswolds Day Tour in a Mercedes <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
         <tr><td class="sch-time-uk">Evening</td><td class="sch-time-cay">—</td><td class="sch-act"><div class="sch-act-title">Return train to London Paddington <span class="badge badge-warn">NOT BOOKED</span></div><div class="sch-alt">Awaiting return time from Cotswolds Drive — book on <a href="https://www.gwr.com" target="_blank">gwr.com</a> once confirmed</div></td></tr>
       </table>
@@ -864,7 +951,7 @@
   </details>
 
   <!-- SAT 4 JUL -->
-  <details class="day-block">
+  <details class="day-block" id="day-04-jul">
     <summary class="day-header">
       <div class="day-date-strip">
         <div class="day-name">Saturday</div>
@@ -885,9 +972,9 @@
         <tr><td class="sch-time-uk">9:00am</td><td class="sch-time-cay">3:00am</td><td class="sch-act"><div class="sch-act-title">Breakfast in Chelsea</div></td></tr>
         <tr><td class="sch-time-uk">11:00am</td><td class="sch-time-cay">5:00am</td><td class="sch-act"><div class="sch-act-title">🏳️‍🌈 <a href="https://londonpride.co.uk" target="_blank">London Pride Parade</a> — Marble Arch to Whitehall</div></td></tr>
         <tr><td class="sch-time-uk">3:00pm</td><td class="sch-time-cay">9:00am</td><td class="sch-act"><div class="sch-act-title">Travel to Notting Hill</div></td></tr>
-        <tr><td class="sch-time-uk">3:30pm</td><td class="sch-time-cay">9:30am</td><td class="sch-act"><div class="sch-act-title">Portobello Road &amp; Notting Hill</div></td></tr>
+        <tr id="loc-notting-hill-portobello"><td class="sch-time-uk">3:30pm</td><td class="sch-time-cay">9:30am</td><td class="sch-act"><div class="sch-act-title">Portobello Road &amp; Notting Hill</div></td></tr>
         <tr><td class="sch-time-uk">5:00pm</td><td class="sch-time-cay">11:00am</td><td class="sch-act"><div class="sch-act-title">Churchill Arms — photo stop</div></td></tr>
-        <tr><td class="sch-time-uk">6:30pm</td><td class="sch-time-cay">12:30pm</td><td class="sch-act"><div class="sch-act-title">Dinner — Dishoom Permit Room, Portobello Road <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
+        <tr id="loc-dishoom-portobello"><td class="sch-time-uk">6:30pm</td><td class="sch-time-cay">12:30pm</td><td class="sch-act"><div class="sch-act-title">Dinner — Dishoom Permit Room, Portobello Road <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
       </table>
       <div class="sun-strip">
         <span>🌅 Sunrise 4:51am</span>
@@ -914,7 +1001,7 @@
   </details>
 
   <!-- SUN 5 JUL -->
-  <details class="day-block">
+  <details class="day-block" id="day-05-jul">
     <summary class="day-header">
       <div class="day-date-strip">
         <div class="day-name">Sunday</div>
@@ -935,9 +1022,9 @@
       <table class="schedule">
         <tr><td class="sch-time-uk">8:30am</td><td class="sch-time-cay">2:30am</td><td class="sch-act"><div class="sch-act-title">Travel to King's Cross St. Pancras</div></td></tr>
         <tr><td class="sch-time-uk">9:00am</td><td class="sch-time-cay">3:00am</td><td class="sch-act"><div class="sch-act-title">Train to Cambridge (~50 min) <span class="badge badge-warn">BOOK NOW</span></div></td></tr>
-        <tr><td class="sch-time-uk">10:00am</td><td class="sch-time-cay">4:00am</td><td class="sch-act"><div class="sch-act-title">Arrive Cambridge — walk city centre</div></td></tr>
+        <tr id="loc-cambridge-centre"><td class="sch-time-uk">10:00am</td><td class="sch-time-cay">4:00am</td><td class="sch-act"><div class="sch-act-title">Arrive Cambridge — walk city centre</div></td></tr>
         <tr><td class="sch-time-uk">12:00pm</td><td class="sch-time-cay">6:00am</td><td class="sch-act"><div class="sch-act-title">Lunch — see Cambridge options below</div></td></tr>
-        <tr><td class="sch-time-uk">1:30pm</td><td class="sch-time-cay">7:30am</td><td class="sch-act"><div class="sch-act-title">Chauffeured punt on the Cam — the Backs route <span class="badge badge-ok">CONFIRMED</span></div><div class="sch-alt">3 guests (Hugh, Betty &amp; Cutie) · Scudamore's · Granta Place CB2 1RS</div></td></tr>
+        <tr id="loc-scudamores-punting"><td class="sch-time-uk">1:30pm</td><td class="sch-time-cay">7:30am</td><td class="sch-act"><div class="sch-act-title">Chauffeured punt on the Cam — the Backs route <span class="badge badge-ok">CONFIRMED</span></div><div class="sch-alt">3 guests (Hugh, Betty &amp; Cutie) · Scudamore's · Granta Place CB2 1RS</div></td></tr>
         <tr><td class="sch-time-uk">3:00pm</td><td class="sch-time-cay">9:00am</td><td class="sch-act"><div class="sch-act-title">Bridge of Sighs · St John's College · Trinity Street</div></td></tr>
         <tr><td class="sch-time-uk">4:00pm</td><td class="sch-time-cay">10:00am</td><td class="sch-act"><div class="sch-act-title">Cambridge University Botanic Garden</div></td></tr>
         <tr><td class="sch-time-uk">6:00pm</td><td class="sch-time-cay">12:00pm</td><td class="sch-act"><div class="sch-act-title">Train back to London</div></td></tr>
@@ -961,7 +1048,7 @@
   </details>
 
   <!-- MON 6 JUL -->
-  <details class="day-block">
+  <details class="day-block" id="day-06-jul">
     <summary class="day-header">
       <div class="day-date-strip">
         <div class="day-name">Monday</div>
@@ -979,7 +1066,7 @@
     <div class="day-body">
       <div class="tz-note">UK times (BST) · Cayman Islands times (EST, UTC−5) shown in grey</div>
       <table class="schedule">
-        <tr><td class="sch-time-uk">Morning</td><td class="sch-time-cay">—</td><td class="sch-act"><div class="sch-act-title">Harry Potter Studios, Watford <span class="badge badge-warn">CHECK NOW</span></div><div class="sch-alt">Alt: Borough Market · Chelsea · relaxed morning in London</div></td></tr>
+        <tr id="loc-wb-studio-tour"><td class="sch-time-uk">Morning</td><td class="sch-time-cay">—</td><td class="sch-act"><div class="sch-act-title">Harry Potter Studios, Watford <span class="badge badge-warn">CHECK NOW</span></div><div class="sch-alt">Alt: Borough Market · Chelsea · relaxed morning in London</div></td></tr>
         <tr><td class="sch-time-uk">Afternoon</td><td class="sch-time-cay">—</td><td class="sch-act"><div class="sch-act-title">TBD</div></td></tr>
         <tr><td class="sch-time-uk">Evening</td><td class="sch-time-cay">—</td><td class="sch-act"><div class="sch-act-title">Final dinner / pack / travel prep</div></td></tr>
       </table>
@@ -1011,7 +1098,7 @@
   </details>
 
   <!-- TUE 7 JUL -->
-  <details class="day-block">
+  <details class="day-block" id="day-07-jul">
     <summary class="day-header">
       <div class="day-date-strip">
         <div class="day-name">Tuesday</div>
@@ -1138,10 +1225,102 @@
 </section>
 
 </div>
+<!-- /tab-itinerary -->
+
+<div class="tab-panel" id="tab-gallery">
+  <section class="gallery-placeholder">
+    <p class="section-label">Photo Gallery</p>
+    <h2 class="ref-title" style="font-size:26px;">Photos coming soon</h2>
+    <p class="body">Trip photos are still being reviewed and curated. Once they're ready, they'll appear here grouped by day and location — click a schedule entry or map pin to jump straight to the matching photos.</p>
+  </section>
+</div>
+
+</div>
 
 <div class="footer">
   London 2026 · Hugh &amp; Betty · The Clermont Victoria &nbsp;·&nbsp; Updated June 2026
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const tripLocations = [
+    { id: 'heathrow-t5',            name: 'Heathrow Terminal 5',                  lat: 51.4723, lng: -0.4881, day: 'day-29-jun', status: 'confirmed' },
+    { id: 'clermont-victoria',      name: 'The Clermont Victoria',                lat: 51.4952, lng: -0.1441, day: 'day-29-jun', status: 'confirmed' },
+    { id: 'peggy-porschen',         name: 'Peggy Porschen Belgravia',             lat: 51.4931, lng: -0.1497, day: 'day-29-jun', status: 'confirmed' },
+    { id: 'south-bank-walk',        name: "City Walk — St Paul's & London Bridge", lat: 51.5138, lng: -0.0984, day: 'day-29-jun', status: 'free' },
+    { id: 'sketch',                 name: 'Sketch',                               lat: 51.5142, lng: -0.1409, day: 'day-29-jun', status: 'confirmed' },
+    { id: 'kew-gardens',            name: 'Kew Gardens',                          lat: 51.4787, lng: -0.2956, day: 'day-30-jun', status: 'confirmed' },
+    { id: 'petersham-nurseries',    name: 'Petersham Nurseries',                  lat: 51.4505, lng: -0.3009, day: 'day-30-jun', status: 'confirmed' },
+    { id: 'peggy-jean-richmond',    name: 'Peggy Jean, Richmond',                 lat: 51.4613, lng: -0.3037, day: 'day-30-jun', status: 'confirmed' },
+    { id: 'churchill-war-rooms',    name: 'Churchill War Rooms',                  lat: 51.5025, lng: -0.1300, day: 'day-01-jul', status: 'confirmed' },
+    { id: 'ambassadors-clubhouse',  name: 'Ambassadors Clubhouse',                lat: 51.5117, lng: -0.1409, day: 'day-01-jul', status: 'confirmed' },
+    { id: 'dominion-theatre',       name: 'Dominion Theatre — Devil Wears Prada', lat: 51.5165, lng: -0.1308, day: 'day-01-jul', status: 'confirmed' },
+    { id: 'sky-garden',             name: 'Sky Garden / Fenchurch',               lat: 51.5113, lng: -0.0836, day: 'day-01-jul', status: 'confirmed' },
+    { id: 'design-museum',          name: 'Design Museum',                        lat: 51.5009, lng: -0.2013, day: 'day-02-jul', status: 'free' },
+    { id: 'harrods',                name: 'Harrods — The Georgian',               lat: 51.4994, lng: -0.1636, day: 'day-02-jul', status: 'confirmed' },
+    { id: 'little-venice',          name: 'Little Venice',                        lat: 51.5220, lng: -0.1826, day: 'day-02-jul', status: 'free' },
+    { id: 'hampstead-hill-garden',  name: 'Hill Garden & Pergola, Hampstead',     lat: 51.5658, lng: -0.1746, day: 'day-02-jul', status: 'free' },
+    { id: 'moreton-in-marsh',       name: 'Moreton-in-Marsh — Cotswolds',         lat: 51.9936, lng: -1.6936, day: 'day-03-jul', status: 'confirmed' },
+    { id: 'notting-hill-portobello',name: 'Portobello Road, Notting Hill',        lat: 51.5170, lng: -0.2050, day: 'day-04-jul', status: 'free' },
+    { id: 'dishoom-portobello',     name: 'Dishoom Permit Room',                  lat: 51.5171, lng: -0.2047, day: 'day-04-jul', status: 'confirmed' },
+    { id: 'cambridge-centre',       name: 'Cambridge City Centre',                lat: 52.2066, lng: 0.1170,  day: 'day-05-jul', status: 'free' },
+    { id: 'scudamores-punting',     name: "Scudamore's Punting",                  lat: 52.2003, lng: 0.1178,  day: 'day-05-jul', status: 'confirmed' },
+    { id: 'wb-studio-tour',         name: 'Warner Bros. Studio Tour',             lat: 51.6925, lng: -0.4189, day: 'day-06-jul', status: 'pending' }
+  ];
+
+  let tripMap;
+
+  function initTripMap() {
+    tripMap = L.map('trip-map', { scrollWheelZoom: false }).setView([51.55, -0.35], 8);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+      maxZoom: 18
+    }).addTo(tripMap);
+
+    const statusColor = { confirmed: '#4a9e7f', pending: '#e05c4b', free: '#5b9bd5' };
+
+    tripLocations.forEach(loc => {
+      const marker = L.circleMarker([loc.lat, loc.lng], {
+        radius: 7,
+        color: statusColor[loc.status] || '#c9a84c',
+        fillColor: statusColor[loc.status] || '#c9a84c',
+        fillOpacity: 0.85,
+        weight: 2
+      }).addTo(tripMap);
+      marker.bindPopup(
+        '<strong>' + loc.name + '</strong><br>' +
+        '<a href="#" onclick="jumpToLocation(\'' + loc.id + '\',\'' + loc.day + '\');return false;">Jump to this day →</a>'
+      );
+    });
+  }
+
+  function jumpToLocation(id, day) {
+    showTab('itinerary');
+    const dayEl = document.getElementById(day);
+    if (!dayEl) return;
+    dayEl.open = true;
+    const locEl = document.getElementById('loc-' + id);
+    const target = locEl || dayEl;
+    setTimeout(() => {
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (locEl) {
+        locEl.classList.add('loc-highlight');
+        setTimeout(() => locEl.classList.remove('loc-highlight'), 1800);
+      }
+    }, 50);
+  }
+
+  function showTab(tab) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    document.getElementById('btn-' + tab).classList.add('active');
+    if (tab === 'itinerary' && tripMap) {
+      setTimeout(() => tripMap.invalidateSize(), 100);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', initTripMap);
+</script>
 </body>
 </html>
