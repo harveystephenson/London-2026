@@ -2,7 +2,9 @@
 Scan the iCloud Photos download folder, pull EXIF date/GPS from each image,
 and sort matches into photos_raw/uk_trip and photos_raw/dc_reunion.
 
-Re-run safe: skips files already copied to the destination.
+Re-run safe: skips files already recorded in the manifest, and a cheap
+filesystem-mtime pre-filter avoids full EXIF decode for files nowhere near
+the trip dates (iCloud preserves original capture date as file mtime).
 
 Usage:
     python scripts/extract_trip_photos.py
@@ -10,7 +12,7 @@ Usage:
 
 import csv
 import shutil
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 import pillow_heif
@@ -35,7 +37,16 @@ UK_TRIP_END = date(2026, 7, 8)
 DC_REUNION_START = date(2026, 7, 9)
 DC_REUNION_END = date(2026, 7, 11)
 
+# Cheap pre-filter using filesystem mtime (no image decode needed) to skip
+# the ~15K-file library down to real candidates before doing expensive HEIC
+# EXIF decode. Wider than the actual windows above to give slack in case
+# mtime and EXIF DateTimeOriginal drift slightly.
+PREFILTER_START = min(UK_TRIP_START, DC_REUNION_START) - timedelta(days=3)
+PREFILTER_END = max(UK_TRIP_END, DC_REUNION_END) + timedelta(days=3)
+
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".heic"}
+
+PROGRESS_INTERVAL = 500
 
 # Standard EXIF tag IDs (avoids relying on ExifTags.TAGS dict ordering)
 TAG_DATETIME_ORIGINAL = 36867
@@ -84,21 +95,60 @@ def read_exif(path):
     return photo_date, lat, lon
 
 
+def mtime_in_prefilter_range(path):
+    mtime_date = datetime.fromtimestamp(path.stat().st_mtime).date()
+    return PREFILTER_START <= mtime_date <= PREFILTER_END
+
+
+def load_existing_manifest():
+    if not MANIFEST_PATH.exists():
+        return {}
+    with open(MANIFEST_PATH, newline="", encoding="utf-8") as f:
+        return {row["filename"]: row for row in csv.DictReader(f)}
+
+
 def main():
     DEST_UK.mkdir(parents=True, exist_ok=True)
     DEST_DC.mkdir(parents=True, exist_ok=True)
     MANIFEST_PATH.parent.mkdir(parents=True, exist_ok=True)
 
+    existing = load_existing_manifest()
     rows = []
     scanned = 0
+    prefiltered_out = 0
+    reused = 0
     no_exif_date = 0
     matched_uk = 0
     matched_dc = 0
 
-    for path in sorted(SOURCE_DIR.iterdir()):
+    all_paths = sorted(SOURCE_DIR.iterdir())
+    total = len(all_paths)
+
+    for i, path in enumerate(all_paths, start=1):
+        if i % PROGRESS_INTERVAL == 0:
+            print(f"...{i}/{total} scanned ({len(rows)} matched so far)")
+
         if path.suffix.lower() not in IMAGE_EXTENSIONS:
             continue
         scanned += 1
+
+        existing_row = existing.get(path.name)
+        if existing_row:
+            dest = DEST_UK if existing_row["category"] == "uk_trip" else DEST_DC
+            dest_path = dest / path.name
+            if not dest_path.exists():
+                shutil.copy2(path, dest_path)
+            rows.append(existing_row)
+            reused += 1
+            if existing_row["category"] == "uk_trip":
+                matched_uk += 1
+            else:
+                matched_dc += 1
+            continue
+
+        if not mtime_in_prefilter_range(path):
+            prefiltered_out += 1
+            continue
 
         photo_dt, lat, lon = read_exif(path)
         if photo_dt is None:
@@ -140,7 +190,10 @@ def main():
         writer.writeheader()
         writer.writerows(rows)
 
-    print(f"Scanned:          {scanned}")
+    print(f"Total files:      {total}")
+    print(f"Image files:      {scanned}")
+    print(f"Reused from prior manifest: {reused}")
+    print(f"Skipped by mtime prefilter: {prefiltered_out}")
     print(f"No EXIF date:     {no_exif_date}")
     print(f"Matched UK trip:  {matched_uk}")
     print(f"Matched DC:       {matched_dc}")
