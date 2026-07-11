@@ -98,7 +98,7 @@
     padding: 0 20px;
   }
 
-  .overview { padding: 48px 0 32px; }
+  .overview { padding: 32px 0 32px; }
   .section-label {
     font-size: 10px;
     letter-spacing: 0.2em;
@@ -247,22 +247,6 @@
     color: var(--white);
     line-height: 1.3;
   }
-  .day-pills {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 8px;
-  }
-  .pill {
-    font-size: 11px;
-    padding: 2px 9px;
-    border-radius: 99px;
-    font-weight: 600;
-    letter-spacing: 0.03em;
-  }
-  .pill-confirmed { background: rgba(74,158,127,0.18); color: var(--sage); border: 1px solid rgba(74,158,127,0.3); }
-  .pill-pending   { background: rgba(224,92,75,0.15);  color: var(--coral); border: 1px solid rgba(224,92,75,0.3); }
-  .pill-free      { background: rgba(91,155,213,0.15); color: var(--sky);   border: 1px solid rgba(91,155,213,0.3); }
 
   .day-chevron {
     padding: 18px 20px;
@@ -275,7 +259,6 @@
 
   .day-body { background: var(--surface); }
 
-  /* ── SCHEDULE TABLE with dual time columns ── */
   .schedule { width: 100%; border-collapse: collapse; }
   .schedule tr {
     border-bottom: 1px solid var(--border);
@@ -285,121 +268,24 @@
   .schedule tr:hover { background: rgba(255,255,255,0.02); }
 
   .sch-time-uk {
-    padding: 12px 8px 12px 20px;
+    padding: 14px 16px;
     font-size: 12px;
     font-weight: 700;
     color: var(--gold);
     white-space: nowrap;
     vertical-align: top;
-    width: 80px;
+    width: 90px;
     letter-spacing: 0.02em;
-  }
-  .sch-time-cay {
-    padding: 12px 12px 12px 4px;
-    font-size: 11px;
-    color: var(--muted);
-    white-space: nowrap;
-    vertical-align: top;
-    width: 72px;
-    letter-spacing: 0.01em;
     border-right: 1px solid var(--border);
   }
-  .sch-time-cay::before { content: '🇰🇾 '; font-size: 10px; }
   .sch-act {
-    padding: 12px 20px 12px 16px;
+    padding: 14px 20px 14px 16px;
     font-size: 14px;
     color: var(--text);
     vertical-align: top;
   }
   .sch-act-title { margin-bottom: 2px; }
-  .sch-alt {
-    font-size: 12px;
-    color: var(--muted);
-    font-style: italic;
-    margin-top: 3px;
-  }
-  .badge {
-    display: inline-block;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 1px 7px;
-    border-radius: 4px;
-    margin-left: 7px;
-    vertical-align: middle;
-    letter-spacing: 0.04em;
-  }
-  .badge-ok   { background: rgba(74,158,127,0.2);  color: var(--sage); }
-  .badge-warn { background: rgba(224,92,75,0.18);  color: var(--coral); }
 
-  /* ── SUN STRIP ── */
-  .sun-strip {
-    display: flex;
-    gap: 24px;
-    padding: 10px 20px;
-    border-top: 1px solid var(--border);
-    background: rgba(201,168,76,0.04);
-    font-size: 12px;
-    color: var(--muted);
-  }
-  .sun-strip span { display: flex; align-items: center; gap: 5px; }
-
-  /* ── CONF BOX ── */
-  .conf-box {
-    margin: 0;
-    padding: 16px 20px 20px;
-    border-top: 1px solid var(--border);
-    background: #10131a;
-  }
-  .conf-label {
-    font-size: 10px;
-    letter-spacing: 0.18em;
-    color: var(--gold);
-    text-transform: uppercase;
-    font-weight: 700;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .conf-label::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-  .conf-rows { display: grid; gap: 5px; }
-  .conf-row {
-    display: flex;
-    gap: 12px;
-    font-size: 13px;
-    align-items: baseline;
-  }
-  .conf-key {
-    color: var(--muted);
-    min-width: 110px;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    flex-shrink: 0;
-  }
-  .conf-val { color: var(--sub); }
-  .conf-val a { color: var(--sky); }
-  .conf-val.warn-text { color: var(--coral); }
-
-  .warn-box {
-    margin: 0;
-    padding: 12px 20px;
-    border-top: 1px solid rgba(224,92,75,0.25);
-    background: rgba(224,92,75,0.06);
-    font-size: 13px;
-    color: var(--coral);
-  }
-  .warn-box::before { content: '⚠  '; }
-
-  .ref-section {
-    border-top: 1px solid var(--border);
-    padding: 48px 0 80px;
-  }
   .ref-title {
     font-family: var(--font-serif);
     font-size: 32px;
@@ -407,44 +293,6 @@
     color: var(--white);
     margin-bottom: 8px;
   }
-  .ref-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    margin-top: 24px;
-  }
-  @media (max-width: 640px) { .ref-grid { grid-template-columns: 1fr; } }
-  .ref-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px 22px;
-  }
-  .ref-card-title {
-    font-size: 10px;
-    letter-spacing: 0.18em;
-    color: var(--gold);
-    text-transform: uppercase;
-    font-weight: 700;
-    margin-bottom: 12px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border);
-  }
-  .ref-list { list-style: none; }
-  .ref-list li {
-    padding: 5px 0;
-    font-size: 13px;
-    color: var(--sub);
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-    display: flex;
-    gap: 8px;
-    align-items: baseline;
-  }
-  .ref-list li:last-child { border-bottom: none; }
-  .ref-list li::before { content: '–'; color: var(--gold-dim); flex-shrink: 0; }
-  .ref-list li a { color: var(--sky); }
-  .ref-list li.warn-item { color: var(--coral); }
-  .ref-list li.warn-item::before { content: '⚠'; color: var(--coral); }
 
   .footer {
     border-top: 1px solid var(--border);
@@ -517,15 +365,6 @@
     margin-left: 2px;
   }
 
-  .tz-note {
-    font-size: 11px;
-    color: var(--muted);
-    padding: 8px 20px;
-    background: rgba(255,255,255,0.02);
-    border-bottom: 1px solid var(--border);
-    letter-spacing: 0.03em;
-  }
-
   /* ── TABS ── */
   .tab-nav {
     display: flex;
@@ -556,9 +395,7 @@
 
   /* ── MAP ── */
   .map-section {
-    padding: 8px 0 40px;
-    border-top: 1px solid var(--border);
-    margin-top: 8px;
+    padding: 32px 0 32px;
   }
   #trip-map {
     height: 420px;
@@ -614,6 +451,17 @@
 
 <div class="tab-panel active" id="tab-itinerary">
 
+<!-- MAP -->
+<section class="map-section">
+  <p class="section-label">Trip Map — click a pin to jump to that day</p>
+  <div id="trip-map"></div>
+  <div class="map-legend">
+    <span><span class="legend-dot" style="background:#4a9e7f"></span> Confirmed</span>
+    <span><span class="legend-dot" style="background:#e05c4b"></span> Pending / not booked</span>
+    <span><span class="legend-dot" style="background:#5b9bd5"></span> Free time / no reservation</span>
+  </div>
+</section>
+
 <!-- OVERVIEW -->
 <section class="overview">
   <p class="section-label">At a Glance — all times UK (BST)</p>
@@ -621,13 +469,302 @@
     <div class="overview-row"><div class="ov-date">MON 29 JUN</div><div class="ov-desc">Arrival · Peggy Porschen · South Bank · Sketch (7:00pm)</div></div>
     <div class="overview-row"><div class="ov-date">TUE 30 JUN</div><div class="ov-desc">Kew Gardens · The Botanical Brasserie · Petersham Nurseries · Peggy Jean Richmond</div></div>
     <div class="overview-row"><div class="ov-date">WED 1 JUL</div><div class="ov-desc">Churchill War Rooms · Ambassadors Clubhouse · Devil Wears Prada · Sky Garden (Fenchurch)</div></div>
-    <div class="overview-row"><div class="ov-date">THU 2 JUL</div><div class="ov-desc">Design Museum · Harrods · Little Venice · Hampstead</div></div>
+    <div class="overview-row"><div class="ov-date">THU 2 JUL</div><div class="ov-desc">Harrods · Hampstead</div></div>
     <div class="overview-row"><div class="ov-date">FRI 3 JUL</div><div class="ov-desc">🌿 The Cotswolds — GWR to Moreton-in-Marsh · Private Mercedes Tour</div></div>
     <div class="overview-row"><div class="ov-date">SAT 4 JUL</div><div class="ov-desc">Pride Parade · Notting Hill · Portobello Road · Dishoom Permit Room</div></div>
     <div class="overview-row"><div class="ov-date">SUN 5 JUL</div><div class="ov-desc">Cambridge — Punting · the Backs · Bridge of Sighs · +Cutie</div></div>
     <div class="overview-row"><div class="ov-date">MON 6 JUL</div><div class="ov-desc">Last Full Day — TBD</div></div>
     <div class="overview-row"><div class="ov-date">TUE 7 JUL</div><div class="ov-desc">Travel Home — BA291 departs 2:00pm · Arrives Dulles 5:25pm</div></div>
   </div>
+</section>
+
+<!-- DAY PAGES -->
+<section class="days-section">
+  <div class="days-section-header">
+    <p class="section-label">Day by Day — click any day to expand</p>
+  </div>
+
+  <!-- MON 29 JUN -->
+  <details class="day-block" id="day-29-jun" open>
+    <summary class="day-header">
+      <div class="day-date-strip">
+        <div class="day-name">Monday</div>
+        <div class="day-num">29</div>
+        <div class="day-month">June</div>
+      </div>
+      <div class="day-title-area">
+        <div class="day-theme">Arrival Day — Belgravia &amp; South Bank</div>
+      </div>
+      <div class="day-chevron">▾</div>
+    </summary>
+    <div class="day-body">
+      <table class="schedule">
+        <tr id="loc-peggy-porschen"><td class="sch-time-uk">10:45am</td><td class="sch-act"><div class="sch-act-title">Peggy Porschen Belgravia — Morning Tea</div></td></tr>
+        <tr id="loc-south-bank-walk"><td class="sch-time-uk">2:00pm</td><td class="sch-act"><div class="sch-act-title">Walk: Bank of England · St Paul's · Leadenhall Market · London Bridge</div></td></tr>
+        <tr id="loc-sketch"><td class="sch-time-uk">7:00pm</td><td class="sch-act"><div class="sch-act-title">Dinner — <a href="https://sketch.london" target="_blank">Sketch, The Gallery</a></div></td></tr>
+      </table>
+      <div class="video-strip">
+        <div class="video-strip-label">📺 Videos by Others</div>
+        <div class="video-links">
+          <a class="video-pill" href="https://www.youtube.com/watch?v=R1rEL-_uZvk" target="_blank"><span class="vp-icon">▶</span>Peggy Porschen Morning Tea<span class="vp-dur">19:29</span></a>
+          <a class="video-pill" href="https://www.youtube.com/watch?v=1bp-dgQ6BM8" target="_blank"><span class="vp-icon">▶</span>Belgravia Village Walk 4K<span class="vp-dur">52:29</span></a>
+          <a class="video-pill" href="https://www.youtube.com/watch?v=LurMYglnGxo" target="_blank"><span class="vp-icon">▶</span>Secret BA Lounge Heathrow<span class="vp-dur">0:16</span></a>
+          <a class="video-pill" href="https://www.youtube.com/watch?v=8BsxGFNhqu8" target="_blank"><span class="vp-icon">▶</span>BA T5 Arrivals Lounge Review<span class="vp-dur">9:09</span></a>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <!-- TUE 30 JUN -->
+  <details class="day-block" id="day-30-jun">
+    <summary class="day-header">
+      <div class="day-date-strip">
+        <div class="day-name">Tuesday</div>
+        <div class="day-num">30</div>
+        <div class="day-month">June</div>
+      </div>
+      <div class="day-title-area">
+        <div class="day-theme">Richmond Day — Kew Gardens, Petersham &amp; Peggy Jean</div>
+      </div>
+      <div class="day-chevron">▾</div>
+    </summary>
+    <div class="day-body">
+      <table class="schedule">
+        <tr id="loc-kew-gardens"><td class="sch-time-uk">10:00am</td><td class="sch-act"><div class="sch-act-title"><a href="https://www.kew.org" target="_blank">Royal Botanic Gardens, Kew</a></div></td></tr>
+        <tr><td class="sch-time-uk">10:30am</td><td class="sch-act"><div class="sch-act-title">Breakfast: The Botanical Brasserie at Kew</div></td></tr>
+        <tr><td class="sch-time-uk">12:00pm</td><td class="sch-act"><div class="sch-act-title">Kew Gardens — The Pagoda &amp; Great Broad Walk</div></td></tr>
+        <tr id="loc-petersham-nurseries"><td class="sch-time-uk">1:30pm</td><td class="sch-act"><div class="sch-act-title"><a href="https://www.petershamnurseries.com" target="_blank">Petersham Nurseries Restaurant</a></div></td></tr>
+        <tr><td class="sch-time-uk">3:30pm</td><td class="sch-act"><div class="sch-act-title">Walk along Richmond riverside</div></td></tr>
+        <tr id="loc-peggy-jean-richmond"><td class="sch-time-uk">6:30pm</td><td class="sch-act"><div class="sch-act-title">Dinner: Peggy Jean, Richmond</div></td></tr>
+      </table>
+      <div class="video-strip">
+        <div class="video-strip-label">📺 Videos by Others</div>
+        <div class="video-links">
+          <a class="video-pill" href="https://www.youtube.com/watch?v=ioG_Vfh0Kxw" target="_blank"><span class="vp-icon">▶</span>Top 10 Attractions at Kew Gardens<span class="vp-dur">6:33</span></a>
+          <a class="video-pill" href="https://www.youtube.com/watch?v=KTdMKdwW8H0" target="_blank"><span class="vp-icon">▶</span>Kew Gardens in Spring 4K<span class="vp-dur">42:32</span></a>
+          <a class="video-pill" href="https://www.youtube.com/watch?v=jBzre20lDXo" target="_blank"><span class="vp-icon">▶</span>Things to Do in Richmond<span class="vp-dur">10:04</span></a>
+          <a class="video-pill" href="https://www.youtube.com/watch?v=5JLDtPUDL68" target="_blank"><span class="vp-icon">▶</span>A Day in Richmond<span class="vp-dur">1:21</span></a>
+          <a class="video-pill" href="https://www.youtube.com/watch?v=UBTrCbXaY2A" target="_blank"><span class="vp-icon">▶</span>Richmond Riverside Walk 4K<span class="vp-dur">57:21</span></a>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <!-- WED 1 JUL -->
+  <details class="day-block" id="day-01-jul">
+    <summary class="day-header">
+      <div class="day-date-strip">
+        <div class="day-name">Wednesday</div>
+        <div class="day-num">1</div>
+        <div class="day-month">July</div>
+      </div>
+      <div class="day-title-area">
+        <div class="day-theme">Churchill War Rooms · Ambassadors · Devil Wears Prada · Sky Garden</div>
+      </div>
+      <div class="day-chevron">▾</div>
+    </summary>
+    <div class="day-body">
+      <table class="schedule">
+        <tr id="loc-churchill-war-rooms"><td class="sch-time-uk">9:30am</td><td class="sch-act"><div class="sch-act-title">Churchill War Rooms</div></td></tr>
+        <tr id="loc-ambassadors-clubhouse"><td class="sch-time-uk">12:00pm</td><td class="sch-act"><div class="sch-act-title">Lunch — <a href="https://ambassadorsclubhouse.com" target="_blank">Ambassadors Clubhouse</a>, Heddon Street</div></td></tr>
+        <tr id="loc-dominion-theatre"><td class="sch-time-uk">2:30pm</td><td class="sch-act"><div class="sch-act-title">🎭 Devil Wears Prada — Dominion Theatre</div></td></tr>
+        <tr id="loc-sky-garden"><td class="sch-time-uk">6:45pm</td><td class="sch-act"><div class="sch-act-title"><a href="https://skygarden.london" target="_blank">Fenchurch Restaurant, Sky Garden</a></div></td></tr>
+      </table>
+      <div class="video-strip">
+        <div class="video-strip-label">📺 Videos by Others</div>
+        <div class="video-links">
+          <a class="video-pill" href="https://www.youtube.com/watch?v=zLxBBV9DBdM" target="_blank"><span class="vp-icon">▶</span>Devil Wears Prada — West End Trailer<span class="vp-dur">1:23</span></a>
+          <a class="video-pill" href="https://www.youtube.com/watch?v=dLrGEtY1J3M" target="_blank"><span class="vp-icon">▶</span>Ambassadors Clubhouse — Michelin Star Indian<span class="vp-dur">short</span></a>
+          <a class="video-pill" href="https://www.youtube.com/watch?v=Pdsw3PV958Q" target="_blank"><span class="vp-icon">▶</span>Every Michelin Star Indian in London Reviewed<span class="vp-dur">9:06</span></a>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <!-- THU 2 JUL -->
+  <details class="day-block" id="day-02-jul">
+    <summary class="day-header">
+      <div class="day-date-strip">
+        <div class="day-name">Thursday</div>
+        <div class="day-num">2</div>
+        <div class="day-month">July</div>
+      </div>
+      <div class="day-title-area">
+        <div class="day-theme">Harrods &amp; Hampstead</div>
+      </div>
+      <div class="day-chevron">▾</div>
+    </summary>
+    <div class="day-body">
+      <table class="schedule">
+        <tr id="loc-harrods"><td class="sch-time-uk">12:00pm</td><td class="sch-act"><div class="sch-act-title">Lunch: The Georgian at Harrods</div></td></tr>
+        <tr><td class="sch-time-uk">5:00pm</td><td class="sch-act"><div class="sch-act-title">Hampstead — Coffee Cup café</div></td></tr>
+        <tr id="loc-hampstead-hill-garden"><td class="sch-time-uk">5:30pm</td><td class="sch-act"><div class="sch-act-title">The Hill Garden &amp; Pergola, Hampstead</div></td></tr>
+        <tr><td class="sch-time-uk">7:00pm</td><td class="sch-act"><div class="sch-act-title">Parliament Hill — sunset views</div></td></tr>
+      </table>
+      <div class="video-strip">
+        <div class="video-strip-label">📺 Videos by Others</div>
+        <div class="video-links">
+          <a class="video-pill" href="https://www.youtube.com/watch?v=Or3miaI_L4w" target="_blank"><span class="vp-icon">▶</span>Does Harrods Have the Best Afternoon Tea?<span class="vp-dur">26:31</span></a>
+          <a class="video-pill" href="https://www.youtube.com/watch?v=A0k_hbaEL-o" target="_blank"><span class="vp-icon">▶</span>Harrods Tiffany & Co Restaurant<span class="vp-dur">34:51</span></a>
+          <a class="video-pill" href="https://www.youtube.com/watch?v=tpnFgPK3QJU" target="_blank"><span class="vp-icon">▶</span>A Day in Hampstead<span class="vp-dur">1:10</span></a>
+          <a class="video-pill" href="https://www.youtube.com/watch?v=-wC2cNuzT-A" target="_blank"><span class="vp-icon">▶</span>Hampstead — Where Billionaires Live 4K<span class="vp-dur">33:29</span></a>
+          <a class="video-pill" href="https://www.youtube.com/watch?v=DwRFZlR9Z2g" target="_blank"><span class="vp-icon">▶</span>Why Everyone Loves Hampstead<span class="vp-dur">12:39</span></a>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <!-- FRI 3 JUL -->
+  <details class="day-block" id="day-03-jul">
+    <summary class="day-header">
+      <div class="day-date-strip">
+        <div class="day-name">Friday</div>
+        <div class="day-num">3</div>
+        <div class="day-month">July</div>
+      </div>
+      <div class="day-title-area">
+        <div class="day-theme">The Cotswolds 🌿 — Private Luxury Day Tour</div>
+      </div>
+      <div class="day-chevron">▾</div>
+    </summary>
+    <div class="day-body">
+      <table class="schedule">
+        <tr><td class="sch-time-uk">8:51am</td><td class="sch-act"><div class="sch-act-title">GWR departs London Paddington → Moreton-in-Marsh — 1st Class</div></td></tr>
+        <tr id="loc-moreton-in-marsh"><td class="sch-time-uk">10:18am</td><td class="sch-act"><div class="sch-act-title">Arrive Moreton-in-Marsh</div></td></tr>
+        <tr><td class="sch-time-uk">All Day</td><td class="sch-act"><div class="sch-act-title">Private Cotswolds Day Tour in a Mercedes</div></td></tr>
+      </table>
+      <div class="video-strip">
+        <div class="video-strip-label">📺 Videos by Others</div>
+        <div class="video-links">
+          <a class="video-pill" href="https://www.youtube.com/watch?v=rshP1BhXZK4" target="_blank"><span class="vp-icon">▶</span>GWR First Class to Moreton-in-Marsh<span class="vp-dur">full</span></a>
+          <a class="video-pill" href="https://www.youtube.com/watch?v=AH7kHklu0so" target="_blank"><span class="vp-icon">▶</span>London to the Cotswolds by Train<span class="vp-dur">full</span></a>
+          <a class="video-pill" href="https://www.youtube.com/watch?v=tt8MLfYrg7Q" target="_blank"><span class="vp-icon">▶</span>4 Days in the Cotswolds 2026<span class="vp-dur">15:05</span></a>
+          <a class="video-pill" href="https://www.youtube.com/watch?v=8a9XO6ApIus" target="_blank"><span class="vp-icon">▶</span>19 Best Things to Do in the Cotswolds<span class="vp-dur">25:06</span></a>
+          <a class="video-pill" href="https://www.youtube.com/watch?v=GnoEOCo5V-Y" target="_blank"><span class="vp-icon">▶</span>Weekend in the Cotswolds<span class="vp-dur">17:17</span></a>
+          <a class="video-pill" href="https://www.youtube.com/watch?v=2DzETRI5RIU" target="_blank"><span class="vp-icon">▶</span>4 Days — Bourton, Bibury & Broadway<span class="vp-dur">18:09</span></a>
+          <a class="video-pill" href="https://www.youtube.com/watch?v=8nlBsMRHyaI" target="_blank"><span class="vp-icon">▶</span>Bourton-on-the-Water — Most Beautiful Village<span class="vp-dur">14:57</span></a>
+          <a class="video-pill" href="https://www.youtube.com/watch?v=itP4IErJYWA" target="_blank"><span class="vp-icon">▶</span>Bibury — Most Beautiful in the World<span class="vp-dur">short</span></a>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <!-- SAT 4 JUL -->
+  <details class="day-block" id="day-04-jul">
+    <summary class="day-header">
+      <div class="day-date-strip">
+        <div class="day-name">Saturday</div>
+        <div class="day-num">4</div>
+        <div class="day-month">July</div>
+      </div>
+      <div class="day-title-area">
+        <div class="day-theme">Pride Parade 🏳️‍🌈 · Notting Hill · Portobello Road · Dishoom</div>
+      </div>
+      <div class="day-chevron">▾</div>
+    </summary>
+    <div class="day-body">
+      <table class="schedule">
+        <tr><td class="sch-time-uk">9:00am</td><td class="sch-act"><div class="sch-act-title">Breakfast in Chelsea</div></td></tr>
+        <tr><td class="sch-time-uk">11:00am</td><td class="sch-act"><div class="sch-act-title">🏳️‍🌈 <a href="https://londonpride.co.uk" target="_blank">London Pride Parade</a> — Marble Arch to Whitehall</div></td></tr>
+        <tr id="loc-notting-hill-portobello"><td class="sch-time-uk">3:30pm</td><td class="sch-act"><div class="sch-act-title">Portobello Road &amp; Notting Hill</div></td></tr>
+        <tr><td class="sch-time-uk">5:00pm</td><td class="sch-act"><div class="sch-act-title">Churchill Arms — photo stop</div></td></tr>
+        <tr id="loc-dishoom-portobello"><td class="sch-time-uk">6:30pm</td><td class="sch-act"><div class="sch-act-title">Dinner — Dishoom Permit Room, Portobello Road</div></td></tr>
+      </table>
+      <div class="video-strip">
+        <div class="video-strip-label">📺 Videos by Others</div>
+        <div class="video-links">
+          <a class="video-pill" href="https://www.youtube.com/watch?v=HhpVvEtvQGc" target="_blank"><span class="vp-icon">▶</span>Perfect Day in Notting Hill<span class="vp-dur">1:07</span></a>
+          <a class="video-pill" href="https://www.youtube.com/watch?v=0lLzzOWLIuY" target="_blank"><span class="vp-icon">▶</span>Notting Hill Tour — Portobello & Film Locations<span class="vp-dur">28:24</span></a>
+          <a class="video-pill" href="https://www.youtube.com/watch?v=S2d3K7UtKqo" target="_blank"><span class="vp-icon">▶</span>Notting Hill 4K HDR Walk<span class="vp-dur">1:01:18</span></a>
+          <a class="video-pill" href="https://www.youtube.com/watch?v=F_d63xsaE00" target="_blank"><span class="vp-icon">▶</span>Dishoom Permit Room Grand Opening<span class="vp-dur">full</span></a>
+          <a class="video-pill" href="https://www.youtube.com/watch?v=aaLdfikBVP0" target="_blank"><span class="vp-icon">▶</span>We Tried Dishoom — London's Most Famous Indian<span class="vp-dur">full</span></a>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <!-- SUN 5 JUL -->
+  <details class="day-block" id="day-05-jul">
+    <summary class="day-header">
+      <div class="day-date-strip">
+        <div class="day-name">Sunday</div>
+        <div class="day-num">5</div>
+        <div class="day-month">July</div>
+      </div>
+      <div class="day-title-area">
+        <div class="day-theme">Cambridge — Punting, the Backs &amp; Bridge of Sighs · +Cutie</div>
+      </div>
+      <div class="day-chevron">▾</div>
+    </summary>
+    <div class="day-body">
+      <table class="schedule">
+        <tr id="loc-cambridge-centre"><td class="sch-time-uk">10:00am</td><td class="sch-act"><div class="sch-act-title">Arrive Cambridge — walk city centre</div></td></tr>
+        <tr id="loc-scudamores-punting"><td class="sch-time-uk">1:30pm</td><td class="sch-act"><div class="sch-act-title">Chauffeured punt on the Cam with Cutie — the Backs route</div></td></tr>
+        <tr><td class="sch-time-uk">3:00pm</td><td class="sch-act"><div class="sch-act-title">Bridge of Sighs · St John's College · Trinity Street</div></td></tr>
+        <tr><td class="sch-time-uk">4:00pm</td><td class="sch-act"><div class="sch-act-title">Cambridge University Botanic Garden</div></td></tr>
+      </table>
+    </div>
+  </details>
+
+  <!-- MON 6 JUL -->
+  <details class="day-block" id="day-06-jul">
+    <summary class="day-header">
+      <div class="day-date-strip">
+        <div class="day-name">Monday</div>
+        <div class="day-num">6</div>
+        <div class="day-month">July</div>
+      </div>
+      <div class="day-title-area">
+        <div class="day-theme">Last Full Day in London</div>
+      </div>
+      <div class="day-chevron">▾</div>
+    </summary>
+    <div class="day-body">
+      <table class="schedule">
+        <tr id="loc-wb-studio-tour"><td class="sch-time-uk">Morning</td><td class="sch-act"><div class="sch-act-title">Harry Potter Studios, Watford</div></td></tr>
+      </table>
+      <div class="video-strip">
+        <div class="video-strip-label">📺 Videos by Others</div>
+        <div class="video-links">
+          <a class="video-pill" href="https://www.youtube.com/watch?v=hy4JnaCYvMc" target="_blank"><span class="vp-icon">▶</span>Harry Potter Studio Tour Worth It in 2026?<span class="vp-dur">full</span></a>
+          <a class="video-pill" href="https://www.youtube.com/watch?v=skTCj4Ctq6Y" target="_blank"><span class="vp-icon">▶</span>Still Worth It in 2025? Honest Review<span class="vp-dur">full</span></a>
+          <a class="video-pill" href="https://www.youtube.com/watch?v=VIdKaNJWYEs" target="_blank"><span class="vp-icon">▶</span>Transport, Tickets & Full Walkthrough<span class="vp-dur">full</span></a>
+          <a class="video-pill" href="https://www.youtube.com/watch?v=liTokMvx4pc" target="_blank"><span class="vp-icon">▶</span>Things to Know Before You Go<span class="vp-dur">full</span></a>
+          <a class="video-pill" href="https://www.youtube.com/watch?v=z6Ec_lvFpSQ" target="_blank"><span class="vp-icon">▶</span>Ultimate Harry Potter Fan Experience<span class="vp-dur">full</span></a>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <!-- TUE 7 JUL -->
+  <details class="day-block" id="day-07-jul">
+    <summary class="day-header">
+      <div class="day-date-strip">
+        <div class="day-name">Tuesday</div>
+        <div class="day-num">7</div>
+        <div class="day-month">July</div>
+      </div>
+      <div class="day-title-area">
+        <div class="day-theme">Travel Home ✈</div>
+      </div>
+      <div class="day-chevron">▾</div>
+    </summary>
+    <div class="day-body">
+      <table class="schedule">
+        <tr><td class="sch-time-uk">2:00pm</td><td class="sch-act"><div class="sch-act-title">BA291 departs Heathrow Terminal 5</div></td></tr>
+        <tr><td class="sch-time-uk">5:25pm</td><td class="sch-act"><div class="sch-act-title">Arrive Dulles International (IAD) <span style="font-size:11px;color:var(--muted)">· EDT (UTC−4)</span></div></td></tr>
+      </table>
+      <div class="video-strip">
+        <div class="video-strip-label">📺 Videos by Others</div>
+        <div class="video-links">
+          <a class="video-pill" href="https://www.youtube.com/watch?v=YOQMmP6uaro" target="_blank"><span class="vp-icon">▶</span>BA Business Lounge Heathrow T5 Review<span class="vp-dur">11:07</span></a>
+          <a class="video-pill" href="https://www.youtube.com/watch?v=h9mjFiV9_ys" target="_blank"><span class="vp-icon">▶</span>BA Galleries Club Lounge — Hidden Gem<span class="vp-dur">9:30</span></a>
+          <a class="video-pill" href="https://www.youtube.com/watch?v=vIvPyZLQiLY" target="_blank"><span class="vp-icon">▶</span>BA 777 First Class LHR → Dulles<span class="vp-dur">7:16</span></a>
+        </div>
+      </div>
+    </div>
+  </details>
+
 </section>
 
 <!-- BOOKINGS SUMMARY -->
@@ -648,579 +785,6 @@
       <div class="info-row"><span class="info-label">Rooms</span><span class="info-val">2 × Deluxe King</span></div>
       <div class="info-row"><span class="info-label">Address</span><span class="info-val">101 Buckingham Palace Road SW1W 0SJ</span></div>
     </div>
-  </div>
-</section>
-
-<!-- MAP -->
-<section class="map-section">
-  <p class="section-label">Trip Map — click a pin to jump to that day</p>
-  <div id="trip-map"></div>
-  <div class="map-legend">
-    <span><span class="legend-dot" style="background:#4a9e7f"></span> Confirmed</span>
-    <span><span class="legend-dot" style="background:#e05c4b"></span> Pending / not booked</span>
-    <span><span class="legend-dot" style="background:#5b9bd5"></span> Free time / no reservation</span>
-  </div>
-</section>
-
-<!-- DAY PAGES -->
-<section class="days-section">
-  <div class="days-section-header">
-    <p class="section-label">Day by Day — click any day to expand</p>
-  </div>
-
-  <!-- MON 29 JUN -->
-  <details class="day-block" id="day-29-jun" open>
-    <summary class="day-header">
-      <div class="day-date-strip">
-        <div class="day-name">Monday</div>
-        <div class="day-num">29</div>
-        <div class="day-month">June</div>
-      </div>
-      <div class="day-title-area">
-        <div class="day-theme">Arrival Day — Belgravia &amp; South Bank</div>
-        <div class="day-pills">
-          <span class="pill pill-confirmed">Peggy Porschen ✓</span>
-          <span class="pill pill-confirmed">Sketch ✓</span>
-        </div>
-      </div>
-      <div class="day-chevron">▾</div>
-    </summary>
-    <div class="day-body">
-      <div class="tz-note">UK times (BST) · Cayman Islands times (EST, UTC−5) shown in grey</div>
-      <table class="schedule">
-        <tr id="loc-heathrow-t5"><td class="sch-time-uk">7:30am</td><td class="sch-time-cay">1:30am</td><td class="sch-act"><div class="sch-act-title">Land at Heathrow Terminal 5</div></td></tr>
-        <tr><td class="sch-time-uk">8:00am</td><td class="sch-time-cay">2:00am</td><td class="sch-act"><div class="sch-act-title">Customs &amp; Immigration</div></td></tr>
-        <tr id="loc-clermont-victoria"><td class="sch-time-uk">9:00am</td><td class="sch-time-cay">3:00am</td><td class="sch-act"><div class="sch-act-title">Transfer to The Clermont Victoria</div></td></tr>
-        <tr id="loc-peggy-porschen"><td class="sch-time-uk">10:45am</td><td class="sch-time-cay">4:45am</td><td class="sch-act"><div class="sch-act-title">Peggy Porschen Belgravia — Morning Tea <span class="badge badge-ok">CONFIRMED</span></div><div class="sch-alt">Alt: Ole &amp; Steen nearby</div></td></tr>
-        <tr><td class="sch-time-uk">12:00pm</td><td class="sch-time-cay">6:00am</td><td class="sch-act"><div class="sch-act-title">Check in / rest</div></td></tr>
-        <tr id="loc-south-bank-walk"><td class="sch-time-uk">2:00pm</td><td class="sch-time-cay">8:00am</td><td class="sch-act"><div class="sch-act-title">Walk: Bank of England · St Paul's · Leadenhall Market · London Bridge</div><div class="sch-alt">Alt: Hyde Park · Belgravia · Chelsea</div></td></tr>
-        <tr id="loc-sketch"><td class="sch-time-uk">7:00pm</td><td class="sch-time-cay">1:00pm</td><td class="sch-act"><div class="sch-act-title">Dinner — <a href="https://sketch.london" target="_blank">Sketch, The Gallery</a> <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
-      </table>
-      <div class="sun-strip">
-        <span>🌅 Sunrise 4:47am</span>
-        <span>🌇 Sunset 9:20pm</span>
-        <span style="color:var(--gold-dim)">· 16h 33m daylight</span>
-      </div>
-      <div class="video-strip">
-        <div class="video-strip-label">📺 Watch Before You Go</div>
-        <div class="video-links">
-          <a class="video-pill" href="https://www.youtube.com/watch?v=R1rEL-_uZvk" target="_blank"><span class="vp-icon">▶</span>Peggy Porschen Morning Tea<span class="vp-dur">19:29</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=1bp-dgQ6BM8" target="_blank"><span class="vp-icon">▶</span>Belgravia Village Walk 4K<span class="vp-dur">52:29</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=LurMYglnGxo" target="_blank"><span class="vp-icon">▶</span>Secret BA Lounge Heathrow<span class="vp-dur">0:16</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=8BsxGFNhqu8" target="_blank"><span class="vp-icon">▶</span>BA T5 Arrivals Lounge Review<span class="vp-dur">9:09</span></a>
-        </div>
-      </div>
-      <div class="conf-box">
-        <div class="conf-label">Confirmations</div>
-        <div class="conf-rows">
-          <div class="conf-row"><span class="conf-key">Peggy Porschen</span><span class="conf-val">Mon 29 Jun · 10:45am–12:15pm · 2 guests · Indoor seating · 2× Classic Morning Tea</span></div>
-          <div class="conf-row"><span class="conf-key">Sketch</span><span class="conf-val">Mon 29 Jun · 7:00–8:45pm · 2 guests · 9 Conduit Street W1S 2XG · <a href="https://sketch.london" target="_blank">sketch.london</a></span></div>
-        </div>
-      </div>
-    </div>
-  </details>
-
-  <!-- TUE 30 JUN -->
-  <details class="day-block" id="day-30-jun">
-    <summary class="day-header">
-      <div class="day-date-strip">
-        <div class="day-name">Tuesday</div>
-        <div class="day-num">30</div>
-        <div class="day-month">June</div>
-      </div>
-      <div class="day-title-area">
-        <div class="day-theme">Richmond Day — Kew Gardens, Petersham &amp; Peggy Jean</div>
-        <div class="day-pills">
-          <span class="pill pill-confirmed">Kew Gardens ✓</span>
-          <span class="pill pill-confirmed">The Botanical ✓</span>
-          <span class="pill pill-confirmed">Petersham ✓</span>
-          <span class="pill pill-confirmed">Peggy Jean ✓</span>
-        </div>
-      </div>
-      <div class="day-chevron">▾</div>
-    </summary>
-    <div class="day-body">
-      <div class="tz-note">UK times (BST) · Cayman Islands times (EST, UTC−5) shown in grey</div>
-      <table class="schedule">
-        <tr><td class="sch-time-uk">9:30am</td><td class="sch-time-cay">3:30am</td><td class="sch-act"><div class="sch-act-title">Uber to Kew</div></td></tr>
-        <tr id="loc-kew-gardens"><td class="sch-time-uk">10:00am</td><td class="sch-time-cay">4:00am</td><td class="sch-act"><div class="sch-act-title"><a href="https://www.kew.org" target="_blank">Royal Botanic Gardens, Kew</a> — eTickets in email <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
-        <tr><td class="sch-time-uk">10:30am</td><td class="sch-time-cay">4:30am</td><td class="sch-act"><div class="sch-act-title">Breakfast: The Botanical Brasserie at Kew <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
-        <tr><td class="sch-time-uk">12:00pm</td><td class="sch-time-cay">6:00am</td><td class="sch-act"><div class="sch-act-title">Kew Gardens — The Pagoda &amp; Great Broad Walk</div></td></tr>
-        <tr><td class="sch-time-uk">1:00pm</td><td class="sch-time-cay">7:00am</td><td class="sch-act"><div class="sch-act-title">Uber to Petersham</div></td></tr>
-        <tr id="loc-petersham-nurseries"><td class="sch-time-uk">1:30pm</td><td class="sch-time-cay">7:30am</td><td class="sch-act"><div class="sch-act-title"><a href="https://www.petershamnurseries.com" target="_blank">Petersham Nurseries Restaurant</a> — Lunch <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
-        <tr><td class="sch-time-uk">3:30pm</td><td class="sch-time-cay">9:30am</td><td class="sch-act"><div class="sch-act-title">Walk along Richmond riverside</div><div class="sch-alt">Alt: Hampton Court Palace</div></td></tr>
-        <tr id="loc-peggy-jean-richmond"><td class="sch-time-uk">6:30pm</td><td class="sch-time-cay">12:30pm</td><td class="sch-act"><div class="sch-act-title">Dinner: Peggy Jean, Richmond <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
-      </table>
-      <div class="sun-strip">
-        <span>🌅 Sunrise 4:47am</span>
-        <span>🌇 Sunset 9:20pm</span>
-        <span style="color:var(--gold-dim)">· 16h 33m daylight</span>
-      </div>
-      <div class="video-strip">
-        <div class="video-strip-label">📺 Watch Before You Go</div>
-        <div class="video-links">
-          <a class="video-pill" href="https://www.youtube.com/watch?v=ioG_Vfh0Kxw" target="_blank"><span class="vp-icon">▶</span>Top 10 Attractions at Kew Gardens<span class="vp-dur">6:33</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=KTdMKdwW8H0" target="_blank"><span class="vp-icon">▶</span>Kew Gardens in Spring 4K<span class="vp-dur">42:32</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=jBzre20lDXo" target="_blank"><span class="vp-icon">▶</span>Things to Do in Richmond<span class="vp-dur">10:04</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=5JLDtPUDL68" target="_blank"><span class="vp-icon">▶</span>A Day in Richmond<span class="vp-dur">1:21</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=UBTrCbXaY2A" target="_blank"><span class="vp-icon">▶</span>Richmond Riverside Walk 4K<span class="vp-dur">57:21</span></a>
-        </div>
-      </div>
-      <div class="conf-box">
-        <div class="conf-label">Confirmations</div>
-        <div class="conf-rows">
-          <div class="conf-row"><span class="conf-key">Kew Gardens</span><span class="conf-val">eTickets in confirmation email · Mobile ticket accepted</span></div>
-          <div class="conf-row"><span class="conf-key">The Botanical</span><span class="conf-val">Tue 30 Jun · 10:30am · 2 guests · The Botanical Brasserie, Kew Gardens TW9 3AB</span></div>
-          <div class="conf-row"><span class="conf-key">Petersham</span><span class="conf-val">Tue 30 Jun · 1:30pm · 2 guests · Church Lane, Richmond TW10 7AB</span></div>
-          <div class="conf-row"><span class="conf-key">Peggy Jean</span><span class="conf-val">Tue 30 Jun · 6:30pm · 2 guests · Peggy Jean Richmond · via Daisy Green Food</span></div>
-        </div>
-      </div>
-      <div class="warn-box">Petersham cancellation policy: 48 hours notice required · £50pp penalty for no-show or late cancellation.</div>
-    </div>
-  </details>
-
-  <!-- WED 1 JUL -->
-  <details class="day-block" id="day-01-jul">
-    <summary class="day-header">
-      <div class="day-date-strip">
-        <div class="day-name">Wednesday</div>
-        <div class="day-num">1</div>
-        <div class="day-month">July</div>
-      </div>
-      <div class="day-title-area">
-        <div class="day-theme">Churchill War Rooms · Ambassadors · Devil Wears Prada · Sky Garden</div>
-        <div class="day-pills">
-          <span class="pill pill-confirmed">Ambassadors ✓</span>
-          <span class="pill pill-confirmed">Churchill ✓</span>
-          <span class="pill pill-confirmed">DWP ✓</span>
-          <span class="pill pill-confirmed">Fenchurch ✓</span>
-        </div>
-      </div>
-      <div class="day-chevron">▾</div>
-    </summary>
-    <div class="day-body">
-      <div class="tz-note">UK times (BST) · Cayman Islands times (EST, UTC−5) shown in grey</div>
-      <table class="schedule">
-        <tr id="loc-churchill-war-rooms"><td class="sch-time-uk">9:30am</td><td class="sch-time-cay">3:30am</td><td class="sch-act"><div class="sch-act-title">Churchill War Rooms — DigiTicket on phone <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
-        <tr id="loc-ambassadors-clubhouse"><td class="sch-time-uk">12:00pm</td><td class="sch-time-cay">6:00am</td><td class="sch-act"><div class="sch-act-title">Lunch — <a href="https://ambassadorsclubhouse.com" target="_blank">Ambassadors Clubhouse</a>, Heddon Street <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
-        <tr><td class="sch-time-uk">1:30pm</td><td class="sch-time-cay">7:30am</td><td class="sch-act"><div class="sch-act-title">Travel to Dominion Theatre, Tottenham Court Road</div></td></tr>
-        <tr id="loc-dominion-theatre"><td class="sch-time-uk">2:30pm</td><td class="sch-time-cay">8:30am</td><td class="sch-act"><div class="sch-act-title">🎭 Devil Wears Prada — Dominion Theatre <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
-        <tr><td class="sch-time-uk">5:15pm</td><td class="sch-time-cay">11:15am</td><td class="sch-act"><div class="sch-act-title">Travel to Sky Garden (allow 45 min)</div></td></tr>
-        <tr id="loc-sky-garden"><td class="sch-time-uk">6:45pm</td><td class="sch-time-cay">12:45pm</td><td class="sch-act"><div class="sch-act-title"><a href="https://skygarden.london" target="_blank">Fenchurch Restaurant, Sky Garden</a> <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
-      </table>
-      <div class="sun-strip">
-        <span>🌅 Sunrise 4:48am</span>
-        <span>🌇 Sunset 9:19pm</span>
-        <span style="color:var(--gold-dim)">· 16h 31m daylight</span>
-      </div>
-      <div class="video-strip">
-        <div class="video-strip-label">📺 Watch Before You Go</div>
-        <div class="video-links">
-          <a class="video-pill" href="https://www.youtube.com/watch?v=zLxBBV9DBdM" target="_blank"><span class="vp-icon">▶</span>Devil Wears Prada — West End Trailer<span class="vp-dur">1:23</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=dLrGEtY1J3M" target="_blank"><span class="vp-icon">▶</span>Ambassadors Clubhouse — Michelin Star Indian<span class="vp-dur">short</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=Pdsw3PV958Q" target="_blank"><span class="vp-icon">▶</span>Every Michelin Star Indian in London Reviewed<span class="vp-dur">9:06</span></a>
-        </div>
-      </div>
-      <div class="conf-box">
-        <div class="conf-label">Confirmations</div>
-        <div class="conf-rows">
-          <div class="conf-row"><span class="conf-key">Churchill</span><span class="conf-val">Wed 1 Jul · 9:30am · DigiTicket on phone</span></div>
-          <div class="conf-row"><span class="conf-key">Ambassadors</span><span class="conf-val">Wed 1 Jul · 12:00–1:30pm · 2 guests · 25 Heddon Street W1B 4BH</span></div>
-          <div class="conf-row"><span class="conf-key">DWP</span><span class="conf-val">Wed 1 Jul · 2:30pm · 2 tickets · Dominion Theatre, 268–269 Tottenham Court Road W1T 7AQ</span></div>
-          <div class="conf-row"><span class="conf-key">Fenchurch</span><span class="conf-val">Wed 1 Jul · 6:45–8:15pm · 2 guests · 1 Sky Garden Walk EC3M 8AF · <a href="https://skygarden.london" target="_blank">skygarden.london</a></span></div>
-        </div>
-      </div>
-      <div class="warn-box">DWP tickets sent in a separate email from order confirmation — confirm tickets are saved on your phone before travel day.</div>
-    </div>
-  </details>
-
-  <!-- THU 2 JUL -->
-  <details class="day-block" id="day-02-jul">
-    <summary class="day-header">
-      <div class="day-date-strip">
-        <div class="day-name">Thursday</div>
-        <div class="day-num">2</div>
-        <div class="day-month">July</div>
-      </div>
-      <div class="day-title-area">
-        <div class="day-theme">Design Museum · Harrods · Little Venice · Hampstead</div>
-        <div class="day-pills">
-          <span class="pill pill-confirmed">Georgian at Harrods ✓</span>
-        </div>
-      </div>
-      <div class="day-chevron">▾</div>
-    </summary>
-    <div class="day-body">
-      <div class="tz-note">UK times (BST) · Cayman Islands times (EST, UTC−5) shown in grey</div>
-      <table class="schedule">
-        <tr id="loc-design-museum"><td class="sch-time-uk">9:30am</td><td class="sch-time-cay">3:30am</td><td class="sch-act"><div class="sch-act-title"><a href="https://designmuseum.org" target="_blank">Design Museum</a>, Kensington</div></td></tr>
-        <tr><td class="sch-time-uk">11:00am</td><td class="sch-time-cay">5:00am</td><td class="sch-act"><div class="sch-act-title">Walk / taxi to <a href="https://www.harrods.com" target="_blank">Harrods</a></div></td></tr>
-        <tr id="loc-harrods"><td class="sch-time-uk">12:00pm</td><td class="sch-time-cay">6:00am</td><td class="sch-act"><div class="sch-act-title">Lunch: The Georgian at Harrods <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
-        <tr><td class="sch-time-uk">2:00pm</td><td class="sch-time-cay">8:00am</td><td class="sch-act"><div class="sch-act-title">Back to hotel / rest</div></td></tr>
-        <tr id="loc-little-venice"><td class="sch-time-uk">3:00pm</td><td class="sch-time-cay">9:00am</td><td class="sch-act"><div class="sch-act-title">Little Venice — Regent's Canal walk</div></td></tr>
-        <tr><td class="sch-time-uk">5:00pm</td><td class="sch-time-cay">11:00am</td><td class="sch-act"><div class="sch-act-title">Hampstead — Coffee Cup café</div></td></tr>
-        <tr id="loc-hampstead-hill-garden"><td class="sch-time-uk">5:30pm</td><td class="sch-time-cay">11:30am</td><td class="sch-act"><div class="sch-act-title">The Hill Garden &amp; Pergola, Hampstead<div class="sch-alt">Free entry · NW3 7EX · Tue–Sun</div></div></td></tr>
-        <tr><td class="sch-time-uk">7:00pm</td><td class="sch-time-cay">1:00pm</td><td class="sch-act"><div class="sch-act-title">Parliament Hill — sunset views</div></td></tr>
-        <tr><td class="sch-time-uk">8:00pm</td><td class="sch-time-cay">2:00pm</td><td class="sch-act"><div class="sch-act-title">Dinner — no reservation; see reference page for suggestions</div></td></tr>
-      </table>
-      <div class="sun-strip">
-        <span>🌅 Sunrise 4:49am</span>
-        <span>🌇 Sunset 9:19pm</span>
-        <span style="color:var(--gold-dim)">· 16h 30m daylight</span>
-      </div>
-      <div class="video-strip">
-        <div class="video-strip-label">📺 Watch Before You Go</div>
-        <div class="video-links">
-          <a class="video-pill" href="https://www.youtube.com/watch?v=Or3miaI_L4w" target="_blank"><span class="vp-icon">▶</span>Does Harrods Have the Best Afternoon Tea?<span class="vp-dur">26:31</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=A0k_hbaEL-o" target="_blank"><span class="vp-icon">▶</span>Harrods Tiffany & Co Restaurant<span class="vp-dur">34:51</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=Tfo6PHcSxHE" target="_blank"><span class="vp-icon">▶</span>Little Venice & Regent's Canal Walk<span class="vp-dur">full</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=tpnFgPK3QJU" target="_blank"><span class="vp-icon">▶</span>A Day in Hampstead<span class="vp-dur">1:10</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=-wC2cNuzT-A" target="_blank"><span class="vp-icon">▶</span>Hampstead — Where Billionaires Live 4K<span class="vp-dur">33:29</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=DwRFZlR9Z2g" target="_blank"><span class="vp-icon">▶</span>Why Everyone Loves Hampstead<span class="vp-dur">12:39</span></a>
-        </div>
-      </div>
-      <div class="conf-box">
-        <div class="conf-label">Confirmations</div>
-        <div class="conf-rows">
-          <div class="conf-row"><span class="conf-key">The Georgian</span><span class="conf-val">Thu 2 Jul · 12:00pm · 2 guests · Main Restaurant · 87–135 Brompton Road SW1X 7XL</span></div>
-        </div>
-      </div>
-    </div>
-  </details>
-
-  <!-- FRI 3 JUL -->
-  <details class="day-block" id="day-03-jul">
-    <summary class="day-header">
-      <div class="day-date-strip">
-        <div class="day-name">Friday</div>
-        <div class="day-num">3</div>
-        <div class="day-month">July</div>
-      </div>
-      <div class="day-title-area">
-        <div class="day-theme">The Cotswolds 🌿 — Private Luxury Day Tour</div>
-        <div class="day-pills">
-          <span class="pill pill-confirmed">GWR Train ✓</span>
-          <span class="pill pill-confirmed">Cotswolds Tour ✓</span>
-          <span class="pill pill-pending">Return Train — awaiting tour operator</span>
-        </div>
-      </div>
-      <div class="day-chevron">▾</div>
-    </summary>
-    <div class="day-body">
-      <div class="tz-note">UK times (BST) · Cayman Islands times (EST, UTC−5) shown in grey</div>
-      <table class="schedule">
-        <tr><td class="sch-time-uk">8:15am</td><td class="sch-time-cay">2:15am</td><td class="sch-act"><div class="sch-act-title">Depart for London Paddington</div></td></tr>
-        <tr><td class="sch-time-uk">8:51am</td><td class="sch-time-cay">2:51am</td><td class="sch-act"><div class="sch-act-title">GWR departs London Paddington → Moreton-in-Marsh <span class="badge badge-ok">CONFIRMED</span></div><div class="sch-alt">1st Class · ticket in GWR app</div></td></tr>
-        <tr id="loc-moreton-in-marsh"><td class="sch-time-uk">10:18am</td><td class="sch-time-cay">4:18am</td><td class="sch-act"><div class="sch-act-title">Arrive Moreton-in-Marsh · meet Cotswolds Drive</div></td></tr>
-        <tr><td class="sch-time-uk">All Day</td><td class="sch-time-cay">—</td><td class="sch-act"><div class="sch-act-title">Private Cotswolds Day Tour in a Mercedes <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
-        <tr><td class="sch-time-uk">Evening</td><td class="sch-time-cay">—</td><td class="sch-act"><div class="sch-act-title">Return train to London Paddington <span class="badge badge-warn">NOT BOOKED</span></div><div class="sch-alt">Awaiting return time from Cotswolds Drive — book on <a href="https://www.gwr.com" target="_blank">gwr.com</a> once confirmed</div></td></tr>
-      </table>
-      <div class="sun-strip">
-        <span>🌅 Sunrise 4:50am</span>
-        <span>🌇 Sunset 9:18pm</span>
-        <span style="color:var(--gold-dim)">· 16h 28m daylight</span>
-      </div>
-      <div class="video-strip">
-        <div class="video-strip-label">📺 Watch Before You Go</div>
-        <div class="video-links">
-          <a class="video-pill" href="https://www.youtube.com/watch?v=rshP1BhXZK4" target="_blank"><span class="vp-icon">▶</span>GWR First Class to Moreton-in-Marsh<span class="vp-dur">full</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=AH7kHklu0so" target="_blank"><span class="vp-icon">▶</span>London to the Cotswolds by Train<span class="vp-dur">full</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=tt8MLfYrg7Q" target="_blank"><span class="vp-icon">▶</span>4 Days in the Cotswolds 2026<span class="vp-dur">15:05</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=8a9XO6ApIus" target="_blank"><span class="vp-icon">▶</span>19 Best Things to Do in the Cotswolds<span class="vp-dur">25:06</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=GnoEOCo5V-Y" target="_blank"><span class="vp-icon">▶</span>Weekend in the Cotswolds<span class="vp-dur">17:17</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=2DzETRI5RIU" target="_blank"><span class="vp-icon">▶</span>4 Days — Bourton, Bibury & Broadway<span class="vp-dur">18:09</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=8nlBsMRHyaI" target="_blank"><span class="vp-icon">▶</span>Bourton-on-the-Water — Most Beautiful Village<span class="vp-dur">14:57</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=itP4IErJYWA" target="_blank"><span class="vp-icon">▶</span>Bibury — Most Beautiful in the World<span class="vp-dur">short</span></a>
-        </div>
-      </div>
-      <div class="conf-box">
-        <div class="conf-label">Confirmations</div>
-        <div class="conf-rows">
-          <div class="conf-row"><span class="conf-key">GWR Outbound</span><span class="conf-val">Fri 3 Jul · Paddington 8:51am → Moreton-in-Marsh 10:18am · 1st Class · 2 Adults · £167.00</span></div>
-          <div class="conf-row"><span class="conf-key">Tour</span><span class="conf-val">Private Cotswolds Day Tour: Small-Group Luxury in a Mercedes</span></div>
-          <div class="conf-row"><span class="conf-key">Operator</span><span class="conf-val">Cotswolds Drive</span></div>
-          <div class="conf-row"><span class="conf-key">Driver</span><span class="conf-val">Christian · Black Mercedes-Benz</span></div>
-          <div class="conf-row"><span class="conf-key">Booking Ref</span><span class="conf-val">2 Adults · <a href="https://www.viator.com/account/bookings" target="_blank">Manage on Viator →</a></span></div>
-          <div class="conf-row"><span class="conf-key">Payment</span><span class="conf-val">USD $665.88 · Auto-charged 30 Jun</span></div>
-          <div class="conf-row"><span class="conf-key">Cancellation</span><span class="conf-val">Free cancellation up to 24 hours before tour start</span></div>
-          <div class="conf-row"><span class="conf-key">Return Train</span><span class="conf-val warn-text">NOT YET BOOKED — tour end time unconfirmed; ~4:30pm return to Moreton assumed. Book on gwr.com once confirmed with tour operator.</span></div>
-        </div>
-      </div>
-      <div class="warn-box">Return train from Moreton-in-Marsh not booked — confirm end time with the tour operator and book on gwr.com. Payment of $665.88 auto-charged 30 June — ensure payment method on file is active.</div>
-    </div>
-  </details>
-
-  <!-- SAT 4 JUL -->
-  <details class="day-block" id="day-04-jul">
-    <summary class="day-header">
-      <div class="day-date-strip">
-        <div class="day-name">Saturday</div>
-        <div class="day-num">4</div>
-        <div class="day-month">July</div>
-      </div>
-      <div class="day-title-area">
-        <div class="day-theme">Pride Parade 🏳️‍🌈 · Notting Hill · Portobello Road · Dishoom</div>
-        <div class="day-pills">
-          <span class="pill pill-confirmed">Dishoom Portobello ✓</span>
-        </div>
-      </div>
-      <div class="day-chevron">▾</div>
-    </summary>
-    <div class="day-body">
-      <div class="tz-note">UK times (BST) · Cayman Islands times (EST, UTC−5) shown in grey</div>
-      <table class="schedule">
-        <tr><td class="sch-time-uk">9:00am</td><td class="sch-time-cay">3:00am</td><td class="sch-act"><div class="sch-act-title">Breakfast in Chelsea</div></td></tr>
-        <tr><td class="sch-time-uk">11:00am</td><td class="sch-time-cay">5:00am</td><td class="sch-act"><div class="sch-act-title">🏳️‍🌈 <a href="https://londonpride.co.uk" target="_blank">London Pride Parade</a> — Marble Arch to Whitehall</div></td></tr>
-        <tr><td class="sch-time-uk">3:00pm</td><td class="sch-time-cay">9:00am</td><td class="sch-act"><div class="sch-act-title">Travel to Notting Hill</div></td></tr>
-        <tr id="loc-notting-hill-portobello"><td class="sch-time-uk">3:30pm</td><td class="sch-time-cay">9:30am</td><td class="sch-act"><div class="sch-act-title">Portobello Road &amp; Notting Hill</div></td></tr>
-        <tr><td class="sch-time-uk">5:00pm</td><td class="sch-time-cay">11:00am</td><td class="sch-act"><div class="sch-act-title">Churchill Arms — photo stop</div></td></tr>
-        <tr id="loc-dishoom-portobello"><td class="sch-time-uk">6:30pm</td><td class="sch-time-cay">12:30pm</td><td class="sch-act"><div class="sch-act-title">Dinner — Dishoom Permit Room, Portobello Road <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
-      </table>
-      <div class="sun-strip">
-        <span>🌅 Sunrise 4:51am</span>
-        <span>🌇 Sunset 9:18pm</span>
-        <span style="color:var(--gold-dim)">· 16h 27m daylight</span>
-      </div>
-      <div class="video-strip">
-        <div class="video-strip-label">📺 Watch Before You Go</div>
-        <div class="video-links">
-          <a class="video-pill" href="https://www.youtube.com/watch?v=HhpVvEtvQGc" target="_blank"><span class="vp-icon">▶</span>Perfect Day in Notting Hill<span class="vp-dur">1:07</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=0lLzzOWLIuY" target="_blank"><span class="vp-icon">▶</span>Notting Hill Tour — Portobello & Film Locations<span class="vp-dur">28:24</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=S2d3K7UtKqo" target="_blank"><span class="vp-icon">▶</span>Notting Hill 4K HDR Walk<span class="vp-dur">1:01:18</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=F_d63xsaE00" target="_blank"><span class="vp-icon">▶</span>Dishoom Permit Room Grand Opening<span class="vp-dur">full</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=aaLdfikBVP0" target="_blank"><span class="vp-icon">▶</span>We Tried Dishoom — London's Most Famous Indian<span class="vp-dur">full</span></a>
-        </div>
-      </div>
-      <div class="conf-box">
-        <div class="conf-label">Confirmations</div>
-        <div class="conf-rows">
-          <div class="conf-row"><span class="conf-key">Dishoom</span><span class="conf-val">Sat 4 Jul · 6:30pm · 2 guests · Dishoom Permit Room · 186 Portobello Road W11 1LA</span></div>
-        </div>
-      </div>
-    </div>
-  </details>
-
-  <!-- SUN 5 JUL -->
-  <details class="day-block" id="day-05-jul">
-    <summary class="day-header">
-      <div class="day-date-strip">
-        <div class="day-name">Sunday</div>
-        <div class="day-num">5</div>
-        <div class="day-month">July</div>
-      </div>
-      <div class="day-title-area">
-        <div class="day-theme">Cambridge — Punting, the Backs &amp; Bridge of Sighs · +Cutie</div>
-        <div class="day-pills">
-          <span class="pill pill-confirmed">Punting ✓</span>
-          <span class="pill pill-pending">Trains — book now</span>
-        </div>
-      </div>
-      <div class="day-chevron">▾</div>
-    </summary>
-    <div class="day-body">
-      <div class="tz-note">UK times (BST) · Cayman Islands times (EST, UTC−5) shown in grey</div>
-      <table class="schedule">
-        <tr><td class="sch-time-uk">8:30am</td><td class="sch-time-cay">2:30am</td><td class="sch-act"><div class="sch-act-title">Travel to King's Cross St. Pancras</div></td></tr>
-        <tr><td class="sch-time-uk">9:00am</td><td class="sch-time-cay">3:00am</td><td class="sch-act"><div class="sch-act-title">Train to Cambridge (~50 min) <span class="badge badge-warn">BOOK NOW</span></div></td></tr>
-        <tr id="loc-cambridge-centre"><td class="sch-time-uk">10:00am</td><td class="sch-time-cay">4:00am</td><td class="sch-act"><div class="sch-act-title">Arrive Cambridge — walk city centre</div></td></tr>
-        <tr><td class="sch-time-uk">12:00pm</td><td class="sch-time-cay">6:00am</td><td class="sch-act"><div class="sch-act-title">Lunch — see Cambridge options below</div></td></tr>
-        <tr id="loc-scudamores-punting"><td class="sch-time-uk">1:30pm</td><td class="sch-time-cay">7:30am</td><td class="sch-act"><div class="sch-act-title">Chauffeured punt on the Cam — the Backs route <span class="badge badge-ok">CONFIRMED</span></div><div class="sch-alt">3 guests (Hugh, Betty &amp; Cutie) · Scudamore's · Granta Place CB2 1RS</div></td></tr>
-        <tr><td class="sch-time-uk">3:00pm</td><td class="sch-time-cay">9:00am</td><td class="sch-act"><div class="sch-act-title">Bridge of Sighs · St John's College · Trinity Street</div></td></tr>
-        <tr><td class="sch-time-uk">4:00pm</td><td class="sch-time-cay">10:00am</td><td class="sch-act"><div class="sch-act-title">Cambridge University Botanic Garden</div></td></tr>
-        <tr><td class="sch-time-uk">6:00pm</td><td class="sch-time-cay">12:00pm</td><td class="sch-act"><div class="sch-act-title">Train back to London</div></td></tr>
-      </table>
-      <div class="sun-strip">
-        <span>🌅 Sunrise 4:51am</span>
-        <span>🌇 Sunset 9:17pm</span>
-        <span style="color:var(--gold-dim)">· 16h 26m daylight</span>
-      </div>
-      <div class="conf-box">
-        <div class="conf-label">Confirmations &amp; Book These Now</div>
-        <div class="conf-rows">
-          <div class="conf-row"><span class="conf-key">Punting</span><span class="conf-val">Sun 5 Jul · 3 guests (Hugh, Betty &amp; Cutie) · Scudamore's Punting Co · USD $108.92 · auto-charged 2 Jul · <a href="https://www.scudamores.com" target="_blank">scudamores.com</a></span></div>
-          <div class="conf-row"><span class="conf-key">Trains</span><span class="conf-val"><a href="https://www.thetrainline.com" target="_blank">Trainline</a> or <a href="https://www.nationalrail.co.uk" target="_blank">National Rail</a> · return from King's Cross · 3 passengers · ~£25–35pp</span></div>
-          <div class="conf-row"><span class="conf-key">King's College</span><span class="conf-val">Closed to visitors on Sundays — not available this day</span></div>
-          <div class="conf-row"><span class="conf-key">Cambridge Lunch</span><span class="conf-val">Parker's Tavern (University Arms) · Cambridge Chop House (King's Parade) · Midsummer House (2 Michelin ⭐⭐ — book well ahead)</span></div>
-        </div>
-      </div>
-      <div class="warn-box">King's College closed to visitors on Sundays. Trains still need to be pre-booked for 3 people — July is peak season.</div>
-    </div>
-  </details>
-
-  <!-- MON 6 JUL -->
-  <details class="day-block" id="day-06-jul">
-    <summary class="day-header">
-      <div class="day-date-strip">
-        <div class="day-name">Monday</div>
-        <div class="day-num">6</div>
-        <div class="day-month">July</div>
-      </div>
-      <div class="day-title-area">
-        <div class="day-theme">Last Full Day in London</div>
-        <div class="day-pills">
-          <span class="pill pill-pending">Harry Potter Studios — check availability</span>
-        </div>
-      </div>
-      <div class="day-chevron">▾</div>
-    </summary>
-    <div class="day-body">
-      <div class="tz-note">UK times (BST) · Cayman Islands times (EST, UTC−5) shown in grey</div>
-      <table class="schedule">
-        <tr id="loc-wb-studio-tour"><td class="sch-time-uk">Morning</td><td class="sch-time-cay">—</td><td class="sch-act"><div class="sch-act-title">Harry Potter Studios, Watford <span class="badge badge-warn">CHECK NOW</span></div><div class="sch-alt">Alt: Borough Market · Chelsea · relaxed morning in London</div></td></tr>
-        <tr><td class="sch-time-uk">Afternoon</td><td class="sch-time-cay">—</td><td class="sch-act"><div class="sch-act-title">TBD</div></td></tr>
-        <tr><td class="sch-time-uk">Evening</td><td class="sch-time-cay">—</td><td class="sch-act"><div class="sch-act-title">Final dinner / pack / travel prep</div></td></tr>
-      </table>
-      <div class="sun-strip">
-        <span>🌅 Sunrise 4:52am</span>
-        <span>🌇 Sunset 9:17pm</span>
-        <span style="color:var(--gold-dim)">· 16h 25m daylight</span>
-      </div>
-      <div class="video-strip">
-        <div class="video-strip-label">📺 Watch Before You Go</div>
-        <div class="video-links">
-          <a class="video-pill" href="https://www.youtube.com/watch?v=hy4JnaCYvMc" target="_blank"><span class="vp-icon">▶</span>Harry Potter Studio Tour Worth It in 2026?<span class="vp-dur">full</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=skTCj4Ctq6Y" target="_blank"><span class="vp-icon">▶</span>Still Worth It in 2025? Honest Review<span class="vp-dur">full</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=VIdKaNJWYEs" target="_blank"><span class="vp-icon">▶</span>Transport, Tickets & Full Walkthrough<span class="vp-dur">full</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=liTokMvx4pc" target="_blank"><span class="vp-icon">▶</span>Things to Know Before You Go<span class="vp-dur">full</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=z6Ec_lvFpSQ" target="_blank"><span class="vp-icon">▶</span>Ultimate Harry Potter Fan Experience<span class="vp-dur">full</span></a>
-        </div>
-      </div>
-      <div class="conf-box">
-        <div class="conf-label">If doing Harry Potter Studios</div>
-        <div class="conf-rows">
-          <div class="conf-row"><span class="conf-key">Book at</span><span class="conf-val"><a href="https://www.wbstudiotour.co.uk" target="_blank">wbstudiotour.co.uk</a> — likely sold out; check immediately</span></div>
-          <div class="conf-row"><span class="conf-key">Transport</span><span class="conf-val">Euston → Watford Junction (20 min) · free shuttle bus to studios</span></div>
-          <div class="conf-row"><span class="conf-key">Duration</span><span class="conf-val">Allow 4–5 hours minimum on site</span></div>
-        </div>
-      </div>
-      <div class="warn-box">Harry Potter Studios almost certainly sold out for July 6 — check wbstudiotour.co.uk immediately.</div>
-    </div>
-  </details>
-
-  <!-- TUE 7 JUL -->
-  <details class="day-block" id="day-07-jul">
-    <summary class="day-header">
-      <div class="day-date-strip">
-        <div class="day-name">Tuesday</div>
-        <div class="day-num">7</div>
-        <div class="day-month">July</div>
-      </div>
-      <div class="day-title-area">
-        <div class="day-theme">Travel Home ✈</div>
-        <div class="day-pills">
-          <span class="pill pill-confirmed">BA291 Confirmed ✓</span>
-        </div>
-      </div>
-      <div class="day-chevron">▾</div>
-    </summary>
-    <div class="day-body">
-      <div class="tz-note">UK times (BST) · Cayman Islands times (EST, UTC−5) shown in grey</div>
-      <table class="schedule">
-        <tr><td class="sch-time-uk">Morning</td><td class="sch-time-cay">—</td><td class="sch-act"><div class="sch-act-title">Check out of The Clermont Victoria</div></td></tr>
-        <tr><td class="sch-time-uk">~10:00am</td><td class="sch-time-cay">~4:00am</td><td class="sch-act"><div class="sch-act-title">Transfer to Heathrow Terminal 5 — allow 90 min from Victoria</div><div class="sch-alt">Heathrow Express from Paddington: 15 min · Tube Piccadilly Line: ~45 min</div></td></tr>
-        <tr><td class="sch-time-uk">11:00am</td><td class="sch-time-cay">5:00am</td><td class="sch-act"><div class="sch-act-title">Arrive T5 · Check in &amp; security</div></td></tr>
-        <tr><td class="sch-time-uk">2:00pm</td><td class="sch-time-cay">8:00am</td><td class="sch-act"><div class="sch-act-title">BA291 departs Heathrow Terminal 5 <span class="badge badge-ok">CONFIRMED</span></div></td></tr>
-        <tr><td class="sch-time-uk">5:25pm</td><td class="sch-time-cay">12:25pm</td><td class="sch-act"><div class="sch-act-title">Arrive Dulles International (IAD) <span style="font-size:11px;color:var(--muted)">· EDT (UTC−4)</span></div></td></tr>
-      </table>
-      <div class="sun-strip">
-        <span>🌅 Sunrise 4:53am</span>
-        <span>🌇 Sunset 9:16pm</span>
-        <span style="color:var(--gold-dim)">· 16h 23m daylight</span>
-      </div>
-      <div class="video-strip">
-        <div class="video-strip-label">📺 For the Journey</div>
-        <div class="video-links">
-          <a class="video-pill" href="https://www.youtube.com/watch?v=YOQMmP6uaro" target="_blank"><span class="vp-icon">▶</span>BA Business Lounge Heathrow T5 Review<span class="vp-dur">11:07</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=h9mjFiV9_ys" target="_blank"><span class="vp-icon">▶</span>BA Galleries Club Lounge — Hidden Gem<span class="vp-dur">9:30</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=vIvPyZLQiLY" target="_blank"><span class="vp-icon">▶</span>BA 777 First Class LHR → Dulles<span class="vp-dur">7:16</span></a>
-        </div>
-      </div>
-      <div class="conf-box">
-        <div class="conf-label">Flight Details</div>
-        <div class="conf-rows">
-          <div class="conf-row"><span class="conf-key">Hugh</span><span class="conf-val">BA291 · Club World · Check in opens 24h before</span></div>
-          <div class="conf-row"><span class="conf-key">Betty</span><span class="conf-val">BA291 · Club World</span></div>
-          <div class="conf-row"><span class="conf-key">Manage</span><span class="conf-val"><a href="https://www.britishairways.com/travel/managebooking/public/en_gb" target="_blank">ba.com — Manage My Booking →</a></span></div>
-        </div>
-      </div>
-    </div>
-  </details>
-
-</section>
-
-<!-- REFERENCE -->
-<section class="ref-section">
-  <p class="section-label">Reference &amp; Ideas</p>
-  <h2 class="ref-title">Things still to book &amp; ideas for the trip</h2>
-
-  <div class="ref-grid">
-
-    <div class="ref-card">
-      <div class="ref-card-title">⚠ Action Items</div>
-      <ul class="ref-list">
-        <li class="warn-item">Return train Moreton-in-Marsh → Paddington — awaiting time from Cotswolds Drive</li>
-        <li class="warn-item">Cambridge trains — book return from King's Cross (Sun 5 Jul) for 3 people</li>
-        <li class="warn-item">Harry Potter Studios Mon 6 Jul — almost certainly sold out</li>
-        <li class="warn-item">Dinner evenings still unbooked: Thu 2, Mon 6 Jul</li>
-        <li class="warn-item">Cotswolds Viator charge $665.88 — ensure payment method on file is active before 30 Jun</li>
-      </ul>
-    </div>
-
-    <div class="ref-card">
-      <div class="ref-card-title">🍽 Restaurant Wishlist</div>
-      <ul class="ref-list">
-        <li>MUSE by Tom Aiken — book quickly (Michelin)</li>
-        <li>Amaya — Michelin Indian near hotel</li>
-        <li>Quilon — Michelin Indian (seafood)</li>
-        <li>Dishoom — excellent all-day Indian</li>
-        <li>High Tea: Savoy · Claridge's · Lanesborough</li>
-        <li>Cedric Grolet — patisserie, Belgravia</li>
-        <li>Dinner by Heston Blumenthal</li>
-        <li>Los Mochis / The Nest — rooftop bars</li>
-      </ul>
-    </div>
-
-    <div class="ref-card">
-      <div class="ref-card-title">🎓 Cambridge — Lunch Options</div>
-      <ul class="ref-list">
-        <li><a href="https://www.midsummerhouse.co.uk" target="_blank">Midsummer House</a> — 2 Michelin ⭐⭐ · tasting menu £150pp · book well ahead</li>
-        <li>Parker's Tavern at University Arms — quintessentially British, grand hotel setting</li>
-        <li>Cambridge Chop House — vaulted cellar on King's Parade, great Sunday roast</li>
-        <li>Garden House at the Graduate — riverside, seasonal British</li>
-        <li>The Copper Kettle — classic Cambridge café, views of King's College</li>
-      </ul>
-    </div>
-
-    <div class="ref-card">
-      <div class="ref-card-title">📍 Places &amp; Attractions</div>
-      <ul class="ref-list">
-        <li>Borough Market — Tue–Sat</li>
-        <li>Crown Jewels &amp; Tower of London</li>
-        <li>Covent Garden</li>
-        <li>Tower Bridge Museum</li>
-        <li>Greenwich — Old Royal Naval College, Cutty Sark</li>
-        <li>The Hill Garden &amp; Pergola, Hampstead NW3</li>
-        <li>Camden Market</li>
-        <li>Royal Mews, Buckingham Palace</li>
-      </ul>
-    </div>
-
-    <div class="ref-card" style="grid-column: 1 / -1;">
-      <div class="ref-card-title">🔗 Useful Links</div>
-      <ul class="ref-list">
-        <li><a href="https://www.britishairways.com/travel/managebooking/public/en_gb" target="_blank">BA Manage My Booking</a></li>
-        <li><a href="https://www.gwr.com" target="_blank">GWR — manage train booking / book return</a></li>
-        <li><a href="https://www.scudamores.com" target="_blank">Scudamore's Punting Cambridge</a></li>
-        <li><a href="https://www.thetrainline.com" target="_blank">The Trainline — Cambridge trains (3 passengers)</a></li>
-        <li><a href="https://www.wbstudiotour.co.uk" target="_blank">Warner Bros. Studio Tour (Harry Potter)</a></li>
-        <li><a href="https://skygarden.london" target="_blank">Sky Garden / Fenchurch</a></li>
-        <li><a href="https://londonpride.co.uk" target="_blank">London Pride 2026</a></li>
-        <li><a href="https://tfl.gov.uk/plan-a-journey/" target="_blank">TfL Journey Planner</a></li>
-        <li><a href="https://www.viator.com/account/bookings" target="_blank">Viator — manage Cotswolds &amp; Cambridge punting bookings</a></li>
-        <li><a href="https://www.midsummerhouse.co.uk" target="_blank">Midsummer House Cambridge</a></li>
-      </ul>
-    </div>
-
   </div>
 </section>
 
@@ -1256,9 +820,7 @@
     { id: 'ambassadors-clubhouse',  name: 'Ambassadors Clubhouse',                lat: 51.5117, lng: -0.1409, day: 'day-01-jul', status: 'confirmed' },
     { id: 'dominion-theatre',       name: 'Dominion Theatre — Devil Wears Prada', lat: 51.5165, lng: -0.1308, day: 'day-01-jul', status: 'confirmed' },
     { id: 'sky-garden',             name: 'Sky Garden / Fenchurch',               lat: 51.5113, lng: -0.0836, day: 'day-01-jul', status: 'confirmed' },
-    { id: 'design-museum',          name: 'Design Museum',                        lat: 51.5009, lng: -0.2013, day: 'day-02-jul', status: 'free' },
     { id: 'harrods',                name: 'Harrods — The Georgian',               lat: 51.4994, lng: -0.1636, day: 'day-02-jul', status: 'confirmed' },
-    { id: 'little-venice',          name: 'Little Venice',                        lat: 51.5220, lng: -0.1826, day: 'day-02-jul', status: 'free' },
     { id: 'hampstead-hill-garden',  name: 'Hill Garden & Pergola, Hampstead',     lat: 51.5658, lng: -0.1746, day: 'day-02-jul', status: 'free' },
     { id: 'moreton-in-marsh',       name: 'Moreton-in-Marsh — Cotswolds',         lat: 51.9936, lng: -1.6936, day: 'day-03-jul', status: 'confirmed' },
     { id: 'notting-hill-portobello',name: 'Portobello Road, Notting Hill',        lat: 51.5170, lng: -0.2050, day: 'day-04-jul', status: 'free' },
