@@ -1,5 +1,6 @@
 /photos_raw/
 /data/photo_manifest.csv
+/original/
 __pycache__/
 *.pyc
 .DS_Store
