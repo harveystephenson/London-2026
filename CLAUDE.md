@@ -84,4 +84,4 @@ GitHub Pages, off the `London-2026` public repo. Free tier requires the repo to 
   gh pr create --title "..." --body "..."
   ```
 - **If the change relates to an open issue, link the PR to it** — include `Closes #N` (or `Refs #N` if it only partially addresses the issue) in the PR body so GitHub attaches them automatically. Check open issues before opening a PR if it's not obvious which one applies.
-- Confirm with the user before merging unless they've said otherwise for a given PR.
+- **PRs are for tracking, not per-PR review** — the user does not want to review each PR individually. Merge once the PR is open, mergeable (clean, no failing checks if any are configured), and its issue links are in place — no need to ask for confirmation first. The user's engagement in this chat/session is standing approval for the work being merged.
