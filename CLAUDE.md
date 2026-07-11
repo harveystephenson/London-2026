@@ -38,18 +38,38 @@ London-2026/
 
 ---
 
-## 3. Photo Pipeline
+## 3. Itinerary HTML Handling
 
-- Source: iCloud for Windows syncs the user's full ~15K photo library to `C:\Users\harve\iCloudPhotos\Photos` (flat folder, no date subfolders, mostly `.HEIC`). Sync was still in progress as of last check.
-- `scripts/extract_trip_photos.py` reads EXIF `DateTimeOriginal` + GPS from each file (via `pillow-heif` for HEIC support), and copies matches into `photos_raw/uk_trip` or `photos_raw/dc_reunion` based on date windows (padded a day on each side of known travel dates). Writes `data/photo_manifest.csv`.
-- Script is idempotent — safe to re-run as the iCloud sync completes; it skips files already copied and rewrites the manifest fresh each run.
+The original pre-trip itinerary HTML (source for `index.html`, tracked in [#2](https://github.com/harveystephenson/London-2026/issues/2)) contains sensitive personal details that must **never** be committed to this public repo: flight booking references (PNRs), hotel/train/tour confirmation numbers, partial payment card digits, and a tour operator's personal phone number, among others.
+
+**Handover method:** the user pastes the raw HTML directly into chat — don't scrape it via browser automation. An earlier attempt to pull it from its `claude.ai/public/artifacts/...` URL via the in-app browser was stopped by the user mid-attempt as less safe than a direct paste (see gotcha in section 8). Default to asking the user to paste content directly when there's a choice.
+
+**Redaction rule (agreed 2026-07-11):** before committing any version of this HTML (or any derived file) to the repo, strip:
+- Flight/train/restaurant/tour booking references and confirmation numbers
+- Partial or full payment card digits
+- Personal phone numbers of hotel/tour/venue contacts
+- Any other unique identifier that could be used to look up or interfere with a real booking
+
+Keep the unredacted original **out of git entirely** — don't commit it, even temporarily on a branch. If it needs to be saved to disk at all, keep it outside the repo or in a gitignored location.
+
+After redacting, report a **high-level summary of what categories were stripped** back in chat — not the actual values — since the chat transcript itself shouldn't contain the sensitive detail either.
+
+---
+
+## 4. Photo Pipeline
+
+- Source: iCloud for Windows synced the user's full library (15,212 files, mostly `.HEIC`) to `C:\Users\harve\iCloudPhotos\Photos` — a flat folder with no date-based subfolders. Sync completed as of 2026-07-11.
+- `scripts/extract_trip_photos.py` reads EXIF `DateTimeOriginal` + GPS from each file (via `pillow-heif` for HEIC support) and copies matches into `photos_raw/uk_trip` or `photos_raw/dc_reunion` based on date windows (padded a day or more on each side of known travel dates). Writes `data/photo_manifest.csv`.
+- Fast and idempotent: a filesystem-mtime pre-filter skips full EXIF decode for files nowhere near the trip window, and rows already recorded in the manifest are reused on re-run rather than re-decoded (see #12/#13 in section 8). A full run over the 15K-file library completes in seconds.
 - `location_name` column in the manifest is intentionally blank — needs manual user review, especially for any photo missing GPS.
+
+**Current state (as of 2026-07-11):** extraction complete — **613 UK trip photos + 15 DC/Rania photos (628 total)** in `photos_raw/`, manifest written to `data/photo_manifest.csv`. Ready for the manual review pass ([#9](https://github.com/harveystephenson/London-2026/issues/9), [#10](https://github.com/harveystephenson/London-2026/issues/10)).
 
 **Known gap:** WhatsApp-forwarded photos (from mom) have no EXIF at all (WhatsApp strips it on send) — these will always need manual location tagging.
 
 ---
 
-## 4. Open Items / Deferred Decisions
+## 5. Open Items / Deferred Decisions
 
 *Do not act on these without the user raising them again — they're tracked here so they aren't lost, not so they're auto-implemented.*
 
@@ -58,20 +78,20 @@ London-2026/
   - iCloud Shared Photo Library — full quality + metadata, needs both parties to set up properly.
   - iCloud Shared Album — simpler, but downsizes images and may not reliably preserve GPS EXIF; would likely need manual location tagging regardless.
   - Decision not yet made.
-- **Blur/bad-photo triage:** planned but not built — a script to flag likely-blurry shots (e.g. Laplacian variance) to speed up the user's manual review pass. Final delete decisions stay with the user.
-- **Itinerary accuracy:** the original HTML itinerary has drifted from what actually happened (some stops skipped or changed). Plan is to build a review checklist once the HTML is supplied, and/or diff against an updated schedule if the user has a separate Claude session regenerate one from their email.
-- **Map library:** planned choice is Leaflet.js + OpenStreetMap tiles (free, no API key), not Google Maps JS API. Not yet implemented.
-- **Site structure:** planned as a single static page with JS-toggled tabs ("Itinerary + Map" / "Photo Gallery") rather than separate page loads. Schedule entries and map pins should share a location identifier so clicking either jumps to the relevant photos. Not yet implemented — waiting on the source HTML.
+- **Blur/bad-photo triage:** planned but not built — a script to flag likely-blurry shots (e.g. Laplacian variance) to speed up the user's manual review pass. Final delete decisions stay with the user. Tracked in [#7](https://github.com/harveystephenson/London-2026/issues/7).
+- **Itinerary accuracy:** the original HTML itinerary has drifted from what actually happened (some stops skipped or changed). Plan is to build a review checklist once the HTML is supplied, and/or diff against an updated schedule if the user has a separate Claude session regenerate one from their email. Tracked in [#8](https://github.com/harveystephenson/London-2026/issues/8).
+- **Map library:** planned choice is Leaflet.js + OpenStreetMap tiles (free, no API key), not Google Maps JS API. Not yet implemented. Tracked in [#3](https://github.com/harveystephenson/London-2026/issues/3).
+- **Site structure:** planned as a single static page with JS-toggled tabs ("Itinerary + Map" / "Photo Gallery") rather than separate page loads. Schedule entries and map pins should share a location identifier so clicking either jumps to the relevant photos. Not yet implemented — waiting on the source HTML. Tracked in [#4](https://github.com/harveystephenson/London-2026/issues/4).
 
 ---
 
-## 5. Hosting
+## 6. Hosting
 
 GitHub Pages, off the `London-2026` public repo. Free tier requires the repo to stay public — user has confirmed this is acceptable for this project. (User's other, unrelated repos are separate and their visibility is the user's own responsibility to manage — not something to be changed on their behalf.)
 
 ---
 
-## 6. Development Workflow
+## 7. Development Workflow
 
 **Push periodically via pull request — this is a standing user preference, not a one-off request.**
 
@@ -90,7 +110,7 @@ GitHub Pages, off the `London-2026` public repo. Free tier requires the repo to 
 
 ---
 
-## 7. Known Gotchas / Environment Notes
+## 8. Known Gotchas / Environment Notes
 
 *Running log of environment traps hit during development — add to this as new ones surface.*
 
@@ -98,6 +118,8 @@ GitHub Pages, off the `London-2026` public repo. Free tier requires the repo to 
 - Almost all real iPhone photos are `.HEIC`, not `.jpg`/`.png` — Pillow needs the `pillow-heif` plugin (`pip install pillow-heif`, then `pillow_heif.register_heif_opener()`) to read them at all, EXIF included.
 - The local iCloud Photos sync folder (`C:\Users\harve\iCloudPhotos\Photos`) is flat — no date-based subfolders, and filenames (`IMG_0044.PNG`, random UUIDs) carry no reliable ordering. Always filter by EXIF `DateTimeOriginal`, never by filename.
 - WhatsApp strips all EXIF metadata (including GPS) on send — any photo forwarded via WhatsApp will need fully manual location tagging.
-- The iCloud sync runs as its own background process independent of anything in this repo — file counts in the source folder can grow between script runs with no action from us; re-running `extract_trip_photos.py` is safe (idempotent) and picks up newly-synced files automatically.
-- `extract_trip_photos.py` is slow (30-40+ min against ~13K synced files) because full-resolution HEIC decode is CPU-intensive per file, and it currently gives zero progress output until the very end, plus re-decodes every file on every run rather than skipping ones already matched. Tracked in [#12](https://github.com/harveystephenson/London-2026/issues/12) — not fixed yet.
+- The iCloud sync ran as its own background process independent of anything in this repo — completed 2026-07-11 (15,212 files total).
+- `extract_trip_photos.py` was originally slow (30-40+ min against ~13K synced files): full-resolution HEIC decode is CPU-intensive per file, and the first version gave zero progress output and re-decoded every file on every run. **Fixed** in PR #13 (closed [#12](https://github.com/harveystephenson/London-2026/issues/12)): a filesystem-mtime pre-filter (iCloud preserves original capture date as file mtime, so files nowhere near the trip window skip decode entirely) + manifest-reuse on re-run + progress logging brought a full run down to a few seconds.
 - The date-window filter is intentionally content-blind — it grabs *everything* timestamped in the trip window (screenshots, unrelated shots, burst duplicates included), not just touristy photos. This is by design (a missed real trip photo is worse than a few extras to delete) — culling happens later in the manual review pass (#9, #10), not at extraction time. GPS-based filtering was considered but rejected since the user confirmed nearly all photos in the window are genuinely UK trip photos anyway (aside from the separate DC/Rania bucket).
+- **Don't scrape claude.ai artifact content via browser automation by default.** The rendered artifact loads in a cross-origin iframe (`claudeusercontent.com`) that can't be navigated to directly; getting the raw source required awkward workarounds (chunked JS reads via the same-origin `/api/published_artifacts/...` endpoint). During one attempt, a silent file download was also triggered without asking the user first — that's a standing rule violation (downloads require explicit permission) and didn't even succeed (browsers block un-requested downloads). The user stopped this approach and prefers pasting content directly into chat. Prefer direct paste over scraping when the user can reasonably provide the content themselves, and always ask before triggering any file download regardless of source.
+- This project was originally created from a Claude Code session rooted in a different repo (`macro_consensus`), which meant this file wasn't auto-loaded into context — it had to be fetched manually each time. Working from a session rooted directly in `London-2026` (rather than `cd`-ing into it from elsewhere) is the correct setup going forward so this file loads automatically.
