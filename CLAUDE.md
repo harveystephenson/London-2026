@@ -83,4 +83,5 @@ GitHub Pages, off the `London-2026` public repo. Free tier requires the repo to 
   git push -u origin feature/short-desc
   gh pr create --title "..." --body "..."
   ```
+- **If the change relates to an open issue, link the PR to it** — include `Closes #N` (or `Refs #N` if it only partially addresses the issue) in the PR body so GitHub attaches them automatically. Check open issues before opening a PR if it's not obvious which one applies.
 - Confirm with the user before merging unless they've said otherwise for a given PR.
