@@ -23,6 +23,8 @@ Audience: family and friends. Optimize for desktop, iPad, and phone — review o
 ```
 London-2026/
 ├── index.html               # itinerary + map (pending — HTML not yet supplied by user)
+├── original/                 # GITIGNORED — preserved, unredacted source material. Never for the public repo.
+│   └── itinerary_source.html # verbatim copy of the original pre-trip itinerary HTML, never modified except on explicit user direction
 ├── scripts/
 │   └── extract_trip_photos.py   # pulls EXIF date/GPS from local iCloud sync folder, sorts into photos_raw/
 ├── photos_raw/               # GITIGNORED — raw, uncurated photo dump sorted by date. Not for the public repo.
@@ -43,6 +45,8 @@ London-2026/
 The original pre-trip itinerary HTML (source for `index.html`, tracked in [#2](https://github.com/harveystephenson/London-2026/issues/2)) contains sensitive personal details that must **never** be committed to this public repo: flight booking references (PNRs), hotel/train/tour confirmation numbers, partial payment card digits, and a tour operator's personal phone number, among others.
 
 **Handover method:** the user pastes the raw HTML directly into chat — don't scrape it via browser automation. An earlier attempt to pull it from its `claude.ai/public/artifacts/...` URL via the in-app browser was stopped by the user mid-attempt as less safe than a direct paste (see gotcha in section 8). Default to asking the user to paste content directly when there's a choice.
+
+**Preserve the unredacted original (agreed 2026-07-11):** when the user pastes the raw itinerary HTML, save it verbatim to `original/itinerary_source.html` (gitignored). This is a preservation copy so the user has the full original in one place if they ever want to reproduce it — it is **never modified** except when the user explicitly directs a fix (e.g. a schedule detail that changed after the trip). The site's `index.html` is a separate, derived, redacted file built from this source — not the same file, and not where source-of-truth edits happen.
 
 **Redaction rule (agreed 2026-07-11):** before committing any version of this HTML (or any derived file) to the repo, strip:
 - Flight/train/restaurant/tour booking references and confirmation numbers
