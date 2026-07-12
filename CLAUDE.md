@@ -22,15 +22,18 @@ Audience: family and friends. Optimize for desktop, iPad, and phone — review o
 
 ```
 London-2026/
-├── index.html               # itinerary + map (pending — HTML not yet supplied by user)
+├── index.html               # live site: hero, tabbed Itinerary+Map / Photo Gallery, Leaflet map, lightbox gallery
 ├── original/                 # GITIGNORED — preserved, unredacted source material. Never for the public repo.
 │   └── itinerary_source.html # verbatim copy of the original pre-trip itinerary HTML, never modified except on explicit user direction
 ├── scripts/
-│   └── extract_trip_photos.py   # pulls EXIF date/GPS from local iCloud sync folder, sorts into photos_raw/
+│   ├── extract_trip_photos.py   # pulls EXIF date/GPS from a source folder, sorts into photos_raw/ (see section 4 — source is currently the USB import, not iCloud)
+│   └── build_gallery.py         # converts photos_raw/uk_trip into web-ready JPGs in photos/, writes photos/manifest.json, and injects the data inline into index.html
 ├── photos_raw/               # GITIGNORED — raw, uncurated photo dump sorted by date. Not for the public repo.
-│   ├── uk_trip/
-│   └── dc_reunion/
-├── photos/                   # curated, final photos for the live site (not yet created — populated after review)
+│   ├── iphone/               # current source: manual USB import (see section 4)
+│   ├── uk_trip/               # matched trip photos, copied from whichever source is active
+│   ├── dc_reunion/
+│   └── pruned_review/        # files present in an older source but missing from the current one — moved here, not deleted, pending manual review (#24)
+├── photos/                   # TRACKED — web-ready thumbs/full JPGs actually shipped on the site, organized by day-slug folder (e.g. day-29-jun/thumbs/, day-29-jun/full/), plus manifest.json
 ├── data/
 │   └── photo_manifest.csv    # GITIGNORED — filename, category, datetime, lat, lon, location_name (blank, needs manual fill)
 └── README.md
@@ -62,12 +65,14 @@ After redacting, report a **high-level summary of what categories were stripped*
 
 ## 4. Photo Pipeline
 
-- Source: iCloud for Windows synced the user's full library (15,212 files, mostly `.HEIC`) to `C:\Users\harve\iCloudPhotos\Photos` — a flat folder with no date-based subfolders. Sync completed as of 2026-07-11.
+- **Source is currently a manual USB import, not iCloud (temporary, as of 2026-07-12).** iCloud Photos sync got stuck/paused mid-trip and was missing every photo from three full days — Fri 3 Jul (Cotswolds), Sun 5 Jul (Cambridge), Mon 6 Jul — even after being unpaused and left overnight. Root cause suspected to be iCloud storage or a stuck upload queue on the phone; not fully resolved. Worked around by connecting the iPhone directly via USB, using Windows' "Import photos and videos" wizard, and dumping everything into `photos_raw/iphone/`. `scripts/extract_trip_photos.py`'s `SOURCE_DIR` was repointed at `photos_raw/iphone/` accordingly (see comment in the script) — **switch it back to `C:\Users\harve\iCloudPhotos\Photos` once iCloud sync is actually fixed**, then re-run and diff against the current state as a sanity check.
 - `scripts/extract_trip_photos.py` reads EXIF `DateTimeOriginal` + GPS from each file (via `pillow-heif` for HEIC support) and copies matches into `photos_raw/uk_trip` or `photos_raw/dc_reunion` based on date windows (padded a day or more on each side of known travel dates). Writes `data/photo_manifest.csv`.
-- Fast and idempotent: a filesystem-mtime pre-filter skips full EXIF decode for files nowhere near the trip window, and rows already recorded in the manifest are reused on re-run rather than re-decoded (see #12/#13 in section 8). A full run over the 15K-file library completes in seconds.
+- Fast and idempotent: a filesystem-mtime pre-filter skips full EXIF decode for files nowhere near the trip window, and rows already recorded in the manifest are reused on re-run rather than re-decoded (see #12/#13 in section 8).
+- **Re-run safe with source switches, non-destructively:** any file present in an older source (e.g. iCloud) but missing from whatever the current `SOURCE_DIR` is gets *moved* — not deleted — into `photos_raw/pruned_review/`, for manual review rather than silent loss. See #24: switching to the USB import lost 226 files (189 photos + 37 screenshots) this way, likely from a manual deletion pass the user did the same morning — needs a look before being discarded for good.
 - `location_name` column in the manifest is intentionally blank — needs manual user review, especially for any photo missing GPS.
+- `scripts/build_gallery.py` converts `photos_raw/uk_trip` into web-ready JPGs (thumbs ~400px, full ~1600px) under `photos/<day-slug>/`, and **injects the resulting JSON directly into `index.html`** between `/*GALLERY_DATA*/ ... /*END_GALLERY_DATA*/` markers rather than having the page `fetch()` it at runtime — `fetch()` of a local file is blocked under `file://`, which broke the gallery when viewed through a local preview panel instead of a real HTTP server. Also prunes (deletes — these are regenerable derived images, not originals) any thumb/full JPG no longer in the manifest.
 
-**Current state (as of 2026-07-11):** extraction complete — **613 UK trip photos + 15 DC/Rania photos (628 total)** in `photos_raw/`, manifest written to `data/photo_manifest.csv`. Ready for the manual review pass ([#9](https://github.com/harveystephenson/London-2026/issues/9), [#10](https://github.com/harveystephenson/London-2026/issues/10)).
+**Current state (as of 2026-07-12):** **749 UK trip photos + 15 DC/Rania photos (764 total)**, all 9 itinerary days have at least some coverage. Photo gallery is live on the site (thumbnail grid, lightbox, per-event and per-map-pin links to that day's photos). Still pending: the manual curation/review pass ([#9](https://github.com/harveystephenson/London-2026/issues/9), [#10](https://github.com/harveystephenson/London-2026/issues/10)) and the `pruned_review/` reconciliation ([#24](https://github.com/harveystephenson/London-2026/issues/24)).
 
 **Known gap:** WhatsApp-forwarded photos (from mom) have no EXIF at all (WhatsApp strips it on send) — these will always need manual location tagging.
 
@@ -127,3 +132,6 @@ GitHub Pages, off the `London-2026` public repo. Free tier requires the repo to 
 - The date-window filter is intentionally content-blind — it grabs *everything* timestamped in the trip window (screenshots, unrelated shots, burst duplicates included), not just touristy photos. This is by design (a missed real trip photo is worse than a few extras to delete) — culling happens later in the manual review pass (#9, #10), not at extraction time. GPS-based filtering was considered but rejected since the user confirmed nearly all photos in the window are genuinely UK trip photos anyway (aside from the separate DC/Rania bucket).
 - **Don't scrape claude.ai artifact content via browser automation by default.** The rendered artifact loads in a cross-origin iframe (`claudeusercontent.com`) that can't be navigated to directly; getting the raw source required awkward workarounds (chunked JS reads via the same-origin `/api/published_artifacts/...` endpoint). During one attempt, a silent file download was also triggered without asking the user first — that's a standing rule violation (downloads require explicit permission) and didn't even succeed (browsers block un-requested downloads). The user stopped this approach and prefers pasting content directly into chat. Prefer direct paste over scraping when the user can reasonably provide the content themselves, and always ask before triggering any file download regardless of source.
 - This project was originally created from a Claude Code session rooted in a different repo (`macro_consensus`), which meant this file wasn't auto-loaded into context — it had to be fetched manually each time. Working from a session rooted directly in `London-2026` (rather than `cd`-ing into it from elsewhere) is the correct setup going forward so this file loads automatically.
+- **The desktop app's local file preview panel does not reliably run the site's JS.** Removing a `fetch()` call (which is genuinely blocked under `file://`) didn't fix a blank gallery there — the user only got a working preview after running a real local HTTP server (`python -m http.server`) and opening that URL in an actual browser tab instead of the app's preview panel. Always verify changes via a real server, not just the preview panel; if something looks broken there but works over `http://localhost`, it's the panel, not the code.
+- **iCloud Photos sync can silently get stuck for days**, even after manually unpausing and leaving it overnight, with zero visible progress in the Photos app. If this happens again: check icloud.com/photos directly to see if the phone→cloud upload even happened (separate from the Windows app's cloud→local download); check iCloud storage quota (Settings → [name] → iCloud → Manage Storage) since a full quota silently blocks new uploads; as a fallback, a direct USB import (see section 4) reliably works when iCloud doesn't.
+- **`pkill -f "http.server ..."` from the Bash tool does not reliably kill background Python servers on this machine** — several accumulated as zombie processes across a session despite `pkill` reporting success. Use PowerShell instead to actually kill them: `Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like "*http.server*" } | Stop-Process -Force`.

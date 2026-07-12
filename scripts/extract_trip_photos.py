@@ -5,9 +5,10 @@ and sort matches into photos_raw/uk_trip and photos_raw/dc_reunion.
 Re-run safe: skips files already recorded in the manifest, and a cheap
 filesystem-mtime pre-filter avoids full EXIF decode for files nowhere near
 the trip dates (iCloud preserves original capture date as file mtime).
-Also prunes photos_raw/ of any file that's no longer present in the iCloud
-source folder, so photos deleted upstream (e.g. iPhone/iCloud.com) drop out
-of the project on the next run instead of lingering as stale copies.
+Also moves any photos_raw/uk_trip or photos_raw/dc_reunion file that's no
+longer present in the source folder into photos_raw/pruned_review/ (not
+deleted — the source folder may simply be an incomplete pull, so these are
+kept for manual review rather than lost).
 
 Usage:
     python scripts/extract_trip_photos.py
@@ -23,10 +24,16 @@ from PIL import ExifTags, Image
 
 pillow_heif.register_heif_opener()
 
-SOURCE_DIR = Path(r"C:\Users\harve\iCloudPhotos\Photos")
+# Temporarily sourcing from a manual USB import (photos_raw/iphone) instead of
+# the iCloud sync folder — iCloud Photos sync got stuck/paused mid-trip and
+# was missing the Cotswolds/Cambridge/Mon-6-Jul days entirely. Switch back to
+# the iCloud folder (C:\Users\harve\iCloudPhotos\Photos) once sync is fixed.
+SOURCE_DIR = Path(__file__).resolve().parent.parent / "photos_raw" / "iphone"
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEST_UK = REPO_ROOT / "photos_raw" / "uk_trip"
 DEST_DC = REPO_ROOT / "photos_raw" / "dc_reunion"
+REVIEW_UK = REPO_ROOT / "photos_raw" / "pruned_review" / "uk_trip"
+REVIEW_DC = REPO_ROOT / "photos_raw" / "pruned_review" / "dc_reunion"
 MANIFEST_PATH = REPO_ROOT / "data" / "photo_manifest.csv"
 
 # Padded a day on each side of the known travel dates to avoid clipping
@@ -113,6 +120,8 @@ def load_existing_manifest():
 def main():
     DEST_UK.mkdir(parents=True, exist_ok=True)
     DEST_DC.mkdir(parents=True, exist_ok=True)
+    REVIEW_UK.mkdir(parents=True, exist_ok=True)
+    REVIEW_DC.mkdir(parents=True, exist_ok=True)
     MANIFEST_PATH.parent.mkdir(parents=True, exist_ok=True)
 
     existing = load_existing_manifest()
@@ -196,10 +205,13 @@ def main():
     expected_uk = {r["filename"] for r in rows if r["category"] == "uk_trip"}
     expected_dc = {r["filename"] for r in rows if r["category"] == "dc_reunion"}
     pruned = 0
-    for dest_dir, expected in ((DEST_UK, expected_uk), (DEST_DC, expected_dc)):
+    for dest_dir, review_dir, expected in (
+        (DEST_UK, REVIEW_UK, expected_uk),
+        (DEST_DC, REVIEW_DC, expected_dc),
+    ):
         for existing_file in dest_dir.iterdir():
             if existing_file.is_file() and existing_file.name not in expected:
-                existing_file.unlink()
+                shutil.move(str(existing_file), str(review_dir / existing_file.name))
                 pruned += 1
 
     print(f"Total files:      {total}")
@@ -209,7 +221,7 @@ def main():
     print(f"No EXIF date:     {no_exif_date}")
     print(f"Matched UK trip:  {matched_uk}")
     print(f"Matched DC:       {matched_dc}")
-    print(f"Pruned (deleted from source, removed from photos_raw/): {pruned}")
+    print(f"Moved to photos_raw/pruned_review/ (not in current source): {pruned}")
     print(f"Manifest written: {MANIFEST_PATH}")
 
 
