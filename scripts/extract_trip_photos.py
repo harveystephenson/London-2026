@@ -10,6 +10,11 @@ longer present in the source folder into photos_raw/pruned_review/ (not
 deleted — the source folder may simply be an incomplete pull, so these are
 kept for manual review rather than lost).
 
+Manual curation: deleting a file directly from photos_raw/uk_trip or
+photos_raw/dc_reunion (not the source dump) is treated as an intentional
+edit — the manifest row is kept but marked deleted=true, and is never
+re-copied back in from the source on a later run.
+
 Usage:
     python scripts/extract_trip_photos.py
 """
@@ -132,6 +137,8 @@ def main():
     no_exif_date = 0
     matched_uk = 0
     matched_dc = 0
+    deleted_skipped = 0
+    newly_deleted = 0
 
     all_paths = sorted(SOURCE_DIR.iterdir())
     total = len(all_paths)
@@ -148,8 +155,22 @@ def main():
         if existing_row:
             dest = DEST_UK if existing_row["category"] == "uk_trip" else DEST_DC
             dest_path = dest / path.name
+            if existing_row.get("deleted") == "true":
+                # User already deleted this from the curated folder — never
+                # resurrect it from the raw source dump.
+                rows.append(existing_row)
+                reused += 1
+                deleted_skipped += 1
+                continue
             if not dest_path.exists():
-                shutil.copy2(path, dest_path)
+                # Missing from the curated folder but not yet marked deleted
+                # means the user just deleted it manually this session.
+                existing_row["deleted"] = "true"
+                rows.append(existing_row)
+                reused += 1
+                deleted_skipped += 1
+                newly_deleted += 1
+                continue
             rows.append(existing_row)
             reused += 1
             if existing_row["category"] == "uk_trip":
@@ -191,13 +212,15 @@ def main():
                 "lat": lat if lat is not None else "",
                 "lon": lon if lon is not None else "",
                 "location_name": "",
+                "deleted": "",
             }
         )
 
     rows.sort(key=lambda r: r["datetime"])
     with open(MANIFEST_PATH, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(
-            f, fieldnames=["filename", "category", "datetime", "lat", "lon", "location_name"]
+            f,
+            fieldnames=["filename", "category", "datetime", "lat", "lon", "location_name", "deleted"],
         )
         writer.writeheader()
         writer.writerows(rows)
@@ -217,6 +240,7 @@ def main():
     print(f"Total files:      {total}")
     print(f"Image files:      {scanned}")
     print(f"Reused from prior manifest: {reused}")
+    print(f"Marked deleted (removed from photos_raw/uk_trip or dc_reunion by user): {deleted_skipped} ({newly_deleted} new this run)")
     print(f"Skipped by mtime prefilter: {prefiltered_out}")
     print(f"No EXIF date:     {no_exif_date}")
     print(f"Matched UK trip:  {matched_uk}")
