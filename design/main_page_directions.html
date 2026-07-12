@@ -1,0 +1,562 @@
+<title>London 2026 — Visual Direction Options</title>
+<style>
+  :root {
+    --page-bg: #f5f3ee;
+    --page-surface: #ffffff;
+    --page-border: #ddd8cc;
+    --page-ink: #232420;
+    --page-muted: #756f60;
+    --page-accent: #5b6b5f;
+    --page-accent-soft: #e4e8e1;
+    --font-chrome-sans: -apple-system, "Neue Haas Grotesk", "Helvetica Neue", Arial, sans-serif;
+    --font-chrome-serif: "Charter", "Iowan Old Style", Georgia, serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page-bg: #17181c;
+      --page-surface: #1e2024;
+      --page-border: #33352e;
+      --page-ink: #eae8e2;
+      --page-muted: #9a9488;
+      --page-accent: #93a894;
+      --page-accent-soft: #262b25;
+    }
+  }
+  :root[data-theme="dark"] {
+    --page-bg: #17181c;
+    --page-surface: #1e2024;
+    --page-border: #33352e;
+    --page-ink: #eae8e2;
+    --page-muted: #9a9488;
+    --page-accent: #93a894;
+    --page-accent-soft: #262b25;
+  }
+  :root[data-theme="light"] {
+    --page-bg: #f5f3ee;
+    --page-surface: #ffffff;
+    --page-border: #ddd8cc;
+    --page-ink: #232420;
+    --page-muted: #756f60;
+    --page-accent: #5b6b5f;
+    --page-accent-soft: #e4e8e1;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--page-bg);
+    color: var(--page-ink);
+    font-family: var(--font-chrome-sans);
+    line-height: 1.5;
+  }
+  .deck {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+  }
+  .deck-intro {
+    margin-bottom: 56px;
+  }
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--page-accent);
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .deck-title {
+    font-family: var(--font-chrome-serif);
+    font-size: 34px;
+    font-weight: 500;
+    text-wrap: balance;
+    margin-bottom: 12px;
+  }
+  .deck-sub {
+    color: var(--page-muted);
+    font-size: 15.5px;
+    max-width: 62ch;
+  }
+
+  .section-label {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--page-accent);
+    font-weight: 600;
+    margin: 64px 0 6px;
+  }
+  .section-title {
+    font-family: var(--font-chrome-serif);
+    font-size: 22px;
+    margin-bottom: 8px;
+  }
+  .section-note {
+    color: var(--page-muted);
+    font-size: 14.5px;
+    max-width: 64ch;
+    margin-bottom: 28px;
+  }
+
+  .option-card {
+    border: 1px solid var(--page-border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 40px;
+    background: var(--page-surface);
+  }
+  .option-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--page-border);
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .option-name {
+    font-family: var(--font-chrome-serif);
+    font-size: 17px;
+  }
+  .option-desc {
+    color: var(--page-muted);
+    font-size: 13px;
+    max-width: 46ch;
+  }
+  .swatches {
+    display: flex;
+    gap: 4px;
+    padding: 0 20px 16px;
+  }
+  .swatch {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.12);
+  }
+
+  /* ============ scoped mockup previews ============ */
+  .preview {
+    padding: 0;
+  }
+  .mock-hero {
+    padding: 40px 32px 28px;
+    text-align: center;
+  }
+  .mock-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.75;
+    margin-bottom: 10px;
+  }
+  .mock-title {
+    font-size: 30px;
+    margin-bottom: 8px;
+  }
+  .mock-dates {
+    font-size: 13px;
+    opacity: 0.8;
+    margin-bottom: 4px;
+  }
+  .mock-names {
+    font-size: 14px;
+    opacity: 0.85;
+  }
+  .mock-body {
+    padding: 22px 32px 32px;
+  }
+  .mock-info-card {
+    border-radius: 6px;
+    padding: 16px 18px;
+    margin-bottom: 18px;
+  }
+  .mock-info-title {
+    font-size: 13.5px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .mock-info-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12.5px;
+    padding: 3px 0;
+    opacity: 0.85;
+  }
+  .mock-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 14px;
+  }
+  .mock-tab {
+    padding: 7px 14px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .mock-schedule {
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .mock-row {
+    display: flex;
+    gap: 14px;
+    padding: 10px 14px;
+    font-size: 12.5px;
+    align-items: baseline;
+  }
+  .mock-time {
+    opacity: 0.6;
+    font-variant-numeric: tabular-nums;
+    width: 62px;
+    flex-shrink: 0;
+  }
+
+  /* OS Map option */
+  .opt-osmap {
+    --bg: #efe7cd; --surface: #e7dcb6; --border: #c3b586;
+    --ink: #23291f; --muted: #6b6b52;
+    --accent: #b8452f; --accent2: #4f6b47; --gold: #a97c26;
+    background: var(--bg); color: var(--ink);
+    font-family: "Rockwell", "Roboto Slab", Georgia, serif;
+  }
+  .opt-osmap .mock-hero { background: var(--surface); border-bottom: 2px solid var(--accent2); }
+  .opt-osmap .mock-eyebrow, .opt-osmap .mock-dates { font-family: "Courier New", monospace; letter-spacing: 0.08em; }
+  .opt-osmap .mock-title { color: var(--accent); font-weight: 700; }
+  .opt-osmap .mock-tab { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
+  .opt-osmap .mock-tab.active { background: var(--accent2); color: var(--bg); border-color: var(--accent2); }
+  .opt-osmap .mock-info-card { background: var(--surface); border: 1px solid var(--border); }
+  .opt-osmap .mock-info-title { color: var(--accent2); font-family: "Courier New", monospace; text-transform: uppercase; font-size: 11.5px; letter-spacing: 0.06em; }
+  .opt-osmap .mock-schedule { border: 1px solid var(--border); }
+  .opt-osmap .mock-row:nth-child(even) { background: var(--surface); }
+  .opt-osmap .mock-row { border-bottom: 1px solid var(--border); font-family: -apple-system, sans-serif; }
+  .opt-osmap .mock-time { color: var(--gold); font-family: "Courier New", monospace; }
+  .opt-osmap .mock-pin { color: var(--accent); }
+
+  /* Golden Hour Thames option */
+  .opt-goldenhour {
+    --bg: #241f2e; --surface: #2f2838; --border: #443a52;
+    --ink: #f3e9e4; --muted: #a8909e;
+    --accent: #e0894f; --accent2: #b85c6b; --gold: #e8b04f;
+    background: var(--bg); color: var(--ink);
+    font-family: "Optima", "Segoe UI", sans-serif;
+  }
+  .opt-goldenhour .mock-hero { background: radial-gradient(ellipse at 50% -10%, rgba(224,137,79,0.22), transparent 60%), var(--bg); }
+  .opt-goldenhour .mock-title { font-family: "Bodoni MT", Didot, Georgia, serif; font-weight: 600; color: var(--gold); }
+  .opt-goldenhour .mock-eyebrow, .opt-goldenhour .mock-dates { color: var(--accent2); }
+  .opt-goldenhour .mock-tab { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
+  .opt-goldenhour .mock-tab.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .opt-goldenhour .mock-info-card { background: var(--surface); border: 1px solid var(--border); }
+  .opt-goldenhour .mock-info-title { color: var(--gold); }
+  .opt-goldenhour .mock-schedule { border: 1px solid var(--border); }
+  .opt-goldenhour .mock-row:nth-child(even) { background: var(--surface); }
+  .opt-goldenhour .mock-row { border-bottom: 1px solid var(--border); }
+  .opt-goldenhour .mock-time { color: var(--accent); }
+  .opt-goldenhour .mock-pin { color: var(--gold); }
+
+  /* Cotswold Stone option */
+  .opt-cotswold {
+    --bg: #f2e9d3; --surface: #ece0c0; --border: #d4c39a;
+    --ink: #2e2a1f; --muted: #7a715a;
+    --accent: #4a6741; --accent2: #4c7c9e; --gold: #c98f2e;
+    background: var(--bg); color: var(--ink);
+    font-family: "Avenir Next", "Century Gothic", sans-serif;
+  }
+  .opt-cotswold .mock-hero { background: var(--bg); }
+  .opt-cotswold .mock-title { font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif; font-weight: 600; color: var(--accent); }
+  .opt-cotswold .mock-eyebrow { color: var(--gold); }
+  .opt-cotswold .mock-dates { color: var(--accent2); }
+  .opt-cotswold .mock-tab { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
+  .opt-cotswold .mock-tab.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .opt-cotswold .mock-info-card { background: var(--surface); border: 1px solid var(--border); }
+  .opt-cotswold .mock-info-title { color: var(--accent); }
+  .opt-cotswold .mock-schedule { border: 1px solid var(--border); }
+  .opt-cotswold .mock-row:nth-child(even) { background: var(--surface); }
+  .opt-cotswold .mock-row { border-bottom: 1px solid var(--border); }
+  .opt-cotswold .mock-time { color: var(--accent2); }
+  .opt-cotswold .mock-pin { color: var(--gold); }
+
+  /* ============ photo integration layout concepts ============ */
+  .layout-card {
+    border: 1px solid var(--page-border);
+    border-radius: 4px;
+    background: var(--page-surface);
+    margin-bottom: 36px;
+    overflow: hidden;
+  }
+  .layout-head {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--page-border);
+  }
+  .layout-name { font-family: var(--font-chrome-serif); font-size: 16px; margin-bottom: 4px; }
+  .layout-desc { color: var(--page-muted); font-size: 13px; max-width: 60ch; }
+  .layout-body { padding: 24px; }
+
+  .photo-tile {
+    background: linear-gradient(135deg, var(--page-accent-soft), var(--page-border));
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--page-muted);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  /* layout concept 1: hero photo strip */
+  .demo-frame {
+    background: #0d0f14;
+    color: #e8eaf0;
+    border-radius: 6px;
+    overflow: hidden;
+    font-family: Georgia, serif;
+  }
+  .demo-hero-mini {
+    text-align: center;
+    padding: 24px 20px 16px;
+  }
+  .demo-hero-mini .t { font-size: 20px; }
+  .demo-hero-mini .s { font-size: 11px; color: #9aa0ae; margin-top: 4px; }
+  .strip-row {
+    display: flex;
+    gap: 3px;
+    padding: 0 3px 3px;
+  }
+  .strip-row .photo-tile { height: 64px; flex: 1; border-radius: 0; }
+
+  /* layout concept 2: inline day-summary thumbs */
+  .demo-day-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #2a2f3d;
+  }
+  .demo-day-row:last-child { border-bottom: none; }
+  .demo-day-label { font-size: 12.5px; flex-shrink: 0; width: 140px; }
+  .demo-day-label b { display: block; font-size: 13px; }
+  .demo-day-label span { color: #6b7585; font-size: 11px; }
+  .demo-day-thumbs { display: flex; gap: 4px; }
+  .demo-day-thumbs .photo-tile { width: 40px; height: 40px; font-size: 0; }
+
+  /* layout concept 3: highlights mosaic */
+  .mosaic {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: repeat(2, 70px);
+    gap: 4px;
+    padding: 3px;
+  }
+  .mosaic .photo-tile:nth-child(1) { grid-column: span 2; grid-row: span 2; }
+  .mosaic .photo-tile:nth-child(2) { grid-column: span 2; }
+  .mosaic .photo-tile:nth-child(3) { grid-column: span 2; }
+  .mosaic .photo-tile:nth-child(4) { grid-column: span 2; }
+  .mosaic .photo-tile:nth-child(5) { grid-column: span 1; }
+  .mosaic .photo-tile:nth-child(6) { grid-column: span 1; }
+
+  .callout {
+    background: var(--page-accent-soft);
+    border-left: 3px solid var(--page-accent);
+    padding: 12px 16px;
+    font-size: 13.5px;
+    color: var(--page-ink);
+    border-radius: 0 4px 4px 0;
+    margin-top: 32px;
+  }
+</style>
+
+<div class="deck">
+  <div class="deck-intro">
+    <div class="eyebrow">Design review — not live on the site</div>
+    <h1 class="deck-title">Three directions for London 2026</h1>
+    <p class="deck-sub">Your current site is a dark luxury-travel palette — near-black ground, gold accent, Georgia serif. Below are three genuinely different directions grounded in the trip itself, plus three ways to work photos into the main page. Nothing here touches <code>index.html</code> — just reactions wanted.</p>
+  </div>
+
+  <div class="section-label">Color &amp; type directions</div>
+  <div class="section-title">Pick a feeling, not just a palette</div>
+  <p class="section-note">Each mockup reuses real content from your site (the hero, the hotel info card, a schedule row) so you can judge it in context, not as an abstract swatch.</p>
+
+  <!-- OPTION 1: Ordnance Survey -->
+  <div class="option-card">
+    <div class="option-head">
+      <div>
+        <div class="option-name">Ordnance Survey</div>
+        <div class="option-desc">Aged trail-map paper, moss green &amp; brick-red waymarking, cartographer's lettering. Leans into the fact that a real map is the centerpiece of your site.</div>
+      </div>
+      <div class="swatches">
+        <div class="swatch" style="background:#efe7cd"></div>
+        <div class="swatch" style="background:#4f6b47"></div>
+        <div class="swatch" style="background:#b8452f"></div>
+        <div class="swatch" style="background:#a97c26"></div>
+      </div>
+    </div>
+    <div class="preview opt-osmap">
+      <div class="mock-hero">
+        <div class="mock-eyebrow">A PRIVATE TRAVEL ITINERARY</div>
+        <div class="mock-title">London</div>
+        <div class="mock-dates">JUNE 29 – JULY 7, 2026</div>
+        <div class="mock-names">Betty &amp; Hugh</div>
+      </div>
+      <div class="mock-body">
+        <div class="mock-tabs">
+          <div class="mock-tab active">Itinerary + Map</div>
+          <div class="mock-tab">Photo Gallery</div>
+        </div>
+        <div class="mock-info-card">
+          <div class="mock-info-title">⛺ The Clermont Victoria</div>
+          <div class="mock-info-row"><span>Dates</span><span>29 Jun – 7 Jul · 8 nights</span></div>
+          <div class="mock-info-row"><span>Rooms</span><span>2 × Deluxe King</span></div>
+        </div>
+        <div class="mock-schedule">
+          <div class="mock-row"><span class="mock-time">10:45</span><span>Peggy Porschen Belgravia — Morning Tea <span class="mock-pin">📷</span></span></div>
+          <div class="mock-row"><span class="mock-time">14:00</span><span>Walk: Bank of England · Leadenhall Market <span class="mock-pin">📷</span></span></div>
+          <div class="mock-row"><span class="mock-time">19:00</span><span>Dinner — Sketch, The Gallery</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OPTION 2: Golden Hour Thames -->
+  <div class="option-card">
+    <div class="option-head">
+      <div>
+        <div class="option-name">Golden Hour Thames</div>
+        <div class="option-desc">Dusk over the river — plum sky fading to sunset coral. Romantic and photographic, drawn from the South Bank and Cambridge punting golden hours.</div>
+      </div>
+      <div class="swatches">
+        <div class="swatch" style="background:#241f2e"></div>
+        <div class="swatch" style="background:#e0894f"></div>
+        <div class="swatch" style="background:#b85c6b"></div>
+        <div class="swatch" style="background:#e8b04f"></div>
+      </div>
+    </div>
+    <div class="preview opt-goldenhour">
+      <div class="mock-hero">
+        <div class="mock-eyebrow">A PRIVATE TRAVEL ITINERARY</div>
+        <div class="mock-title">London</div>
+        <div class="mock-dates">June 29 – July 7, 2026</div>
+        <div class="mock-names">Betty &amp; Hugh</div>
+      </div>
+      <div class="mock-body">
+        <div class="mock-tabs">
+          <div class="mock-tab active">Itinerary + Map</div>
+          <div class="mock-tab">Photo Gallery</div>
+        </div>
+        <div class="mock-info-card">
+          <div class="mock-info-title">🏨 The Clermont Victoria</div>
+          <div class="mock-info-row"><span>Dates</span><span>29 Jun – 7 Jul · 8 nights</span></div>
+          <div class="mock-info-row"><span>Rooms</span><span>2 × Deluxe King</span></div>
+        </div>
+        <div class="mock-schedule">
+          <div class="mock-row"><span class="mock-time">10:45</span><span>Peggy Porschen Belgravia — Morning Tea <span class="mock-pin">📷</span></span></div>
+          <div class="mock-row"><span class="mock-time">14:00</span><span>Walk: Bank of England · Leadenhall Market <span class="mock-pin">📷</span></span></div>
+          <div class="mock-row"><span class="mock-time">19:00</span><span>Dinner — Sketch, The Gallery</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OPTION 3: Cotswold Stone -->
+  <div class="option-card">
+    <div class="option-head">
+      <div>
+        <div class="option-name">Cotswold Stone</div>
+        <div class="option-desc">Light and airy — honey limestone, hedgerow green, English-summer denim blue. The only bright option; feels like a scrapbook rather than a travel brochure.</div>
+      </div>
+      <div class="swatches">
+        <div class="swatch" style="background:#f2e9d3"></div>
+        <div class="swatch" style="background:#4a6741"></div>
+        <div class="swatch" style="background:#4c7c9e"></div>
+        <div class="swatch" style="background:#c98f2e"></div>
+      </div>
+    </div>
+    <div class="preview opt-cotswold">
+      <div class="mock-hero">
+        <div class="mock-eyebrow">A PRIVATE TRAVEL ITINERARY</div>
+        <div class="mock-title">London</div>
+        <div class="mock-dates">June 29 – July 7, 2026</div>
+        <div class="mock-names">Betty &amp; Hugh</div>
+      </div>
+      <div class="mock-body">
+        <div class="mock-tabs">
+          <div class="mock-tab active">Itinerary + Map</div>
+          <div class="mock-tab">Photo Gallery</div>
+        </div>
+        <div class="mock-info-card">
+          <div class="mock-info-title">🏨 The Clermont Victoria</div>
+          <div class="mock-info-row"><span>Dates</span><span>29 Jun – 7 Jul · 8 nights</span></div>
+          <div class="mock-info-row"><span>Rooms</span><span>2 × Deluxe King</span></div>
+        </div>
+        <div class="mock-schedule">
+          <div class="mock-row"><span class="mock-time">10:45</span><span>Peggy Porschen Belgravia — Morning Tea <span class="mock-pin">📷</span></span></div>
+          <div class="mock-row"><span class="mock-time">14:00</span><span>Walk: Bank of England · Leadenhall Market <span class="mock-pin">📷</span></span></div>
+          <div class="mock-row"><span class="mock-time">19:00</span><span>Dinner — Sketch, The Gallery</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout">Note: "Betty &amp; Hugh" and the dropped hotel name in these mockups reflect the title change you asked for separately (#44) — shown here so the hero reads the way it actually would.</div>
+
+  <div class="section-label">Photo integration</div>
+  <div class="section-title">Three ways to surface photos before the gallery tab</div>
+  <p class="section-note">Right now photos only appear behind the Photo Gallery tab or a per-event popup — nothing is visible on first scroll. These three ideas pull photos forward, shown here in a neutral frame (grey tiles stand in for real thumbnails) so the layout idea reads independent of whichever color direction you pick above.</p>
+
+  <div class="layout-card">
+    <div class="layout-head">
+      <div class="layout-name">1 · Hero photo strip</div>
+      <div class="layout-desc">A thin strip of favorite thumbnails directly under the title, before the map — an immediate "here's the trip" moment.</div>
+    </div>
+    <div class="layout-body">
+      <div class="demo-frame">
+        <div class="demo-hero-mini">
+          <div class="t">London</div>
+          <div class="s">June 29 – July 7, 2026</div>
+        </div>
+        <div class="strip-row">
+          <div class="photo-tile"></div><div class="photo-tile"></div><div class="photo-tile"></div>
+          <div class="photo-tile"></div><div class="photo-tile"></div><div class="photo-tile"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="layout-card">
+    <div class="layout-head">
+      <div class="layout-name">2 · Inline day thumbnails</div>
+      <div class="layout-desc">Each row in "At a Glance" gets 3–4 small thumbnails next to it — a preview before you even click into that day's detail.</div>
+    </div>
+    <div class="layout-body">
+      <div class="demo-frame">
+        <div class="demo-day-row">
+          <div class="demo-day-label"><b>MON 29 JUN</b><span>Arrival · South Bank · Sketch</span></div>
+          <div class="demo-day-thumbs"><div class="photo-tile"></div><div class="photo-tile"></div><div class="photo-tile"></div><div class="photo-tile"></div></div>
+        </div>
+        <div class="demo-day-row">
+          <div class="demo-day-label"><b>FRI 3 JUL</b><span>Cotswolds — Burford, Bourton</span></div>
+          <div class="demo-day-thumbs"><div class="photo-tile"></div><div class="photo-tile"></div><div class="photo-tile"></div><div class="photo-tile"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="layout-card">
+    <div class="layout-head">
+      <div class="layout-name">3 · Highlights mosaic</div>
+      <div class="layout-desc">A curated mosaic of favorite shots as its own section, between the map and "At a Glance" — a scrapbook cover page before the structured itinerary starts.</div>
+    </div>
+    <div class="layout-body">
+      <div class="demo-frame">
+        <div class="mosaic">
+          <div class="photo-tile"></div><div class="photo-tile"></div><div class="photo-tile"></div>
+          <div class="photo-tile"></div><div class="photo-tile"></div><div class="photo-tile"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout">All three photo layouts work with any of the three color directions — they're independent choices. Once you've reacted to both, I'll fold the picks into an actual <code>index.html</code> change under #47.</div>
+</div>
