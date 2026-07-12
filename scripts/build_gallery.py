@@ -24,12 +24,15 @@ pillow_heif.register_heif_opener()
 
 ROOT = Path(__file__).resolve().parent.parent
 MANIFEST_CSV = ROOT / "data" / "photo_manifest.csv"
+FLAGS_CSV = ROOT / "data" / "flag_locations.csv"
 RAW_DIR = ROOT / "photos_raw" / "uk_trip"
 OUT_DIR = ROOT / "photos"
 GALLERY_MANIFEST = OUT_DIR / "manifest.json"
 INDEX_HTML = ROOT / "index.html"
 START_MARKER = "/*GALLERY_DATA*/"
 END_MARKER = "/*END_GALLERY_DATA*/"
+LOC_START_MARKER = "/*GALLERY_BY_LOCATION*/"
+LOC_END_MARKER = "/*END_GALLERY_BY_LOCATION*/"
 
 THUMB_MAX = 400
 THUMB_QUALITY = 78
@@ -49,18 +52,28 @@ DAY_SLUGS = {
 }
 
 
-def update_index_html(gallery):
+def load_name_to_location_id():
+    with open(FLAGS_CSV, newline="", encoding="utf-8") as f:
+        return {row["name"]: row["location_id"] for row in csv.DictReader(f)}
+
+
+def inject(html, start_marker, end_marker, data):
+    if start_marker not in html or end_marker not in html:
+        raise RuntimeError(f"Could not find {start_marker} / {end_marker} markers in index.html")
+    json_str = json.dumps(data, separators=(",", ":"))
+    start_idx = html.index(start_marker) + len(start_marker)
+    end_idx = html.index(end_marker)
+    return html[:start_idx] + json_str + html[end_idx:]
+
+
+def update_index_html(gallery, gallery_by_location):
     """Inline the gallery data into index.html so the page doesn't depend on a
     fetch() at runtime — fetch() of a local file is blocked under file://,
     which breaks the gallery when previewed outside a real HTTP server."""
     html = INDEX_HTML.read_text(encoding="utf-8")
-    if START_MARKER not in html or END_MARKER not in html:
-        raise RuntimeError(f"Could not find {START_MARKER} / {END_MARKER} markers in index.html")
-    json_str = json.dumps(gallery, separators=(",", ":"))
-    start_idx = html.index(START_MARKER) + len(START_MARKER)
-    end_idx = html.index(END_MARKER)
-    new_html = html[:start_idx] + json_str + html[end_idx:]
-    INDEX_HTML.write_text(new_html, encoding="utf-8")
+    html = inject(html, START_MARKER, END_MARKER, gallery)
+    html = inject(html, LOC_START_MARKER, LOC_END_MARKER, gallery_by_location)
+    INDEX_HTML.write_text(html, encoding="utf-8")
 
 
 def save_resized(img, dest, max_dim, quality):
@@ -85,7 +98,10 @@ def main():
 
     print(f"Processing {len(rows)} photos into {OUT_DIR}...")
 
+    name_to_location_id = load_name_to_location_id()
+
     gallery = {slug: [] for slug in DAY_SLUGS.values()}
+    gallery_by_location = {}
     failures = []
 
     for i, row in enumerate(rows, 1):
@@ -107,7 +123,15 @@ def main():
             failures.append((row["filename"], str(e)))
             continue
 
-        gallery[day_slug].append({"thumb": thumb_rel, "full": full_rel})
+        photo_entry = {"thumb": thumb_rel, "full": full_rel}
+        gallery[day_slug].append(photo_entry)
+
+        # final_location (user-confirmed) wins over suggested_location
+        # (Claude's guess); photos with neither just stay day-grouped.
+        location_name = row.get("final_location") or row.get("suggested_location")
+        location_id = name_to_location_id.get(location_name) if location_name else None
+        if location_id:
+            gallery_by_location.setdefault(location_id, []).append(photo_entry)
 
         if i % 50 == 0 or i == len(rows):
             print(f"...{i}/{len(rows)} converted")
@@ -127,11 +151,14 @@ def main():
                 pruned += 1
 
     GALLERY_MANIFEST.write_text(json.dumps(gallery, indent=2), encoding="utf-8")
-    update_index_html(gallery)
+    update_index_html(gallery, gallery_by_location)
 
     print("\nPer-day counts:")
     for slug, photos in gallery.items():
         print(f"  {slug}: {len(photos)}")
+
+    assigned = sum(len(p) for p in gallery_by_location.values())
+    print(f"\nGrouped by location: {assigned}/{len(rows) - len(failures)} photos across {len(gallery_by_location)} locations")
 
     if failures:
         print(f"\n{len(failures)} failures:")
