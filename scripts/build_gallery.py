@@ -23,6 +23,9 @@ MANIFEST_CSV = ROOT / "data" / "photo_manifest.csv"
 RAW_DIR = ROOT / "photos_raw" / "uk_trip"
 OUT_DIR = ROOT / "photos"
 GALLERY_MANIFEST = OUT_DIR / "manifest.json"
+INDEX_HTML = ROOT / "index.html"
+START_MARKER = "/*GALLERY_DATA*/"
+END_MARKER = "/*END_GALLERY_DATA*/"
 
 THUMB_MAX = 400
 THUMB_QUALITY = 78
@@ -40,6 +43,20 @@ DAY_SLUGS = {
     "2026-07-06": "day-06-jul",
     "2026-07-07": "day-07-jul",
 }
+
+
+def update_index_html(gallery):
+    """Inline the gallery data into index.html so the page doesn't depend on a
+    fetch() at runtime — fetch() of a local file is blocked under file://,
+    which breaks the gallery when previewed outside a real HTTP server."""
+    html = INDEX_HTML.read_text(encoding="utf-8")
+    if START_MARKER not in html or END_MARKER not in html:
+        raise RuntimeError(f"Could not find {START_MARKER} / {END_MARKER} markers in index.html")
+    json_str = json.dumps(gallery, separators=(",", ":"))
+    start_idx = html.index(START_MARKER) + len(START_MARKER)
+    end_idx = html.index(END_MARKER)
+    new_html = html[:start_idx] + json_str + html[end_idx:]
+    INDEX_HTML.write_text(new_html, encoding="utf-8")
 
 
 def save_resized(img, dest, max_dim, quality):
@@ -86,6 +103,7 @@ def main():
             print(f"...{i}/{len(rows)} converted")
 
     GALLERY_MANIFEST.write_text(json.dumps(gallery, indent=2), encoding="utf-8")
+    update_index_html(gallery)
 
     print("\nPer-day counts:")
     for slug, photos in gallery.items():
@@ -97,6 +115,7 @@ def main():
             print(f"  {fname}: {err}")
 
     print(f"\nGallery manifest written: {GALLERY_MANIFEST}")
+    print(f"index.html gallery data updated in place")
 
 
 if __name__ == "__main__":
