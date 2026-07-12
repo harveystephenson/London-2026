@@ -74,7 +74,13 @@ def main():
     with open(MANIFEST_CSV, encoding="utf-8") as f:
         rows = list(csv.DictReader(f))
 
-    rows = [r for r in rows if r["category"] == "uk_trip" and r["datetime"][:10] in DAY_SLUGS]
+    rows = [
+        r
+        for r in rows
+        if r["category"] == "uk_trip"
+        and r["datetime"][:10] in DAY_SLUGS
+        and r.get("deleted") != "true"
+    ]
     rows.sort(key=lambda r: r["datetime"])
 
     print(f"Processing {len(rows)} photos into {OUT_DIR}...")
