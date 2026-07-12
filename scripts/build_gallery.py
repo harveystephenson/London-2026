@@ -6,6 +6,10 @@ files from photos_raw/uk_trip/, and writes JPGs into photos/<day-slug>/thumbs/
 and photos/<day-slug>/full/. Only uk_trip photos dated within the 9-day
 itinerary window (2026-06-29 to 2026-07-07 inclusive) are included — earlier
 prep-day and later post-trip shots don't map to any day section on the site.
+
+Re-run safe: also prunes any thumb/full JPG under photos/ that no longer
+corresponds to a manifest row, so photos deleted upstream (iPhone/iCloud)
+drop out of the gallery on the next run instead of lingering.
 """
 
 import csv
@@ -102,6 +106,20 @@ def main():
         if i % 50 == 0 or i == len(rows):
             print(f"...{i}/{len(rows)} converted")
 
+    expected_rel_paths = set()
+    for photos in gallery.values():
+        for p in photos:
+            expected_rel_paths.add(p["thumb"])
+            expected_rel_paths.add(p["full"])
+
+    pruned = 0
+    if OUT_DIR.exists():
+        for existing_file in OUT_DIR.rglob("*.jpg"):
+            rel = str(existing_file.relative_to(OUT_DIR)).replace("\\", "/")
+            if rel not in expected_rel_paths:
+                existing_file.unlink()
+                pruned += 1
+
     GALLERY_MANIFEST.write_text(json.dumps(gallery, indent=2), encoding="utf-8")
     update_index_html(gallery)
 
@@ -114,7 +132,8 @@ def main():
         for fname, err in failures:
             print(f"  {fname}: {err}")
 
-    print(f"\nGallery manifest written: {GALLERY_MANIFEST}")
+    print(f"\nPruned (no longer in manifest, removed from photos/): {pruned}")
+    print(f"Gallery manifest written: {GALLERY_MANIFEST}")
     print(f"index.html gallery data updated in place")
 
 
