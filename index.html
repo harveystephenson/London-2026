@@ -397,23 +397,41 @@
   .map-section {
     padding: 32px 0 32px;
   }
+  .map-region-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .region-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 6px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 700;
+    font-family: var(--font-sans);
+    transition: color 0.15s, background 0.15s, border-color 0.15s;
+  }
+  .region-btn:hover { color: var(--text); }
+  .region-btn.active { color: var(--gold); background: var(--surface); border-color: var(--gold-dim); }
   #trip-map {
     height: 420px;
     width: 100%;
     border-radius: var(--radius-lg);
     border: 1px solid var(--border);
+    background: var(--card);
   }
   @media (max-width: 600px) { #trip-map { height: 300px; } }
-  .map-legend {
-    display: flex;
-    gap: 18px;
-    margin-top: 12px;
-    font-size: 12px;
-    color: var(--muted);
-    flex-wrap: wrap;
+  .trip-pin-inner {
+    font-size: 26px;
+    line-height: 1;
+    text-align: center;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.7));
   }
-  .map-legend span { display: flex; align-items: center; gap: 6px; }
-  .legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
 
   @keyframes locFlash {
     0%, 100% { background: transparent; }
@@ -454,12 +472,12 @@
 <!-- MAP -->
 <section class="map-section">
   <p class="section-label">Trip Map — click a pin to jump to that day</p>
-  <div id="trip-map"></div>
-  <div class="map-legend">
-    <span><span class="legend-dot" style="background:#4a9e7f"></span> Confirmed</span>
-    <span><span class="legend-dot" style="background:#e05c4b"></span> Pending / not booked</span>
-    <span><span class="legend-dot" style="background:#5b9bd5"></span> Free time / no reservation</span>
+  <div class="map-region-tabs">
+    <button class="region-btn active" id="region-london" onclick="setMapRegion('london')">London</button>
+    <button class="region-btn" id="region-cambridge" onclick="setMapRegion('cambridge')">Cambridge</button>
+    <button class="region-btn" id="region-cotswolds" onclick="setMapRegion('cotswolds')">Cotswolds</button>
   </div>
+  <div id="trip-map"></div>
 </section>
 
 <!-- OVERVIEW -->
@@ -470,10 +488,10 @@
     <div class="overview-row"><div class="ov-date">TUE 30 JUN</div><div class="ov-desc">Kew Gardens · The Botanical Brasserie · Petersham Nurseries · Peggy Jean Richmond</div></div>
     <div class="overview-row"><div class="ov-date">WED 1 JUL</div><div class="ov-desc">Churchill War Rooms · Ambassadors Clubhouse · Devil Wears Prada · Sky Garden (Fenchurch)</div></div>
     <div class="overview-row"><div class="ov-date">THU 2 JUL</div><div class="ov-desc">Harrods · Hampstead</div></div>
-    <div class="overview-row"><div class="ov-date">FRI 3 JUL</div><div class="ov-desc">🌿 The Cotswolds — GWR to Moreton-in-Marsh · Private Mercedes Tour</div></div>
-    <div class="overview-row"><div class="ov-date">SAT 4 JUL</div><div class="ov-desc">Pride Parade · Notting Hill · Portobello Road · Dishoom Permit Room</div></div>
+    <div class="overview-row"><div class="ov-date">FRI 3 JUL</div><div class="ov-desc">🌿 The Cotswolds — GWR to Moreton-in-Marsh · Burford · Private Mercedes Tour</div></div>
+    <div class="overview-row"><div class="ov-date">SAT 4 JUL</div><div class="ov-desc">Notting Hill · Portobello Road · Dishoom Permit Room</div></div>
     <div class="overview-row"><div class="ov-date">SUN 5 JUL</div><div class="ov-desc">Cambridge — Punting · the Backs · Bridge of Sighs · +Cutie</div></div>
-    <div class="overview-row"><div class="ov-date">MON 6 JUL</div><div class="ov-desc">Last Full Day — TBD</div></div>
+    <div class="overview-row"><div class="ov-date">MON 6 JUL</div><div class="ov-desc">Liverpool Street (Cutie) · High Tea — Jacqueline, The Chancery Rosewood</div></div>
     <div class="overview-row"><div class="ov-date">TUE 7 JUL</div><div class="ov-desc">Travel Home — BA291 departs 2:00pm · Arrives Dulles 5:25pm</div></div>
   </div>
 </section>
@@ -631,6 +649,8 @@
       <table class="schedule">
         <tr><td class="sch-time-uk">8:51am</td><td class="sch-act"><div class="sch-act-title">GWR departs London Paddington → Moreton-in-Marsh — 1st Class</div></td></tr>
         <tr id="loc-moreton-in-marsh"><td class="sch-time-uk">10:18am</td><td class="sch-act"><div class="sch-act-title">Arrive Moreton-in-Marsh</div></td></tr>
+        <tr><td class="sch-time-uk">Midday</td><td class="sch-act"><div class="sch-act-title">Lunch — Cotswolds (restaurant to confirm from photos)</div></td></tr>
+        <tr id="loc-burford"><td class="sch-time-uk">Afternoon</td><td class="sch-act"><div class="sch-act-title">Burford</div></td></tr>
         <tr><td class="sch-time-uk">All Day</td><td class="sch-act"><div class="sch-act-title">Private Cotswolds Day Tour in a Mercedes</div></td></tr>
       </table>
       <div class="video-strip">
@@ -658,17 +678,15 @@
         <div class="day-month">July</div>
       </div>
       <div class="day-title-area">
-        <div class="day-theme">Pride Parade 🏳️‍🌈 · Notting Hill · Portobello Road · Dishoom</div>
+        <div class="day-theme">Notting Hill &amp; Portobello Road</div>
       </div>
       <div class="day-chevron">▾</div>
     </summary>
     <div class="day-body">
       <table class="schedule">
-        <tr><td class="sch-time-uk">9:00am</td><td class="sch-act"><div class="sch-act-title">Breakfast in Chelsea</div></td></tr>
-        <tr><td class="sch-time-uk">11:00am</td><td class="sch-act"><div class="sch-act-title">🏳️‍🌈 <a href="https://londonpride.co.uk" target="_blank">London Pride Parade</a> — Marble Arch to Whitehall</div></td></tr>
-        <tr id="loc-notting-hill-portobello"><td class="sch-time-uk">3:30pm</td><td class="sch-act"><div class="sch-act-title">Portobello Road &amp; Notting Hill</div></td></tr>
-        <tr><td class="sch-time-uk">5:00pm</td><td class="sch-act"><div class="sch-act-title">Churchill Arms — photo stop</div></td></tr>
-        <tr id="loc-dishoom-portobello"><td class="sch-time-uk">6:30pm</td><td class="sch-act"><div class="sch-act-title">Dinner — Dishoom Permit Room, Portobello Road</div></td></tr>
+        <tr id="loc-notting-hill-portobello"><td class="sch-time-uk">Morning</td><td class="sch-act"><div class="sch-act-title">Portobello Road &amp; Notting Hill</div></td></tr>
+        <tr id="loc-notting-hill-bookshop"><td class="sch-time-uk">Morning</td><td class="sch-act"><div class="sch-act-title">The Notting Hill Bookshop — the movie's bookstore</div></td></tr>
+        <tr id="loc-dishoom-portobello"><td class="sch-time-uk">1:00pm</td><td class="sch-act"><div class="sch-act-title">Lunch — Dishoom Permit Room, Portobello Road</div></td></tr>
       </table>
       <div class="video-strip">
         <div class="video-strip-label">📺 Videos by Others</div>
@@ -721,18 +739,9 @@
     </summary>
     <div class="day-body">
       <table class="schedule">
-        <tr id="loc-wb-studio-tour"><td class="sch-time-uk">Morning</td><td class="sch-act"><div class="sch-act-title">Harry Potter Studios, Watford</div></td></tr>
+        <tr id="loc-liverpool-street"><td class="sch-time-uk">Morning</td><td class="sch-act"><div class="sch-act-title">Took Cutie to Liverpool Street Station</div></td></tr>
+        <tr id="loc-chancery-rosewood"><td class="sch-time-uk">Afternoon</td><td class="sch-act"><div class="sch-act-title">High Tea — Jacqueline, The Chancery Rosewood</div></td></tr>
       </table>
-      <div class="video-strip">
-        <div class="video-strip-label">📺 Videos by Others</div>
-        <div class="video-links">
-          <a class="video-pill" href="https://www.youtube.com/watch?v=hy4JnaCYvMc" target="_blank"><span class="vp-icon">▶</span>Harry Potter Studio Tour Worth It in 2026?<span class="vp-dur">full</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=skTCj4Ctq6Y" target="_blank"><span class="vp-icon">▶</span>Still Worth It in 2025? Honest Review<span class="vp-dur">full</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=VIdKaNJWYEs" target="_blank"><span class="vp-icon">▶</span>Transport, Tickets & Full Walkthrough<span class="vp-dur">full</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=liTokMvx4pc" target="_blank"><span class="vp-icon">▶</span>Things to Know Before You Go<span class="vp-dur">full</span></a>
-          <a class="video-pill" href="https://www.youtube.com/watch?v=z6Ec_lvFpSQ" target="_blank"><span class="vp-icon">▶</span>Ultimate Harry Potter Fan Experience<span class="vp-dur">full</span></a>
-        </div>
-      </div>
     </div>
   </details>
 
@@ -808,52 +817,72 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
   const tripLocations = [
-    { id: 'heathrow-t5',            name: 'Heathrow Terminal 5',                  lat: 51.4723, lng: -0.4881, day: 'day-29-jun', status: 'confirmed' },
-    { id: 'clermont-victoria',      name: 'The Clermont Victoria',                lat: 51.4952, lng: -0.1441, day: 'day-29-jun', status: 'confirmed' },
-    { id: 'peggy-porschen',         name: 'Peggy Porschen Belgravia',             lat: 51.4931, lng: -0.1497, day: 'day-29-jun', status: 'confirmed' },
-    { id: 'south-bank-walk',        name: "City Walk — St Paul's & London Bridge", lat: 51.5138, lng: -0.0984, day: 'day-29-jun', status: 'free' },
-    { id: 'sketch',                 name: 'Sketch',                               lat: 51.5142, lng: -0.1409, day: 'day-29-jun', status: 'confirmed' },
-    { id: 'kew-gardens',            name: 'Kew Gardens',                          lat: 51.4787, lng: -0.2956, day: 'day-30-jun', status: 'confirmed' },
-    { id: 'petersham-nurseries',    name: 'Petersham Nurseries',                  lat: 51.4505, lng: -0.3009, day: 'day-30-jun', status: 'confirmed' },
-    { id: 'peggy-jean-richmond',    name: 'Peggy Jean, Richmond',                 lat: 51.4613, lng: -0.3037, day: 'day-30-jun', status: 'confirmed' },
-    { id: 'churchill-war-rooms',    name: 'Churchill War Rooms',                  lat: 51.5025, lng: -0.1300, day: 'day-01-jul', status: 'confirmed' },
-    { id: 'ambassadors-clubhouse',  name: 'Ambassadors Clubhouse',                lat: 51.5117, lng: -0.1409, day: 'day-01-jul', status: 'confirmed' },
-    { id: 'dominion-theatre',       name: 'Dominion Theatre — Devil Wears Prada', lat: 51.5165, lng: -0.1308, day: 'day-01-jul', status: 'confirmed' },
-    { id: 'sky-garden',             name: 'Sky Garden / Fenchurch',               lat: 51.5113, lng: -0.0836, day: 'day-01-jul', status: 'confirmed' },
-    { id: 'harrods',                name: 'Harrods — The Georgian',               lat: 51.4994, lng: -0.1636, day: 'day-02-jul', status: 'confirmed' },
-    { id: 'hampstead-hill-garden',  name: 'Hill Garden & Pergola, Hampstead',     lat: 51.5658, lng: -0.1746, day: 'day-02-jul', status: 'free' },
-    { id: 'moreton-in-marsh',       name: 'Moreton-in-Marsh — Cotswolds',         lat: 51.9936, lng: -1.6936, day: 'day-03-jul', status: 'confirmed' },
-    { id: 'notting-hill-portobello',name: 'Portobello Road, Notting Hill',        lat: 51.5170, lng: -0.2050, day: 'day-04-jul', status: 'free' },
-    { id: 'dishoom-portobello',     name: 'Dishoom Permit Room',                  lat: 51.5171, lng: -0.2047, day: 'day-04-jul', status: 'confirmed' },
-    { id: 'cambridge-centre',       name: 'Cambridge City Centre',                lat: 52.2066, lng: 0.1170,  day: 'day-05-jul', status: 'free' },
-    { id: 'scudamores-punting',     name: "Scudamore's Punting",                  lat: 52.2003, lng: 0.1178,  day: 'day-05-jul', status: 'confirmed' },
-    { id: 'wb-studio-tour',         name: 'Warner Bros. Studio Tour',             lat: 51.6925, lng: -0.4189, day: 'day-06-jul', status: 'pending' }
+    { id: 'clermont-victoria',       name: 'The Clermont Victoria',                lat: 51.4952, lng: -0.1441, day: 'day-29-jun' },
+    { id: 'peggy-porschen',          name: 'Peggy Porschen Belgravia',             lat: 51.4931, lng: -0.1497, day: 'day-29-jun' },
+    { id: 'south-bank-walk',         name: "City Walk — St Paul's & London Bridge", lat: 51.5138, lng: -0.0984, day: 'day-29-jun' },
+    { id: 'sketch',                  name: 'Sketch',                               lat: 51.5142, lng: -0.1409, day: 'day-29-jun' },
+    { id: 'kew-gardens',             name: 'Kew Gardens',                          lat: 51.4787, lng: -0.2956, day: 'day-30-jun' },
+    { id: 'petersham-nurseries',     name: 'Petersham Nurseries',                  lat: 51.4505, lng: -0.3009, day: 'day-30-jun' },
+    { id: 'peggy-jean-richmond',     name: 'Peggy Jean, Richmond',                 lat: 51.4613, lng: -0.3037, day: 'day-30-jun' },
+    { id: 'churchill-war-rooms',     name: 'Churchill War Rooms',                  lat: 51.5025, lng: -0.1300, day: 'day-01-jul' },
+    { id: 'ambassadors-clubhouse',   name: 'Ambassadors Clubhouse',                lat: 51.5117, lng: -0.1409, day: 'day-01-jul' },
+    { id: 'dominion-theatre',        name: 'Dominion Theatre — Devil Wears Prada', lat: 51.5165, lng: -0.1308, day: 'day-01-jul' },
+    { id: 'sky-garden',              name: 'Sky Garden / Fenchurch',               lat: 51.5113, lng: -0.0836, day: 'day-01-jul' },
+    { id: 'harrods',                 name: 'Harrods — The Georgian',               lat: 51.4994, lng: -0.1636, day: 'day-02-jul' },
+    { id: 'hampstead-hill-garden',   name: 'Hill Garden & Pergola, Hampstead',     lat: 51.5658, lng: -0.1746, day: 'day-02-jul' },
+    { id: 'moreton-in-marsh',        name: 'Moreton-in-Marsh — Cotswolds',         lat: 51.9936, lng: -1.6936, day: 'day-03-jul' },
+    { id: 'burford',                 name: 'Burford — Cotswolds',                  lat: 51.8117, lng: -1.6336, day: 'day-03-jul' },
+    { id: 'notting-hill-portobello', name: 'Portobello Road, Notting Hill',        lat: 51.5170, lng: -0.2050, day: 'day-04-jul' },
+    { id: 'notting-hill-bookshop',   name: 'The Notting Hill Bookshop',            lat: 51.5164, lng: -0.2039, day: 'day-04-jul' },
+    { id: 'dishoom-portobello',      name: 'Dishoom Permit Room',                  lat: 51.5171, lng: -0.2047, day: 'day-04-jul' },
+    { id: 'cambridge-centre',        name: 'Cambridge City Centre',                lat: 52.2066, lng: 0.1170,  day: 'day-05-jul' },
+    { id: 'scudamores-punting',      name: "Scudamore's Punting",                  lat: 52.2003, lng: 0.1178,  day: 'day-05-jul' },
+    { id: 'liverpool-street',        name: 'Liverpool Street Station',             lat: 51.5178, lng: -0.0823, day: 'day-06-jul' },
+    { id: 'chancery-rosewood',       name: 'Jacqueline, The Chancery Rosewood',    lat: 51.5177, lng: -0.1145, day: 'day-06-jul' }
   ];
+
+  const mapRegions = {
+    london:    { center: [51.51, -0.16], zoom: 11 },
+    cambridge: { center: [52.203, 0.117], zoom: 14 },
+    cotswolds: { center: [51.90, -1.66], zoom: 10 }
+  };
 
   let tripMap;
 
+  function tripPinIcon() {
+    return L.divIcon({
+      className: 'trip-pin',
+      html: '<div class="trip-pin-inner">🚩</div>',
+      iconSize: [28, 28],
+      iconAnchor: [8, 26],
+      popupAnchor: [4, -24]
+    });
+  }
+
   function initTripMap() {
-    tripMap = L.map('trip-map', { scrollWheelZoom: false }).setView([51.55, -0.35], 8);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors',
-      maxZoom: 18
+    tripMap = L.map('trip-map', { scrollWheelZoom: false }).setView(mapRegions.london.center, mapRegions.london.zoom);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 20,
+      detectRetina: true
     }).addTo(tripMap);
 
-    const statusColor = { confirmed: '#4a9e7f', pending: '#e05c4b', free: '#5b9bd5' };
-
     tripLocations.forEach(loc => {
-      const marker = L.circleMarker([loc.lat, loc.lng], {
-        radius: 7,
-        color: statusColor[loc.status] || '#c9a84c',
-        fillColor: statusColor[loc.status] || '#c9a84c',
-        fillOpacity: 0.85,
-        weight: 2
-      }).addTo(tripMap);
+      const marker = L.marker([loc.lat, loc.lng], { icon: tripPinIcon() }).addTo(tripMap);
       marker.bindPopup(
         '<strong>' + loc.name + '</strong><br>' +
         '<a href="#" onclick="jumpToLocation(\'' + loc.id + '\',\'' + loc.day + '\');return false;">Jump to this day →</a>'
       );
     });
+  }
+
+  function setMapRegion(region) {
+    const r = mapRegions[region];
+    if (!r || !tripMap) return;
+    tripMap.setView(r.center, r.zoom);
+    document.querySelectorAll('.region-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('region-' + region).classList.add('active');
   }
 
   function jumpToLocation(id, day) {
