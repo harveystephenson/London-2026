@@ -132,11 +132,16 @@ def main():
         gallery[day_slug].append(photo_entry)
 
         # final_location (user-confirmed) wins over suggested_location
-        # (Claude's guess); photos with neither just stay day-grouped.
+        # (Claude's guess) whenever it actually matches a known flag.
+        # A generic-but-non-blank final_location (e.g. "Cotswolds" before
+        # it's broken into specific villages) matches no flag on its own,
+        # so fall through to suggested_location rather than dead-ending —
+        # it still loses to final_location wherever that resolves.
         # Hand-typed CSV values are prone to stray leading/trailing
         # whitespace, so strip before matching against flag names.
-        location_name = (row.get("final_location") or "").strip() or (row.get("suggested_location") or "").strip()
-        location_id = name_to_location_id.get(location_name) if location_name else None
+        final_location = (row.get("final_location") or "").strip()
+        suggested_location = (row.get("suggested_location") or "").strip()
+        location_id = name_to_location_id.get(final_location) or name_to_location_id.get(suggested_location)
         if location_id:
             gallery_by_location.setdefault(location_id, []).append(photo_entry)
 
