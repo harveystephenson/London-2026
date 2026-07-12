@@ -119,7 +119,16 @@ def load_existing_manifest():
     if not MANIFEST_PATH.exists():
         return {}
     with open(MANIFEST_PATH, newline="", encoding="utf-8") as f:
-        return {row["filename"]: row for row in csv.DictReader(f)}
+        rows = list(csv.DictReader(f))
+    for row in rows:
+        # Migrate the old single location_name column (retired in favor of
+        # suggested_location/final_location) — it was always left blank, so
+        # there's nothing to carry forward, just drop the stale key.
+        row.pop("location_name", None)
+        row.setdefault("suggested_location", "")
+        row.setdefault("final_location", "")
+        row.setdefault("deleted", "")
+    return {row["filename"]: row for row in rows}
 
 
 def main():
@@ -211,7 +220,8 @@ def main():
                 "datetime": photo_dt.isoformat(),
                 "lat": lat if lat is not None else "",
                 "lon": lon if lon is not None else "",
-                "location_name": "",
+                "suggested_location": "",
+                "final_location": "",
                 "deleted": "",
             }
         )
@@ -220,7 +230,16 @@ def main():
     with open(MANIFEST_PATH, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(
             f,
-            fieldnames=["filename", "category", "datetime", "lat", "lon", "location_name", "deleted"],
+            fieldnames=[
+                "filename",
+                "category",
+                "datetime",
+                "lat",
+                "lon",
+                "suggested_location",
+                "final_location",
+                "deleted",
+            ],
         )
         writer.writeheader()
         writer.writerows(rows)
