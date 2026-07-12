@@ -10,6 +10,10 @@ prep-day and later post-trip shots don't map to any day section on the site.
 Re-run safe: also prunes any thumb/full JPG under photos/ that no longer
 corresponds to a manifest row, so photos deleted upstream (iPhone/iCloud)
 drop out of the gallery on the next run instead of lingering.
+
+Rows with final_location == "Ignore" are skipped entirely (kept, worth
+keeping, just not interesting enough to publish) — distinct from deleted,
+which means physically removed from photos_raw/uk_trip.
 """
 
 import csv
@@ -54,7 +58,7 @@ DAY_SLUGS = {
 
 def load_name_to_location_id():
     with open(FLAGS_CSV, newline="", encoding="utf-8") as f:
-        return {row["name"]: row["location_id"] for row in csv.DictReader(f)}
+        return {row["name"].strip(): row["location_id"] for row in csv.DictReader(f)}
 
 
 def inject(html, start_marker, end_marker, data):
@@ -93,6 +97,7 @@ def main():
         if r["category"] == "uk_trip"
         and r["datetime"][:10] in DAY_SLUGS
         and r.get("deleted") != "true"
+        and r.get("final_location", "").strip() != "Ignore"
     ]
     rows.sort(key=lambda r: r["datetime"])
 
@@ -128,7 +133,9 @@ def main():
 
         # final_location (user-confirmed) wins over suggested_location
         # (Claude's guess); photos with neither just stay day-grouped.
-        location_name = row.get("final_location") or row.get("suggested_location")
+        # Hand-typed CSV values are prone to stray leading/trailing
+        # whitespace, so strip before matching against flag names.
+        location_name = (row.get("final_location") or "").strip() or (row.get("suggested_location") or "").strip()
         location_id = name_to_location_id.get(location_name) if location_name else None
         if location_id:
             gallery_by_location.setdefault(location_id, []).append(photo_entry)
