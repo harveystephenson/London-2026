@@ -440,13 +440,118 @@
   .loc-highlight { animation: locFlash 1.8s ease; border-radius: 6px; }
 
   .gallery-placeholder {
-    padding: 64px 0;
+    padding: 32px 0 64px;
   }
   .gallery-placeholder p.body {
     color: var(--sub);
     max-width: 560px;
     margin-top: 12px;
     font-size: 14px;
+  }
+
+  /* ── GALLERY ── */
+  .gallery-missing-note {
+    color: var(--sub);
+    font-size: 13px;
+    font-style: italic;
+    margin-bottom: 24px;
+  }
+  .gallery-day { padding: 24px 0; }
+  .gallery-day + .gallery-day { border-top: 1px solid var(--border); }
+  .gallery-day-title {
+    font-family: var(--font-serif);
+    font-size: 18px;
+    font-weight: normal;
+    color: var(--white);
+    margin-bottom: 14px;
+  }
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 6px;
+  }
+  .gallery-thumb {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.15s;
+    display: block;
+    background: var(--card);
+  }
+  .gallery-thumb:hover { transform: scale(1.03); border-color: var(--gold-dim); }
+
+  .photo-link {
+    display: inline-block;
+    font-size: 12px;
+    color: var(--sky);
+    margin-left: 8px;
+    white-space: nowrap;
+  }
+  .photo-link:hover { color: var(--gold); }
+
+  /* ── LIGHTBOX ── */
+  .lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.92);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .lightbox.open { display: flex; }
+  .lightbox img#lightbox-img {
+    max-width: 92vw;
+    max-height: 82vh;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+  }
+  .lightbox-close {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 28px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 8px;
+  }
+  .lightbox-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,0.08);
+    border: none;
+    color: #fff;
+    font-size: 30px;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+  }
+  .lightbox-nav:hover { background: rgba(255,255,255,0.18); }
+  .lightbox-prev { left: 16px; }
+  .lightbox-next { right: 16px; }
+  .lightbox-counter {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 14px;
+    letter-spacing: 0.05em;
+  }
+  @media (max-width: 600px) {
+    .lightbox-nav { width: 42px; height: 42px; font-size: 22px; }
+    .lightbox-close { font-size: 22px; }
   }
 </style>
 </head>
@@ -517,9 +622,9 @@
     </summary>
     <div class="day-body">
       <table class="schedule">
-        <tr id="loc-peggy-porschen"><td class="sch-time-uk">10:45am</td><td class="sch-act"><div class="sch-act-title">Peggy Porschen Belgravia — Morning Tea</div></td></tr>
-        <tr id="loc-south-bank-walk"><td class="sch-time-uk">2:00pm</td><td class="sch-act"><div class="sch-act-title">Walk: Bank of England · St Paul's · Leadenhall Market · London Bridge</div></td></tr>
-        <tr id="loc-sketch"><td class="sch-time-uk">7:00pm</td><td class="sch-act"><div class="sch-act-title">Dinner — <a href="https://sketch.london" target="_blank">Sketch, The Gallery</a></div></td></tr>
+        <tr id="loc-peggy-porschen"><td class="sch-time-uk">10:45am</td><td class="sch-act"><div class="sch-act-title">Peggy Porschen Belgravia — Morning Tea<a class="photo-link" href="#" onclick="openLightbox('day-29-jun',0);return false;">📷 Photos</a></div></td></tr>
+        <tr id="loc-south-bank-walk"><td class="sch-time-uk">2:00pm</td><td class="sch-act"><div class="sch-act-title">Walk: Bank of England · St Paul's · Leadenhall Market · London Bridge<a class="photo-link" href="#" onclick="openLightbox('day-29-jun',0);return false;">📷 Photos</a></div></td></tr>
+        <tr id="loc-sketch"><td class="sch-time-uk">7:00pm</td><td class="sch-act"><div class="sch-act-title">Dinner — <a href="https://sketch.london" target="_blank">Sketch, The Gallery</a><a class="photo-link" href="#" onclick="openLightbox('day-29-jun',0);return false;">📷 Photos</a></div></td></tr>
       </table>
       <div class="video-strip">
         <div class="video-strip-label">📺 Videos by Others</div>
@@ -548,12 +653,12 @@
     </summary>
     <div class="day-body">
       <table class="schedule">
-        <tr id="loc-kew-gardens"><td class="sch-time-uk">10:00am</td><td class="sch-act"><div class="sch-act-title"><a href="https://www.kew.org" target="_blank">Royal Botanic Gardens, Kew</a></div></td></tr>
-        <tr><td class="sch-time-uk">10:30am</td><td class="sch-act"><div class="sch-act-title">Breakfast: The Botanical Brasserie at Kew</div></td></tr>
-        <tr><td class="sch-time-uk">12:00pm</td><td class="sch-act"><div class="sch-act-title">Kew Gardens — The Pagoda &amp; Great Broad Walk</div></td></tr>
-        <tr id="loc-petersham-nurseries"><td class="sch-time-uk">1:30pm</td><td class="sch-act"><div class="sch-act-title"><a href="https://www.petershamnurseries.com" target="_blank">Petersham Nurseries Restaurant</a></div></td></tr>
-        <tr><td class="sch-time-uk">3:30pm</td><td class="sch-act"><div class="sch-act-title">Walk along Richmond riverside</div></td></tr>
-        <tr id="loc-peggy-jean-richmond"><td class="sch-time-uk">6:30pm</td><td class="sch-act"><div class="sch-act-title">Dinner: Peggy Jean, Richmond</div></td></tr>
+        <tr id="loc-kew-gardens"><td class="sch-time-uk">10:00am</td><td class="sch-act"><div class="sch-act-title"><a href="https://www.kew.org" target="_blank">Royal Botanic Gardens, Kew</a><a class="photo-link" href="#" onclick="openLightbox('day-30-jun',0);return false;">📷 Photos</a></div></td></tr>
+        <tr><td class="sch-time-uk">10:30am</td><td class="sch-act"><div class="sch-act-title">Breakfast: The Botanical Brasserie at Kew<a class="photo-link" href="#" onclick="openLightbox('day-30-jun',0);return false;">📷 Photos</a></div></td></tr>
+        <tr><td class="sch-time-uk">12:00pm</td><td class="sch-act"><div class="sch-act-title">Kew Gardens — The Pagoda &amp; Great Broad Walk<a class="photo-link" href="#" onclick="openLightbox('day-30-jun',0);return false;">📷 Photos</a></div></td></tr>
+        <tr id="loc-petersham-nurseries"><td class="sch-time-uk">1:30pm</td><td class="sch-act"><div class="sch-act-title"><a href="https://www.petershamnurseries.com" target="_blank">Petersham Nurseries Restaurant</a><a class="photo-link" href="#" onclick="openLightbox('day-30-jun',0);return false;">📷 Photos</a></div></td></tr>
+        <tr><td class="sch-time-uk">3:30pm</td><td class="sch-act"><div class="sch-act-title">Walk along Richmond riverside<a class="photo-link" href="#" onclick="openLightbox('day-30-jun',0);return false;">📷 Photos</a></div></td></tr>
+        <tr id="loc-peggy-jean-richmond"><td class="sch-time-uk">6:30pm</td><td class="sch-act"><div class="sch-act-title">Dinner: Peggy Jean, Richmond<a class="photo-link" href="#" onclick="openLightbox('day-30-jun',0);return false;">📷 Photos</a></div></td></tr>
       </table>
       <div class="video-strip">
         <div class="video-strip-label">📺 Videos by Others</div>
@@ -583,10 +688,10 @@
     </summary>
     <div class="day-body">
       <table class="schedule">
-        <tr id="loc-churchill-war-rooms"><td class="sch-time-uk">9:30am</td><td class="sch-act"><div class="sch-act-title">Churchill War Rooms</div></td></tr>
-        <tr id="loc-ambassadors-clubhouse"><td class="sch-time-uk">12:00pm</td><td class="sch-act"><div class="sch-act-title">Lunch — <a href="https://ambassadorsclubhouse.com" target="_blank">Ambassadors Clubhouse</a>, Heddon Street</div></td></tr>
-        <tr id="loc-dominion-theatre"><td class="sch-time-uk">2:30pm</td><td class="sch-act"><div class="sch-act-title">🎭 Devil Wears Prada — Dominion Theatre</div></td></tr>
-        <tr id="loc-sky-garden"><td class="sch-time-uk">6:45pm</td><td class="sch-act"><div class="sch-act-title"><a href="https://skygarden.london" target="_blank">Fenchurch Restaurant, Sky Garden</a></div></td></tr>
+        <tr id="loc-churchill-war-rooms"><td class="sch-time-uk">9:30am</td><td class="sch-act"><div class="sch-act-title">Churchill War Rooms<a class="photo-link" href="#" onclick="openLightbox('day-01-jul',0);return false;">📷 Photos</a></div></td></tr>
+        <tr id="loc-ambassadors-clubhouse"><td class="sch-time-uk">12:00pm</td><td class="sch-act"><div class="sch-act-title">Lunch — <a href="https://ambassadorsclubhouse.com" target="_blank">Ambassadors Clubhouse</a>, Heddon Street<a class="photo-link" href="#" onclick="openLightbox('day-01-jul',0);return false;">📷 Photos</a></div></td></tr>
+        <tr id="loc-dominion-theatre"><td class="sch-time-uk">2:30pm</td><td class="sch-act"><div class="sch-act-title">🎭 Devil Wears Prada — Dominion Theatre<a class="photo-link" href="#" onclick="openLightbox('day-01-jul',0);return false;">📷 Photos</a></div></td></tr>
+        <tr id="loc-sky-garden"><td class="sch-time-uk">6:45pm</td><td class="sch-act"><div class="sch-act-title"><a href="https://skygarden.london" target="_blank">Fenchurch Restaurant, Sky Garden</a><a class="photo-link" href="#" onclick="openLightbox('day-01-jul',0);return false;">📷 Photos</a></div></td></tr>
       </table>
       <div class="video-strip">
         <div class="video-strip-label">📺 Videos by Others</div>
@@ -614,10 +719,10 @@
     </summary>
     <div class="day-body">
       <table class="schedule">
-        <tr id="loc-harrods"><td class="sch-time-uk">12:00pm</td><td class="sch-act"><div class="sch-act-title">Lunch: The Georgian at Harrods</div></td></tr>
-        <tr><td class="sch-time-uk">5:00pm</td><td class="sch-act"><div class="sch-act-title">Hampstead — Coffee Cup café</div></td></tr>
-        <tr id="loc-hampstead-hill-garden"><td class="sch-time-uk">5:30pm</td><td class="sch-act"><div class="sch-act-title">The Hill Garden &amp; Pergola, Hampstead</div></td></tr>
-        <tr><td class="sch-time-uk">7:00pm</td><td class="sch-act"><div class="sch-act-title">Parliament Hill — sunset views</div></td></tr>
+        <tr id="loc-harrods"><td class="sch-time-uk">12:00pm</td><td class="sch-act"><div class="sch-act-title">Lunch: The Georgian at Harrods<a class="photo-link" href="#" onclick="openLightbox('day-02-jul',0);return false;">📷 Photos</a></div></td></tr>
+        <tr><td class="sch-time-uk">5:00pm</td><td class="sch-act"><div class="sch-act-title">Hampstead — Coffee Cup café<a class="photo-link" href="#" onclick="openLightbox('day-02-jul',0);return false;">📷 Photos</a></div></td></tr>
+        <tr id="loc-hampstead-hill-garden"><td class="sch-time-uk">5:30pm</td><td class="sch-act"><div class="sch-act-title">The Hill Garden &amp; Pergola, Hampstead<a class="photo-link" href="#" onclick="openLightbox('day-02-jul',0);return false;">📷 Photos</a></div></td></tr>
+        <tr><td class="sch-time-uk">7:00pm</td><td class="sch-act"><div class="sch-act-title">Parliament Hill — sunset views<a class="photo-link" href="#" onclick="openLightbox('day-02-jul',0);return false;">📷 Photos</a></div></td></tr>
       </table>
       <div class="video-strip">
         <div class="video-strip-label">📺 Videos by Others</div>
@@ -684,9 +789,9 @@
     </summary>
     <div class="day-body">
       <table class="schedule">
-        <tr id="loc-notting-hill-portobello"><td class="sch-time-uk">Morning</td><td class="sch-act"><div class="sch-act-title">Portobello Road &amp; Notting Hill</div></td></tr>
-        <tr id="loc-notting-hill-bookshop"><td class="sch-time-uk">Morning</td><td class="sch-act"><div class="sch-act-title">The Notting Hill Bookshop — the movie's bookstore</div></td></tr>
-        <tr id="loc-dishoom-portobello"><td class="sch-time-uk">1:00pm</td><td class="sch-act"><div class="sch-act-title">Lunch — Dishoom Permit Room, Portobello Road</div></td></tr>
+        <tr id="loc-notting-hill-portobello"><td class="sch-time-uk">Morning</td><td class="sch-act"><div class="sch-act-title">Portobello Road &amp; Notting Hill<a class="photo-link" href="#" onclick="openLightbox('day-04-jul',0);return false;">📷 Photos</a></div></td></tr>
+        <tr id="loc-notting-hill-bookshop"><td class="sch-time-uk">Morning</td><td class="sch-act"><div class="sch-act-title">The Notting Hill Bookshop — the movie's bookstore<a class="photo-link" href="#" onclick="openLightbox('day-04-jul',0);return false;">📷 Photos</a></div></td></tr>
+        <tr id="loc-dishoom-portobello"><td class="sch-time-uk">1:00pm</td><td class="sch-act"><div class="sch-act-title">Lunch — Dishoom Permit Room, Portobello Road<a class="photo-link" href="#" onclick="openLightbox('day-04-jul',0);return false;">📷 Photos</a></div></td></tr>
       </table>
       <div class="video-strip">
         <div class="video-strip-label">📺 Videos by Others</div>
@@ -760,8 +865,8 @@
     </summary>
     <div class="day-body">
       <table class="schedule">
-        <tr><td class="sch-time-uk">2:00pm</td><td class="sch-act"><div class="sch-act-title">BA291 departs Heathrow Terminal 5</div></td></tr>
-        <tr><td class="sch-time-uk">5:25pm</td><td class="sch-act"><div class="sch-act-title">Arrive Dulles International (IAD) <span style="font-size:11px;color:var(--muted)">· EDT (UTC−4)</span></div></td></tr>
+        <tr><td class="sch-time-uk">2:00pm</td><td class="sch-act"><div class="sch-act-title">BA291 departs Heathrow Terminal 5<a class="photo-link" href="#" onclick="openLightbox('day-07-jul',0);return false;">📷 Photos</a></div></td></tr>
+        <tr><td class="sch-time-uk">5:25pm</td><td class="sch-act"><div class="sch-act-title">Arrive Dulles International (IAD) <span style="font-size:11px;color:var(--muted)">· EDT (UTC−4)</span><a class="photo-link" href="#" onclick="openLightbox('day-07-jul',0);return false;">📷 Photos</a></div></td></tr>
       </table>
       <div class="video-strip">
         <div class="video-strip-label">📺 Videos by Others</div>
@@ -803,8 +908,7 @@
 <div class="tab-panel" id="tab-gallery">
   <section class="gallery-placeholder">
     <p class="section-label">Photo Gallery</p>
-    <h2 class="ref-title" style="font-size:26px;">Photos coming soon</h2>
-    <p class="body">Trip photos are still being reviewed and curated. Once they're ready, they'll appear here grouped by day and location — click a schedule entry or map pin to jump straight to the matching photos.</p>
+    <div id="gallery-content"><p class="body">Loading photos…</p></div>
   </section>
 </div>
 
@@ -812,6 +916,14 @@
 
 <div class="footer">
   London 2026 · Hugh &amp; Betty · The Clermont Victoria &nbsp;·&nbsp; Updated June 2026
+</div>
+
+<div class="lightbox" id="lightbox" onclick="if(event.target===this) closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <button class="lightbox-nav lightbox-prev" onclick="lightboxNav(-1)">‹</button>
+  <img id="lightbox-img" src="" alt="">
+  <button class="lightbox-nav lightbox-next" onclick="lightboxNav(1)">›</button>
+  <div class="lightbox-counter" id="lightbox-counter"></div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -847,7 +959,90 @@
     cotswolds: { center: [51.90, -1.66], zoom: 10 }
   };
 
+  const DAY_ORDER = ['day-29-jun','day-30-jun','day-01-jul','day-02-jul','day-03-jul','day-04-jul','day-05-jul','day-06-jul','day-07-jul'];
+  const DAY_LABELS = {
+    'day-29-jun': 'Monday 29 June',
+    'day-30-jun': 'Tuesday 30 June',
+    'day-01-jul': 'Wednesday 1 July',
+    'day-02-jul': 'Thursday 2 July',
+    'day-03-jul': 'Friday 3 July',
+    'day-04-jul': 'Saturday 4 July',
+    'day-05-jul': 'Sunday 5 July',
+    'day-06-jul': 'Monday 6 July',
+    'day-07-jul': 'Tuesday 7 July'
+  };
+
+  let galleryData = {};
+  let lightboxState = { daySlug: null, index: 0 };
   let tripMap;
+
+  async function loadGallery() {
+    try {
+      const res = await fetch('photos/manifest.json');
+      galleryData = await res.json();
+    } catch (e) {
+      galleryData = {};
+    }
+    buildGalleryTab();
+  }
+
+  function buildGalleryTab() {
+    const container = document.getElementById('gallery-content');
+    const missing = DAY_ORDER.filter(slug => !(galleryData[slug] || []).length);
+    let html = '';
+    if (missing.length) {
+      html += '<p class="gallery-missing-note">Photos not synced yet for: ' +
+        missing.map(slug => DAY_LABELS[slug]).join(', ') + '.</p>';
+    }
+    DAY_ORDER.forEach(slug => {
+      const photos = galleryData[slug] || [];
+      if (!photos.length) return;
+      html += '<div class="gallery-day" id="gallery-' + slug + '">' +
+        '<h3 class="gallery-day-title">' + DAY_LABELS[slug] + '</h3>' +
+        '<div class="gallery-grid">' +
+        photos.map((p, idx) =>
+          '<img class="gallery-thumb" src="photos/' + p.thumb + '" loading="lazy" alt="" onclick="openLightbox(\'' + slug + '\',' + idx + ')">'
+        ).join('') +
+        '</div></div>';
+    });
+    container.innerHTML = html || '<p class="body">No photos yet.</p>';
+  }
+
+  function openLightbox(daySlug, index) {
+    const photos = galleryData[daySlug];
+    if (!photos || !photos.length) return;
+    lightboxState = { daySlug, index };
+    updateLightboxImage();
+    document.getElementById('lightbox').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function updateLightboxImage() {
+    const photos = galleryData[lightboxState.daySlug];
+    const p = photos[lightboxState.index];
+    document.getElementById('lightbox-img').src = 'photos/' + p.full;
+    document.getElementById('lightbox-counter').textContent = (lightboxState.index + 1) + ' / ' + photos.length;
+  }
+
+  function lightboxNav(delta) {
+    const photos = galleryData[lightboxState.daySlug];
+    if (!photos) return;
+    lightboxState.index = (lightboxState.index + delta + photos.length) % photos.length;
+    updateLightboxImage();
+  }
+
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  document.addEventListener('keydown', (e) => {
+    const lb = document.getElementById('lightbox');
+    if (!lb.classList.contains('open')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') lightboxNav(-1);
+    if (e.key === 'ArrowRight') lightboxNav(1);
+  });
 
   function tripPinIcon() {
     return L.divIcon({
@@ -870,10 +1065,13 @@
 
     tripLocations.forEach(loc => {
       const marker = L.marker([loc.lat, loc.lng], { icon: tripPinIcon() }).addTo(tripMap);
-      marker.bindPopup(
-        '<strong>' + loc.name + '</strong><br>' +
-        '<a href="#" onclick="jumpToLocation(\'' + loc.id + '\',\'' + loc.day + '\');return false;">Jump to this day →</a>'
-      );
+      const hasPhotos = (galleryData[loc.day] || []).length > 0;
+      let popupHtml = '<strong>' + loc.name + '</strong><br>' +
+        '<a href="#" onclick="jumpToLocation(\'' + loc.id + '\',\'' + loc.day + '\');return false;">Jump to this day →</a>';
+      if (hasPhotos) {
+        popupHtml += '<br><a href="#" onclick="openLightbox(\'' + loc.day + '\',0);return false;">📷 Jump to pictures</a>';
+      }
+      marker.bindPopup(popupHtml);
     });
   }
 
@@ -911,7 +1109,10 @@
     }
   }
 
-  document.addEventListener('DOMContentLoaded', initTripMap);
+  document.addEventListener('DOMContentLoaded', async () => {
+    await loadGallery();
+    initTripMap();
+  });
 </script>
 </body>
 </html>
