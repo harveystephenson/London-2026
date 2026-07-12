@@ -5,6 +5,9 @@ and sort matches into photos_raw/uk_trip and photos_raw/dc_reunion.
 Re-run safe: skips files already recorded in the manifest, and a cheap
 filesystem-mtime pre-filter avoids full EXIF decode for files nowhere near
 the trip dates (iCloud preserves original capture date as file mtime).
+Also prunes photos_raw/ of any file that's no longer present in the iCloud
+source folder, so photos deleted upstream (e.g. iPhone/iCloud.com) drop out
+of the project on the next run instead of lingering as stale copies.
 
 Usage:
     python scripts/extract_trip_photos.py
@@ -190,6 +193,15 @@ def main():
         writer.writeheader()
         writer.writerows(rows)
 
+    expected_uk = {r["filename"] for r in rows if r["category"] == "uk_trip"}
+    expected_dc = {r["filename"] for r in rows if r["category"] == "dc_reunion"}
+    pruned = 0
+    for dest_dir, expected in ((DEST_UK, expected_uk), (DEST_DC, expected_dc)):
+        for existing_file in dest_dir.iterdir():
+            if existing_file.is_file() and existing_file.name not in expected:
+                existing_file.unlink()
+                pruned += 1
+
     print(f"Total files:      {total}")
     print(f"Image files:      {scanned}")
     print(f"Reused from prior manifest: {reused}")
@@ -197,6 +209,7 @@ def main():
     print(f"No EXIF date:     {no_exif_date}")
     print(f"Matched UK trip:  {matched_uk}")
     print(f"Matched DC:       {matched_dc}")
+    print(f"Pruned (deleted from source, removed from photos_raw/): {pruned}")
     print(f"Manifest written: {MANIFEST_PATH}")
 
 
