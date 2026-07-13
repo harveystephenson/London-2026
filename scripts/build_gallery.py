@@ -38,6 +38,8 @@ from pathlib import Path
 from PIL import Image, ImageOps
 import pillow_heif
 
+from photo_enhance import enhance
+
 pillow_heif.register_heif_opener()
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -45,6 +47,10 @@ MANIFEST_CSV = ROOT / "data" / "photo_manifest.csv"
 FLAGS_CSV = ROOT / "data" / "flag_locations.csv"
 RAW_DIR = ROOT / "photos_raw" / "uk_trip"
 RAW_DC_DIR = ROOT / "photos_raw" / "dc_reunion"
+# filename,decision rows written by apply_photo_edits.py; photos whose
+# decision is "approved" get photo_enhance.enhance() applied at encode time,
+# so approvals survive any rebuild (including --force).
+EDITS_CSV = ROOT / "data" / "photo_edits.csv"
 OUT_DIR = ROOT / "photos"
 GALLERY_MANIFEST = OUT_DIR / "manifest.json"
 INDEX_HTML = ROOT / "index.html"
@@ -80,6 +86,13 @@ DAY_SLUGS = {
 def load_name_to_location_id():
     with open(FLAGS_CSV, newline="", encoding="utf-8") as f:
         return {row["name"].strip(): row["location_id"] for row in csv.DictReader(f)}
+
+
+def load_approved_edits():
+    if not EDITS_CSV.exists():
+        return set()
+    with open(EDITS_CSV, newline="", encoding="utf-8") as f:
+        return {row["filename"] for row in csv.DictReader(f) if row.get("decision") == "approved"}
 
 
 def inject(html, start_marker, end_marker, data):
@@ -143,13 +156,15 @@ def process_photo(task):
     full image, not the original — LANCZOS from ~12MP twice was nearly half
     the per-photo CPU cost for an identical-looking 400px result.
     """
-    src, thumb_dest, full_dest = task
+    src, thumb_dest, full_dest, do_enhance = task
     try:
         with Image.open(src) as img:
             img = ImageOps.exif_transpose(img)
             if img.mode != "RGB":
                 img = img.convert("RGB")
             img.thumbnail((FULL_MAX, FULL_MAX), Image.LANCZOS)
+            if do_enhance:
+                img = enhance(img)
             full_dest.parent.mkdir(parents=True, exist_ok=True)
             img.save(full_dest, "JPEG", quality=FULL_QUALITY, optimize=True)
             img.thumbnail((THUMB_MAX, THUMB_MAX), Image.LANCZOS)
@@ -187,8 +202,12 @@ def main():
         print("Size/quality settings changed since last run — full rebuild.")
         force = True
 
+    approved_edits = load_approved_edits()
+
     # Plan: decide per photo whether the existing JPGs can be reused, so a
     # data-only run (retagged locations, flag edits) skips image work entirely.
+    # Note: a changed edit DECISION doesn't change any mtime — apply_photo_edits.py
+    # deletes the affected outputs so they show up as missing here.
     tasks = []
     for row in rows:
         src_dir = RAW_DIR if row["category"] == "uk_trip" else RAW_DC_DIR
@@ -200,7 +219,7 @@ def main():
         thumb_path = OUT_DIR / row["_thumb_rel"]
         full_path = OUT_DIR / row["_full_rel"]
         if force or not is_up_to_date(src, thumb_path, full_path):
-            tasks.append((src, thumb_path, full_path))
+            tasks.append((src, thumb_path, full_path, row["filename"] in approved_edits))
 
     print(f"{len(rows)} photos in manifest: {len(rows) - len(tasks)} up to date, {len(tasks)} to process")
 
