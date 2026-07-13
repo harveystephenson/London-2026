@@ -15,6 +15,13 @@ photos_raw/dc_reunion (not the source dump) is treated as an intentional
 edit — the manifest row is kept but marked deleted=true, and is never
 re-copied back in from the source on a later run.
 
+Manual additions work the same way (#61): a file placed directly into
+photos_raw/uk_trip or photos_raw/dc_reunion that isn't in the manifest or
+the source dump is ADOPTED — EXIF is read (file mtime as the date fallback)
+and a manifest row appended — rather than swept into pruned_review/.
+Restoring a previously deleted file to the curated folder un-deletes its
+row for the same reason: presence in the curated folder means it's wanted.
+
 Usage:
     python scripts/extract_trip_photos.py
 """
@@ -148,6 +155,8 @@ def main():
     matched_dc = 0
     deleted_skipped = 0
     newly_deleted = 0
+    undeleted = 0
+    adopted = 0
 
     all_paths = sorted(SOURCE_DIR.iterdir())
     total = len(all_paths)
@@ -165,12 +174,18 @@ def main():
             dest = DEST_UK if existing_row["category"] == "uk_trip" else DEST_DC
             dest_path = dest / path.name
             if existing_row.get("deleted") == "true":
-                # User already deleted this from the curated folder — never
-                # resurrect it from the raw source dump.
-                rows.append(existing_row)
-                reused += 1
-                deleted_skipped += 1
-                continue
+                if dest_path.exists():
+                    # The user manually put the file back in the curated
+                    # folder — that's an explicit "I want it after all".
+                    existing_row["deleted"] = ""
+                    undeleted += 1
+                else:
+                    # User already deleted this from the curated folder —
+                    # never resurrect it from the raw source dump.
+                    rows.append(existing_row)
+                    reused += 1
+                    deleted_skipped += 1
+                    continue
             if not dest_path.exists():
                 # Missing from the curated folder but not yet marked deleted
                 # means the user just deleted it manually this session.
@@ -226,6 +241,37 @@ def main():
             }
         )
 
+    # Adopt files the user added directly to the curated folders — present
+    # on disk but in neither the manifest nor the source dump (#61). Without
+    # this, the prune step below would sweep an intentional manual addition
+    # into pruned_review/.
+    manifest_names = {r["filename"] for r in rows}
+    for dest_dir, category in ((DEST_UK, "uk_trip"), (DEST_DC, "dc_reunion")):
+        for path in sorted(dest_dir.iterdir()):
+            if not path.is_file() or path.suffix.lower() not in IMAGE_EXTENSIONS:
+                continue
+            if path.name in manifest_names:
+                continue
+            photo_dt, lat, lon = read_exif(path)
+            if photo_dt is None:
+                # No EXIF date (e.g. WhatsApp-sourced) — fall back to file
+                # mtime so the photo still lands on a day.
+                photo_dt = datetime.fromtimestamp(path.stat().st_mtime)
+            rows.append(
+                {
+                    "filename": path.name,
+                    "category": category,
+                    "datetime": photo_dt.isoformat(),
+                    "lat": lat if lat is not None else "",
+                    "lon": lon if lon is not None else "",
+                    "suggested_location": "",
+                    "final_location": "",
+                    "deleted": "",
+                }
+            )
+            manifest_names.add(path.name)
+            adopted += 1
+
     rows.sort(key=lambda r: r["datetime"])
     with open(MANIFEST_PATH, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(
@@ -260,6 +306,8 @@ def main():
     print(f"Image files:      {scanned}")
     print(f"Reused from prior manifest: {reused}")
     print(f"Marked deleted (removed from photos_raw/uk_trip or dc_reunion by user): {deleted_skipped} ({newly_deleted} new this run)")
+    print(f"Adopted (manually added to curated folders): {adopted}")
+    print(f"Un-deleted (manually restored to curated folders): {undeleted}")
     print(f"Skipped by mtime prefilter: {prefiltered_out}")
     print(f"No EXIF date:     {no_exif_date}")
     print(f"Matched UK trip:  {matched_uk}")
