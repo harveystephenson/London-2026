@@ -25,12 +25,21 @@ image rather than the ~12MP original to halve the resize cost.
 Rows with final_location == "Ignore" are skipped entirely (kept, worth
 keeping, just not interesting enough to publish) — distinct from deleted,
 which means physically removed from photos_raw/uk_trip.
+
+Mom's photos (source=moms_phone, from photos_raw/moms_phone) have no usable
+datetime — WhatsApp strips EXIF and their file dates are the send time. Their
+day comes from the user-assigned location instead: the location's flag day,
+or failing that the day the user's own photos with that same final_location
+fall on. Rows whose location hasn't been assigned (or can't be mapped to a
+day) are skipped and counted, and they sort after the user's photos within
+their day.
 """
 
 import argparse
 import csv
 import json
 import os
+import re
 import sys
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
@@ -47,6 +56,7 @@ MANIFEST_CSV = ROOT / "data" / "photo_manifest.csv"
 FLAGS_CSV = ROOT / "data" / "flag_locations.csv"
 RAW_DIR = ROOT / "photos_raw" / "uk_trip"
 RAW_DC_DIR = ROOT / "photos_raw" / "dc_reunion"
+RAW_MOMS_DIR = ROOT / "photos_raw" / "moms_phone"
 # filename,decision rows written by apply_photo_edits.py; photos whose
 # decision is "approved" get photo_enhance.enhance() applied at encode time,
 # so approvals survive any rebuild (including --force).
@@ -83,9 +93,47 @@ DAY_SLUGS = {
 }
 
 
-def load_name_to_location_id():
+def load_flags():
+    """Return (name -> location_id, name -> day slug) from flag_locations.csv."""
     with open(FLAGS_CSV, newline="", encoding="utf-8") as f:
-        return {row["name"].strip(): row["location_id"] for row in csv.DictReader(f)}
+        flags = list(csv.DictReader(f))
+    name_to_id = {row["name"].strip(): row["location_id"] for row in flags}
+    name_to_day = {row["name"].strip(): row["day"].strip() for row in flags}
+    return name_to_id, name_to_day
+
+
+def stem_slug(filename):
+    """URL-safe output stem. Identity for the usual img_1234 names; mom's
+    WhatsApp names ("PHOTO-2026-07-08-16-37-12 (3).jpg") get their spaces
+    and parens collapsed so photos/ paths stay clean."""
+    return re.sub(r"[^a-z0-9_-]+", "-", Path(filename).stem.lower()).strip("-")
+
+
+def build_location_day_map(rows, flag_days):
+    """Map every location name to a day slug: the flag's day where one
+    exists, else the modal day of the user's own photos carrying that
+    final_location (covers deliberately-flagless names like Heathrow)."""
+    by_name = {}
+    for r in rows:
+        if r.get("source") == "moms_phone":
+            continue
+        day = DAY_SLUGS.get(r["datetime"][:10])
+        name = (r.get("final_location") or "").strip()
+        if day and name:
+            by_name.setdefault(name, {}).setdefault(day, 0)
+            by_name[name][day] += 1
+    result = {name: max(days, key=days.get) for name, days in by_name.items()}
+    result.update(flag_days)
+    return result
+
+
+def day_slug_for(row, location_days):
+    """The day a row belongs to: datetime-derived normally, location-derived
+    for mom's photos (their datetimes are WhatsApp send times, meaningless)."""
+    if row.get("source") == "moms_phone":
+        name = (row.get("final_location") or "").strip()
+        return location_days.get(name)
+    return DAY_SLUGS.get(row["datetime"][:10])
 
 
 def load_approved_edits():
@@ -191,11 +239,29 @@ def main():
         r
         for r in rows
         if r["category"] in ("uk_trip", "dc_reunion")
-        and r["datetime"][:10] in DAY_SLUGS
         and r.get("deleted") != "true"
         and r.get("final_location", "").strip() != "Ignore"
     ]
-    rows.sort(key=lambda r: r["datetime"])
+
+    name_to_location_id, flag_days = load_flags()
+    location_days = build_location_day_map(rows, flag_days)
+
+    placed = []
+    moms_unplaced = 0
+    for r in rows:
+        day = day_slug_for(r, location_days)
+        if day is None:
+            # Out-of-window shots (prep days etc.), or mom's photos whose
+            # location hasn't been assigned / mapped to a day yet.
+            if r.get("source") == "moms_phone":
+                moms_unplaced += 1
+            continue
+        r["_day"] = day
+        placed.append(r)
+    rows = placed
+    # Mom's photos sort after the user's within each day regardless of what
+    # their (meaningless, send-time) datetimes happen to be.
+    rows.sort(key=lambda r: (r.get("source") == "moms_phone", r["datetime"], r["filename"]))
 
     force = args.force
     if not force and settings_changed():
@@ -209,13 +275,25 @@ def main():
     # Note: a changed edit DECISION doesn't change any mtime — apply_photo_edits.py
     # deletes the affected outputs so they show up as missing here.
     tasks = []
+    seen_rel = {}
     for row in rows:
-        src_dir = RAW_DIR if row["category"] == "uk_trip" else RAW_DC_DIR
+        if row.get("source") == "moms_phone":
+            src_dir = RAW_MOMS_DIR
+        else:
+            src_dir = RAW_DIR if row["category"] == "uk_trip" else RAW_DC_DIR
         src = src_dir / row["filename"]
-        day_slug = DAY_SLUGS[row["datetime"][:10]]
-        stem = Path(row["filename"]).stem.lower()
+        day_slug = row["_day"]
+        stem = stem_slug(row["filename"])
         row["_thumb_rel"] = f"{day_slug}/thumbs/{stem}.jpg"
         row["_full_rel"] = f"{day_slug}/full/{stem}.jpg"
+        # Slugging could theoretically collapse two filenames onto one output
+        # path — fail loudly rather than silently overwrite.
+        if row["_full_rel"] in seen_rel:
+            raise RuntimeError(
+                f"Output path collision: {row['filename']} and "
+                f"{seen_rel[row['_full_rel']]} both map to {row['_full_rel']}"
+            )
+        seen_rel[row["_full_rel"]] = row["filename"]
         thumb_path = OUT_DIR / row["_thumb_rel"]
         full_path = OUT_DIR / row["_full_rel"]
         if force or not is_up_to_date(src, thumb_path, full_path):
@@ -234,8 +312,6 @@ def main():
                 if i % 25 == 0 or i == len(tasks):
                     print(f"...{i}/{len(tasks)} converted")
 
-    name_to_location_id = load_name_to_location_id()
-
     gallery = {slug: [] for slug in DAY_SLUGS.values()}
     gallery_by_location = {}
     failures = []
@@ -245,7 +321,7 @@ def main():
             failures.append((row["filename"], failed_names[row["filename"]]))
             continue
 
-        day_slug = DAY_SLUGS[row["datetime"][:10]]
+        day_slug = row["_day"]
         photo_entry = {"thumb": row["_thumb_rel"], "full": row["_full_rel"]}
         gallery[day_slug].append(photo_entry)
 
@@ -287,6 +363,8 @@ def main():
 
     assigned = sum(len(p) for p in gallery_by_location.values())
     print(f"\nGrouped by location: {assigned}/{len(rows) - len(failures)} photos across {len(gallery_by_location)} locations")
+    if moms_unplaced:
+        print(f"Mom's photos awaiting a location (not on the site yet): {moms_unplaced}")
 
     if failures:
         print(f"\n{len(failures)} failures:")

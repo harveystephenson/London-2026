@@ -84,6 +84,10 @@ def main():
     for row in rows:
         if row["category"] != "uk_trip" or row.get("deleted") == "true":
             continue
+        if row.get("source") == "moms_phone":
+            # WhatsApp exports carry no GPS at all — nothing to suggest,
+            # and no point flooding the no-GPS report with them.
+            continue
         if not row["lat"] or not row["lon"]:
             no_gps.append(row["filename"])
             continue
@@ -113,6 +117,7 @@ def main():
                 "suggested_location",
                 "final_location",
                 "deleted",
+                "source",
             ],
         )
         writer.writeheader()
