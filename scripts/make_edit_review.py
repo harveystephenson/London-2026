@@ -27,7 +27,7 @@ from pathlib import Path
 import pillow_heif
 from PIL import Image, ImageOps
 
-from photo_enhance import enhance
+from photo_enhance import RECIPE_VERSION, enhance
 
 pillow_heif.register_heif_opener()
 
@@ -87,9 +87,14 @@ def main():
     ]
     rows.sort(key=lambda r: r["datetime"])
 
+    # scores sidecar is keyed to the recipe version: a recipe change makes
+    # every existing candidate stale, so start scores empty to force a full
+    # re-render (the task condition below re-renders anything not in scores).
     scores = {}
     if SCORES_JSON.exists():
-        scores = json.loads(SCORES_JSON.read_text(encoding="utf-8"))
+        data = json.loads(SCORES_JSON.read_text(encoding="utf-8"))
+        if isinstance(data, dict) and data.get("recipe") == RECIPE_VERSION:
+            scores = data.get("scores", {})
 
     tasks = []
     for r in rows:
@@ -115,7 +120,7 @@ def main():
                     scores[name] = score
                 if i % 25 == 0 or i == len(tasks):
                     print(f"...{i}/{len(tasks)}")
-        SCORES_JSON.write_text(json.dumps(scores), encoding="utf-8")
+        SCORES_JSON.write_text(json.dumps({"recipe": RECIPE_VERSION, "scores": scores}), encoding="utf-8")
 
     # existing decisions (from a previous apply) pre-populate the page
     decisions = {}
@@ -181,6 +186,9 @@ def main():
     <option value="day">Sort: by day</option>
     <option value="score">Sort: biggest change first</option>
   </select>
+  <button class="top" id="prev">‹ Prev</button>
+  <span class="counts" id="pageinfo"></span>
+  <button class="top" id="next">Next ›</button>
   <button class="top export" id="export">⬇ Export decisions</button>
 </header>
 <main>
@@ -201,17 +209,26 @@ for (const [f, d] of Object.entries(PRIOR)) if (!(f in store)) store[f] = d;
 function save() { localStorage.setItem('photo-edit-decisions', JSON.stringify(store)); }
 function stateOf(f) { return store[f] || 'undecided'; }
 
+const PAGE_SIZE = 40;   // cards per page — the full set crashes browsers
+let page = 0;
+
 function render() {
   const filter = document.getElementById('filter').value;
   const sort = document.getElementById('sort').value;
   let list = CARDS.slice();
   if (sort === 'score') list.sort((a, b) => b.score - a.score);
+  const filtered = list.filter(c => filter === 'all' || stateOf(c.file) === filter);
+  const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  if (page >= pages) page = pages - 1;
+  if (page < 0) page = 0;
+  document.getElementById('pageinfo').textContent =
+    'Page ' + (page + 1) + ' / ' + pages + ' (' + filtered.length + ' shown)';
+  const slice = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
   const wrap = document.getElementById('cards');
   wrap.innerHTML = '';
   let lastDay = null;
-  list.forEach(c => {
+  slice.forEach(c => {
     const st = stateOf(c.file);
-    if (filter !== 'all' && st !== filter) return;
     if (sort === 'day' && c.day !== lastDay) {
       lastDay = c.day;
       const h = document.createElement('h2');
@@ -238,8 +255,10 @@ function render() {
   document.getElementById('counts').innerHTML =
     '<b>' + a + '</b> approved · <b>' + r + '</b> rejected · ' + (CARDS.length - a - r) + ' undecided';
 }
-document.getElementById('filter').onchange = render;
-document.getElementById('sort').onchange = render;
+document.getElementById('filter').onchange = () => { page = 0; render(); };
+document.getElementById('sort').onchange = () => { page = 0; render(); };
+document.getElementById('prev').onclick = () => { page--; render(); window.scrollTo(0, 0); };
+document.getElementById('next').onclick = () => { page++; render(); window.scrollTo(0, 0); };
 document.getElementById('export').onclick = () => {
   const out = { approved: [], rejected: [] };
   CARDS.forEach(c => { const st = stateOf(c.file); if (st !== 'undecided') out[st].push(c.file); });
