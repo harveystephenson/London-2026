@@ -1082,7 +1082,7 @@
     { id: 'ambassadors-clubhouse',   name: 'Ambassadors Clubhouse',                lat: 51.5117, lng: -0.1409, day: 'day-01-jul' },
     { id: 'dominion-theatre',        name: 'Dominion Theatre - Devil Wears Prada', lat: 51.5165, lng: -0.1308, day: 'day-01-jul' },
     { id: 'sky-garden',              name: 'Sky Garden / Fenchurch',               lat: 51.5113, lng: -0.0836, day: 'day-01-jul' },
-    { id: 'piccadilly-circus',       name: 'Piccadilly Circus',                    lat: 51.5116, lng: -0.1395, day: 'day-01-jul' },
+    { id: 'piccadilly-circus',       name: 'Piccadilly Circus',                    lat: 51.5106, lng: -0.1362, day: 'day-01-jul' },
     { id: 'downing-street',          name: '10 Downing Street',                    lat: 51.5034, lng: -0.1290, day: 'day-01-jul' },
     { id: 'st-james-park',           name: "St James's Park",                      lat: 51.5022, lng: -0.1310, day: 'day-01-jul' },
     { id: 'harrods',                 name: 'The Georgian (Harrods)',               lat: 51.4990, lng: -0.1634, day: 'day-02-jul' },
@@ -1279,6 +1279,7 @@
       }
       popupHtml += '<br><a href="#" onclick="jumpToLocation(\'' + loc.id + '\',\'' + loc.day + '\');return false;">Jump to this day →</a>';
       marker.bindPopup(popupHtml);
+      marker.bindTooltip(loc.name, { direction: 'top', offset: [4, -22] });
     });
   }
 
