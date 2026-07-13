@@ -22,11 +22,21 @@ and a manifest row appended — rather than swept into pruned_review/.
 Restoring a previously deleted file to the curated folder un-deletes its
 row for the same reason: presence in the curated folder means it's wanted.
 
+Mom's photos (#6): photos_raw/moms_phone is a third curated folder with the
+same adopt / delete-track / un-delete semantics, marked source=moms_phone in
+the manifest. These are WhatsApp exports with zero EXIF and send-time (not
+capture-time) file dates, so their manifest datetime is meaningless for day
+placement — build_gallery.py derives their day from the user-assigned
+location instead. Exact byte-duplicates (WhatsApp double-downloads) among
+not-yet-adopted files are moved to photos_raw/moms_phone_dupes/ rather than
+adopted twice; files already in the manifest are never second-guessed.
+
 Usage:
     python scripts/extract_trip_photos.py
 """
 
 import csv
+import hashlib
 import shutil
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -46,7 +56,21 @@ DEST_UK = REPO_ROOT / "photos_raw" / "uk_trip"
 DEST_DC = REPO_ROOT / "photos_raw" / "dc_reunion"
 REVIEW_UK = REPO_ROOT / "photos_raw" / "pruned_review" / "uk_trip"
 REVIEW_DC = REPO_ROOT / "photos_raw" / "pruned_review" / "dc_reunion"
+DEST_MOMS = REPO_ROOT / "photos_raw" / "moms_phone"
+DUPES_MOMS = REPO_ROOT / "photos_raw" / "moms_phone_dupes"
 MANIFEST_PATH = REPO_ROOT / "data" / "photo_manifest.csv"
+
+MANIFEST_FIELDS = [
+    "filename",
+    "category",
+    "datetime",
+    "lat",
+    "lon",
+    "suggested_location",
+    "final_location",
+    "deleted",
+    "source",
+]
 
 # Padded a day on each side of the known travel dates to avoid clipping
 # photos taken late at night / during the flight where the camera's local
@@ -135,7 +159,86 @@ def load_existing_manifest():
         row.setdefault("suggested_location", "")
         row.setdefault("final_location", "")
         row.setdefault("deleted", "")
+        row.setdefault("source", "")
     return {row["filename"]: row for row in rows}
+
+
+def sync_moms_photos(existing, rows):
+    """Reconcile photos_raw/moms_phone against the manifest (source=moms_phone
+    rows). Appends the resulting rows to `rows` and returns per-action counts.
+    """
+    DEST_MOMS.mkdir(parents=True, exist_ok=True)
+    mom_rows = {
+        name: row for name, row in existing.items()
+        if row.get("source") == "moms_phone"
+    }
+    present = {
+        p.name: p for p in sorted(DEST_MOMS.iterdir())
+        if p.is_file() and p.suffix.lower() in IMAGE_EXTENSIONS
+    }
+
+    # Exact-duplicate sweep over files not yet in the manifest: WhatsApp
+    # double-downloads ("... (3) (1).jpg") are byte-identical copies. Keep
+    # the manifest-listed copy if one exists, else the shortest name; move
+    # the rest aside for the record rather than deleting.
+    by_hash = {}
+    for name, path in present.items():
+        digest = hashlib.md5(path.read_bytes()).hexdigest()
+        by_hash.setdefault(digest, []).append(name)
+    duped = 0
+    for group in by_hash.values():
+        if len(group) < 2:
+            continue
+        known = [n for n in group if n in mom_rows]
+        keepers = set(known) if known else {min(group, key=lambda n: (len(n), n))}
+        for name in group:
+            if name not in keepers:
+                DUPES_MOMS.mkdir(parents=True, exist_ok=True)
+                shutil.move(str(present[name]), str(DUPES_MOMS / name))
+                del present[name]
+                duped += 1
+
+    kept = newly_deleted = undeleted = adopted = 0
+    for name, row in mom_rows.items():
+        if name in present:
+            if row.get("deleted") == "true":
+                row["deleted"] = ""
+                undeleted += 1
+            kept += 1
+        elif row.get("deleted") != "true":
+            row["deleted"] = "true"
+            newly_deleted += 1
+        rows.append(row)
+
+    for name in sorted(present):
+        if name in mom_rows:
+            continue
+        # WhatsApp strips EXIF entirely; file mtime is the send/download
+        # time, not capture time — recorded for sort order only, day
+        # placement comes from the user-assigned location downstream.
+        photo_dt = datetime.fromtimestamp(present[name].stat().st_mtime)
+        rows.append(
+            {
+                "filename": name,
+                "category": "uk_trip",
+                "datetime": photo_dt.isoformat(),
+                "lat": "",
+                "lon": "",
+                "suggested_location": "",
+                "final_location": "",
+                "deleted": "",
+                "source": "moms_phone",
+            }
+        )
+        adopted += 1
+
+    return {
+        "duplicates_moved": duped,
+        "kept": kept,
+        "newly_deleted": newly_deleted,
+        "undeleted": undeleted,
+        "adopted": adopted,
+    }
 
 
 def main():
@@ -170,6 +273,12 @@ def main():
         scanned += 1
 
         existing_row = existing.get(path.name)
+        if existing_row and existing_row.get("source") == "moms_phone":
+            # Filename collision between the source dump and a mom's-phone
+            # manifest row (never expected — WhatsApp names vs IMG_xxxx).
+            # The moms row wins; ignore the source-dump file entirely rather
+            # than emitting two rows for one filename.
+            continue
         if existing_row:
             dest = DEST_UK if existing_row["category"] == "uk_trip" else DEST_DC
             dest_path = dest / path.name
@@ -238,6 +347,7 @@ def main():
                 "suggested_location": "",
                 "final_location": "",
                 "deleted": "",
+                "source": "",
             }
         )
 
@@ -267,30 +377,24 @@ def main():
                     "suggested_location": "",
                     "final_location": "",
                     "deleted": "",
+                    "source": "",
                 }
             )
             manifest_names.add(path.name)
             adopted += 1
 
-    rows.sort(key=lambda r: r["datetime"])
+    moms = sync_moms_photos(existing, rows)
+
+    rows.sort(key=lambda r: (r["datetime"], r["filename"]))
     with open(MANIFEST_PATH, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(
-            f,
-            fieldnames=[
-                "filename",
-                "category",
-                "datetime",
-                "lat",
-                "lon",
-                "suggested_location",
-                "final_location",
-                "deleted",
-            ],
-        )
+        writer = csv.DictWriter(f, fieldnames=MANIFEST_FIELDS)
         writer.writeheader()
         writer.writerows(rows)
 
-    expected_uk = {r["filename"] for r in rows if r["category"] == "uk_trip"}
+    expected_uk = {
+        r["filename"] for r in rows
+        if r["category"] == "uk_trip" and r.get("source") != "moms_phone"
+    }
     expected_dc = {r["filename"] for r in rows if r["category"] == "dc_reunion"}
     pruned = 0
     for dest_dir, review_dir, expected in (
@@ -313,6 +417,11 @@ def main():
     print(f"Matched UK trip:  {matched_uk}")
     print(f"Matched DC:       {matched_dc}")
     print(f"Moved to photos_raw/pruned_review/ (not in current source): {pruned}")
+    print(
+        "Mom's phone: {kept} kept, {adopted} adopted, {duplicates_moved} exact "
+        "duplicates moved to moms_phone_dupes/, {newly_deleted} newly deleted, "
+        "{undeleted} un-deleted".format(**moms)
+    )
     print(f"Manifest written: {MANIFEST_PATH}")
 
 
