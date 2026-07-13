@@ -2,10 +2,11 @@
 organized by itinerary day, and write photos/manifest.json for the site's gallery JS.
 
 Reads data/photo_manifest.csv (written by extract_trip_photos.py), pulls source
-files from photos_raw/uk_trip/, and writes JPGs into photos/<day-slug>/thumbs/
-and photos/<day-slug>/full/. Only uk_trip photos dated within the 9-day
-itinerary window (2026-06-29 to 2026-07-07 inclusive) are included — earlier
-prep-day and later post-trip shots don't map to any day section on the site.
+files from photos_raw/uk_trip/ (or photos_raw/dc_reunion/ for dc_reunion rows),
+and writes JPGs into photos/<day-slug>/thumbs/ and photos/<day-slug>/full/.
+Only photos dated on a DAY_SLUGS day are included: the 9-day UK itinerary
+window (2026-06-29 to 2026-07-07) plus the 2026-07-10 DC reunion postscript —
+earlier prep-day and other out-of-window shots don't map to any day section.
 
 Re-run safe: also prunes any thumb/full JPG under photos/ that no longer
 corresponds to a manifest row, so photos deleted upstream (iPhone/iCloud)
@@ -43,6 +44,7 @@ ROOT = Path(__file__).resolve().parent.parent
 MANIFEST_CSV = ROOT / "data" / "photo_manifest.csv"
 FLAGS_CSV = ROOT / "data" / "flag_locations.csv"
 RAW_DIR = ROOT / "photos_raw" / "uk_trip"
+RAW_DC_DIR = ROOT / "photos_raw" / "dc_reunion"
 OUT_DIR = ROOT / "photos"
 GALLERY_MANIFEST = OUT_DIR / "manifest.json"
 INDEX_HTML = ROOT / "index.html"
@@ -70,6 +72,8 @@ DAY_SLUGS = {
     "2026-07-05": "day-05-jul",
     "2026-07-06": "day-06-jul",
     "2026-07-07": "day-07-jul",
+    # DC reunion postscript (category dc_reunion, sourced from photos_raw/dc_reunion)
+    "2026-07-10": "day-10-jul",
 }
 
 
@@ -171,7 +175,7 @@ def main():
     rows = [
         r
         for r in rows
-        if r["category"] == "uk_trip"
+        if r["category"] in ("uk_trip", "dc_reunion")
         and r["datetime"][:10] in DAY_SLUGS
         and r.get("deleted") != "true"
         and r.get("final_location", "").strip() != "Ignore"
@@ -187,7 +191,8 @@ def main():
     # data-only run (retagged locations, flag edits) skips image work entirely.
     tasks = []
     for row in rows:
-        src = RAW_DIR / row["filename"]
+        src_dir = RAW_DIR if row["category"] == "uk_trip" else RAW_DC_DIR
+        src = src_dir / row["filename"]
         day_slug = DAY_SLUGS[row["datetime"][:10]]
         stem = Path(row["filename"]).stem.lower()
         row["_thumb_rel"] = f"{day_slug}/thumbs/{stem}.jpg"
