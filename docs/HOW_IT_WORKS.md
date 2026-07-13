@@ -110,10 +110,11 @@ The killer feature we exploit: **CSS variables**. At the top of `index.html`:
 
 `#c9a84c` is a color as hex RGB — same idea as `(201, 168, 76)` in Pillow.
 Every rule below refers to `var(--gold)` instead of hard-coding the color. This
-is why the three palette previews (`index-rose.html` etc.) were cheap to make:
-a script swaps ~14 variable definitions plus a handful of stragglers, and the
-whole site re-skins. That's also why the final palette choice (#47) is a small
-change, not a rewrite.
+is what makes the site's four switchable themes (#47) possible without four
+copies of the CSS: each theme is just a `:root[data-theme="..."]` block
+redefining the same ~16 variables, toggled by a small picker in the hero and
+persisted to `localStorage`. Swapping the default palette is a one-line change
+(which `:root` block has no `data-theme` qualifier), not a rewrite.
 
 Also in there: `@media (max-width: 600px) { ... }` blocks — rules that apply
 only on narrow screens. That's the entire mechanism behind "the site works on
