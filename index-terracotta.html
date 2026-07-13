@@ -119,6 +119,7 @@
     align-items: center;
     background: var(--card);
     transition: background 0.15s;
+    cursor: pointer;
   }
   .overview-row:nth-child(even) { background: var(--card-alt); }
   .overview-row:hover { background: #efe3c9; }
@@ -267,17 +268,6 @@
   .schedule tr:last-child { border-bottom: none; }
   .schedule tr:hover { background: rgba(0,0,0,0.025); }
 
-  .sch-time-uk {
-    padding: 14px 16px;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--gold);
-    white-space: nowrap;
-    vertical-align: top;
-    width: 90px;
-    letter-spacing: 0.02em;
-    border-right: 1px solid var(--border);
-  }
   .sch-act {
     padding: 14px 20px 14px 16px;
     font-size: 14px;
@@ -657,7 +647,7 @@
   <p class="hero-eyebrow">A Trip Remembered</p>
   <h1>London</h1>
   <p class="hero-dates">June 29 – July 7, 2026</p>
-  <p class="hero-sub">Hugh &amp; Betty &nbsp;·&nbsp; The Clermont Victoria</p>
+  <p class="hero-sub">Betty &amp; Hugh</p>
   <hr class="hero-rule">
 </div>
 
@@ -691,17 +681,17 @@
 
 <!-- OVERVIEW -->
 <section class="overview">
-  <p class="section-label">At a Glance — all times UK (BST)</p>
+  <p class="section-label">At a Glance</p>
   <div class="overview-grid">
-    <div class="overview-row"><div class="ov-date">MON 29 JUN</div><div class="ov-desc">Arrival · Peggy Porschen · South Bank · Sketch (7:00pm)</div></div>
-    <div class="overview-row"><div class="ov-date">TUE 30 JUN</div><div class="ov-desc">Kew Gardens · The Botanical Brasserie · Petersham Nurseries · Peggy Jean Richmond</div></div>
-    <div class="overview-row"><div class="ov-date">WED 1 JUL</div><div class="ov-desc">Churchill War Rooms · Ambassadors Clubhouse · Devil Wears Prada · Sky Garden (Fenchurch)</div></div>
-    <div class="overview-row"><div class="ov-date">THU 2 JUL</div><div class="ov-desc">Harrods · Hampstead</div></div>
-    <div class="overview-row"><div class="ov-date">FRI 3 JUL</div><div class="ov-desc">🌿 The Cotswolds — GWR to Moreton-in-Marsh · Burford · Private Mercedes Tour</div></div>
-    <div class="overview-row"><div class="ov-date">SAT 4 JUL</div><div class="ov-desc">Notting Hill · Portobello Road · Dishoom Permit Room</div></div>
-    <div class="overview-row"><div class="ov-date">SUN 5 JUL</div><div class="ov-desc">Cambridge — Punting · the Backs · Bridge of Sighs · +Cutie</div></div>
-    <div class="overview-row"><div class="ov-date">MON 6 JUL</div><div class="ov-desc">Liverpool Street (Cutie) · High Tea — Jacqueline, The Chancery Rosewood</div></div>
-    <div class="overview-row"><div class="ov-date">TUE 7 JUL</div><div class="ov-desc">Travel Home — BA291 departs 2:00pm · Arrives Dulles 5:25pm</div></div>
+    <div class="overview-row" onclick="jumpToDay('day-29-jun')"><div class="ov-date">MON 29 JUN</div><div class="ov-desc">Arrival · Peggy Porschen · South Bank</div></div>
+    <div class="overview-row" onclick="jumpToDay('day-30-jun')"><div class="ov-date">TUE 30 JUN</div><div class="ov-desc">Kew Gardens · The Botanical Brasserie · Petersham Nurseries · Peggy Jean Richmond</div></div>
+    <div class="overview-row" onclick="jumpToDay('day-01-jul')"><div class="ov-date">WED 1 JUL</div><div class="ov-desc">Churchill War Rooms · Ambassadors Clubhouse · Devil Wears Prada · Sky Garden (Fenchurch)</div></div>
+    <div class="overview-row" onclick="jumpToDay('day-02-jul')"><div class="ov-date">THU 2 JUL</div><div class="ov-desc">Harrods · Hampstead</div></div>
+    <div class="overview-row" onclick="jumpToDay('day-03-jul')"><div class="ov-date">FRI 3 JUL</div><div class="ov-desc">🌿 The Cotswolds — GWR to Moreton-in-Marsh · Burford · Private Mercedes Tour</div></div>
+    <div class="overview-row" onclick="jumpToDay('day-04-jul')"><div class="ov-date">SAT 4 JUL</div><div class="ov-desc">Notting Hill · Portobello Road · Dishoom Permit Room</div></div>
+    <div class="overview-row" onclick="jumpToDay('day-05-jul')"><div class="ov-date">SUN 5 JUL</div><div class="ov-desc">Cambridge — Punting · the Backs · Bridge of Sighs · +Cutie</div></div>
+    <div class="overview-row" onclick="jumpToDay('day-06-jul')"><div class="ov-date">MON 6 JUL</div><div class="ov-desc">Liverpool Street (Cutie) · High Tea at The Chancery Rosewood · Battersea Power Station</div></div>
+    <div class="overview-row" onclick="jumpToDay('day-07-jul')"><div class="ov-date">TUE 7 JUL</div><div class="ov-desc">Travel Home — BA291 to Dulles</div></div>
   </div>
 </section>
 
@@ -726,12 +716,11 @@
     </summary>
     <div class="day-body">
       <table class="schedule">
-        <tr id="loc-peggy-porschen"><td class="sch-time-uk">10:45am</td><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('peggy-porschen');return false;">Peggy Porschen Belgravia — Morning Tea<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-bank-of-england"><td class="sch-time-uk">2:00pm</td><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('bank-of-england');return false;">Bank of England<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-leadenhall-market"><td class="sch-time-uk">2:30pm</td><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('leadenhall-market');return false;">Leadenhall Market<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-london-bridge"><td class="sch-time-uk">3:00pm</td><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('london-bridge');return false;">Crossed London Bridge<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-borough-market-river-walk"><td class="sch-time-uk">4:00pm</td><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('borough-market-river-walk');return false;">River walk: Borough Market → South Bank → London Eye<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-sketch"><td class="sch-time-uk">7:00pm</td><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLightbox('day-29-jun',0);return false;">Dinner — Sketch, The Gallery<span class="cam-icon">📷</span></a><a class="site-link" href="https://sketch.london" target="_blank" title="Official website">🔗</a></div></td></tr>
+        <tr id="loc-peggy-porschen"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('peggy-porschen');return false;">Peggy Porschen Belgravia — Morning Tea<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr id="loc-bank-of-england"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('bank-of-england');return false;">Bank of England<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr id="loc-leadenhall-market"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('leadenhall-market');return false;">Leadenhall Market<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr id="loc-london-bridge"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('london-bridge');return false;">Crossed London Bridge<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr id="loc-borough-market-river-walk"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('borough-market-river-walk');return false;">River walk: Borough Market → South Bank → London Eye<span class="cam-icon">📷</span></a></div></td></tr>
       </table>
       <div class="video-strip">
         <div class="video-strip-label">📺 Videos by Others</div>
@@ -760,12 +749,12 @@
     </summary>
     <div class="day-body">
       <table class="schedule">
-        <tr id="loc-kew-gardens"><td class="sch-time-uk">10:00am</td><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('kew-gardens');return false;">Royal Botanic Gardens, Kew<span class="cam-icon">📷</span></a><a class="site-link" href="https://www.kew.org" target="_blank" title="Official website">🔗</a></div></td></tr>
-        <tr><td class="sch-time-uk">10:30am</td><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('kew-gardens');return false;">Breakfast: The Botanical Brasserie at Kew<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr><td class="sch-time-uk">12:00pm</td><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('kew-gardens');return false;">Kew Gardens — The Pagoda &amp; Great Broad Walk<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-petersham-nurseries"><td class="sch-time-uk">1:30pm</td><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('petersham-nurseries');return false;">Petersham Nurseries Restaurant<span class="cam-icon">📷</span></a><a class="site-link" href="https://www.petershamnurseries.com" target="_blank" title="Official website">🔗</a></div></td></tr>
-        <tr id="loc-richmond"><td class="sch-time-uk">3:30pm</td><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('richmond');return false;">Walk along Richmond riverside<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-peggy-jean-richmond"><td class="sch-time-uk">6:30pm</td><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('peggy-jean-richmond');return false;">Dinner: Peggy Jean, Richmond<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr id="loc-kew-gardens"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('kew-gardens');return false;">Royal Botanic Gardens, Kew<span class="cam-icon">📷</span></a><a class="site-link" href="https://www.kew.org" target="_blank" title="Official website">🔗</a></div></td></tr>
+        <tr><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('kew-gardens');return false;">Breakfast: The Botanical Brasserie at Kew<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('kew-gardens');return false;">Kew Gardens — The Pagoda &amp; Great Broad Walk<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr id="loc-petersham-nurseries"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('petersham-nurseries');return false;">Petersham Nurseries Restaurant<span class="cam-icon">📷</span></a><a class="site-link" href="https://www.petershamnurseries.com" target="_blank" title="Official website">🔗</a></div></td></tr>
+        <tr id="loc-richmond"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('richmond');return false;">Walk along Richmond riverside<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr id="loc-peggy-jean-richmond"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('peggy-jean-richmond');return false;">Dinner: Peggy Jean, Richmond<span class="cam-icon">📷</span></a></div></td></tr>
       </table>
       <div class="video-strip">
         <div class="video-strip-label">📺 Videos by Others</div>
@@ -795,10 +784,10 @@
     </summary>
     <div class="day-body">
       <table class="schedule">
-        <tr id="loc-churchill-war-rooms"><td class="sch-time-uk">9:30am</td><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('churchill-war-rooms');return false;">Churchill War Rooms<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-ambassadors-clubhouse"><td class="sch-time-uk">12:00pm</td><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('ambassadors-clubhouse');return false;">Lunch — Ambassadors Clubhouse, Heddon Street<span class="cam-icon">📷</span></a><a class="site-link" href="https://ambassadorsclubhouse.com" target="_blank" title="Official website">🔗</a></div></td></tr>
-        <tr id="loc-dominion-theatre"><td class="sch-time-uk">2:30pm</td><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('dominion-theatre');return false;">🎭 Devil Wears Prada — Dominion Theatre<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-sky-garden"><td class="sch-time-uk">6:45pm</td><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('sky-garden');return false;">Fenchurch Restaurant, Sky Garden<span class="cam-icon">📷</span></a><a class="site-link" href="https://skygarden.london" target="_blank" title="Official website">🔗</a></div></td></tr>
+        <tr id="loc-churchill-war-rooms"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('churchill-war-rooms');return false;">Churchill War Rooms<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr id="loc-ambassadors-clubhouse"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('ambassadors-clubhouse');return false;">Lunch — Ambassadors Clubhouse, Heddon Street<span class="cam-icon">📷</span></a><a class="site-link" href="https://ambassadorsclubhouse.com" target="_blank" title="Official website">🔗</a></div></td></tr>
+        <tr id="loc-dominion-theatre"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('dominion-theatre');return false;">🎭 Devil Wears Prada — Dominion Theatre<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr id="loc-sky-garden"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('sky-garden');return false;">Fenchurch Restaurant, Sky Garden<span class="cam-icon">📷</span></a><a class="site-link" href="https://skygarden.london" target="_blank" title="Official website">🔗</a></div></td></tr>
       </table>
       <div class="video-strip">
         <div class="video-strip-label">📺 Videos by Others</div>
@@ -826,10 +815,10 @@
     </summary>
     <div class="day-body">
       <table class="schedule">
-        <tr id="loc-harrods"><td class="sch-time-uk">12:00pm</td><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('harrods');return false;">Lunch: The Georgian at Harrods<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-coffee-cup"><td class="sch-time-uk">5:00pm</td><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('coffee-cup');return false;">Hampstead — Coffee Cup café<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-hampstead-hill-garden"><td class="sch-time-uk">5:30pm</td><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('hampstead-hill-garden');return false;">The Hill Garden &amp; Pergola, Hampstead<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-hampstead-heath"><td class="sch-time-uk">7:00pm</td><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('hampstead-heath');return false;">Parliament Hill — sunset views<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr id="loc-harrods"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('harrods');return false;">Lunch: The Georgian at Harrods<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr id="loc-coffee-cup"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('coffee-cup');return false;">Hampstead — Coffee Cup café<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr id="loc-hampstead-hill-garden"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('hampstead-hill-garden');return false;">The Hill Garden &amp; Pergola, Hampstead<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr id="loc-hampstead-heath"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('hampstead-heath');return false;">Parliament Hill — sunset views<span class="cam-icon">📷</span></a></div></td></tr>
       </table>
       <div class="video-strip">
         <div class="video-strip-label">📺 Videos by Others</div>
@@ -859,11 +848,11 @@
     </summary>
     <div class="day-body">
       <table class="schedule">
-        <tr><td class="sch-time-uk">8:51am</td><td class="sch-act"><div class="sch-act-title">GWR departs London Paddington → Moreton-in-Marsh — 1st Class</div></td></tr>
-        <tr id="loc-moreton-in-marsh"><td class="sch-time-uk">10:18am</td><td class="sch-act"><div class="sch-act-title">Arrive Moreton-in-Marsh</div></td></tr>
-        <tr><td class="sch-time-uk">Midday</td><td class="sch-act"><div class="sch-act-title">Lunch — Cotswolds (restaurant to confirm from photos)</div></td></tr>
-        <tr id="loc-burford"><td class="sch-time-uk">Afternoon</td><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('burford');return false;">Burford<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr><td class="sch-time-uk">All Day</td><td class="sch-act"><div class="sch-act-title">Private Cotswolds Day Tour in a Mercedes</div></td></tr>
+        <tr><td class="sch-act"><div class="sch-act-title">GWR departs London Paddington → Moreton-in-Marsh — 1st Class</div></td></tr>
+        <tr id="loc-moreton-in-marsh"><td class="sch-act"><div class="sch-act-title">Arrive Moreton-in-Marsh</div></td></tr>
+        <tr><td class="sch-act"><div class="sch-act-title">Lunch — Cotswolds (restaurant to confirm from photos)</div></td></tr>
+        <tr id="loc-burford"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('burford');return false;">Burford<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr><td class="sch-act"><div class="sch-act-title">Private Cotswolds Day Tour in a Mercedes</div></td></tr>
       </table>
       <div class="video-strip">
         <div class="video-strip-label">📺 Videos by Others</div>
@@ -896,9 +885,9 @@
     </summary>
     <div class="day-body">
       <table class="schedule">
-        <tr id="loc-notting-hill-portobello"><td class="sch-time-uk">Morning</td><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('notting-hill-portobello');return false;">Portobello Road &amp; Notting Hill<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-notting-hill-bookshop"><td class="sch-time-uk">Morning</td><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('notting-hill-bookshop');return false;">The Notting Hill Bookshop — the movie's bookstore<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-dishoom-portobello"><td class="sch-time-uk">1:00pm</td><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('dishoom-portobello');return false;">Lunch — Dishoom Permit Room, Portobello Road<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr id="loc-notting-hill-portobello"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('notting-hill-portobello');return false;">Portobello Road &amp; Notting Hill<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr id="loc-notting-hill-bookshop"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('notting-hill-bookshop');return false;">The Notting Hill Bookshop — the movie's bookstore<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr id="loc-dishoom-portobello"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('dishoom-portobello');return false;">Lunch — Dishoom Permit Room, Portobello Road<span class="cam-icon">📷</span></a></div></td></tr>
       </table>
       <div class="video-strip">
         <div class="video-strip-label">📺 Videos by Others</div>
@@ -928,10 +917,10 @@
     </summary>
     <div class="day-body">
       <table class="schedule">
-        <tr id="loc-cambridge-centre"><td class="sch-time-uk">10:00am</td><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('cambridge-centre');return false;">Arrive Cambridge — walk city centre<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-scudamores-punting"><td class="sch-time-uk">1:30pm</td><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('scudamores-punting');return false;">Chauffeured punt on the Cam with Cutie — the Backs route<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr><td class="sch-time-uk">3:00pm</td><td class="sch-act"><div class="sch-act-title">Bridge of Sighs · St John's College · Trinity Street</div></td></tr>
-        <tr><td class="sch-time-uk">4:00pm</td><td class="sch-act"><div class="sch-act-title">Cambridge University Botanic Garden</div></td></tr>
+        <tr id="loc-cambridge-centre"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('cambridge-centre');return false;">Arrive Cambridge — walk city centre<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr id="loc-scudamores-punting"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('scudamores-punting');return false;">Chauffeured punt on the Cam with Cutie — the Backs route<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr><td class="sch-act"><div class="sch-act-title">Bridge of Sighs · St John's College · Trinity Street</div></td></tr>
+        <tr><td class="sch-act"><div class="sch-act-title">Cambridge University Botanic Garden</div></td></tr>
       </table>
     </div>
   </details>
@@ -951,8 +940,10 @@
     </summary>
     <div class="day-body">
       <table class="schedule">
-        <tr id="loc-liverpool-street"><td class="sch-time-uk">Morning</td><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLightbox('day-06-jul',0);return false;">Took Cutie to Liverpool Street Station<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-chancery-rosewood"><td class="sch-time-uk">Afternoon</td><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('chancery-rosewood');return false;">High Tea — Jacqueline, The Chancery Rosewood<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr id="loc-liverpool-street"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLightbox('day-06-jul',0);return false;">Took Cutie to Liverpool Street Station<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr id="loc-chancery-rosewood"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('chancery-rosewood');return false;">High Tea — Jacqueline, The Chancery Rosewood<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr id="loc-battersea-power-station"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('battersea-power-station');return false;">Battersea Power Station<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr><td class="sch-act"><div class="sch-act-title">Dinner — Italian restaurant at Battersea Power Station <span style="font-size:11px;color:var(--muted)">· name to confirm from photos</span></div></td></tr>
       </table>
     </div>
   </details>
@@ -972,8 +963,8 @@
     </summary>
     <div class="day-body">
       <table class="schedule">
-        <tr><td class="sch-time-uk">2:00pm</td><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLightbox('day-07-jul',0);return false;">BA291 departs Heathrow Terminal 5<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr><td class="sch-time-uk">5:25pm</td><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLightbox('day-07-jul',0);return false;">Arrive Dulles International (IAD) <span style="font-size:11px;color:var(--muted)">· EDT (UTC−4)</span><span class="cam-icon">📷</span></a></div></td></tr>
+        <tr><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLightbox('day-07-jul',0);return false;">BA291 departs Heathrow Terminal 5<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLightbox('day-07-jul',0);return false;">Arrive Dulles International (IAD) <span style="font-size:11px;color:var(--muted)">· EDT (UTC−4)</span><span class="cam-icon">📷</span></a></div></td></tr>
       </table>
       <div class="video-strip">
         <div class="video-strip-label">📺 Videos by Others</div>
@@ -1022,7 +1013,7 @@
 </div>
 
 <div class="footer">
-  London 2026 · Hugh &amp; Betty · The Clermont Victoria &nbsp;·&nbsp; Updated June 2026
+  London 2026 · Betty &amp; Hugh &nbsp;·&nbsp; Updated July 2026
 </div>
 
 <div class="lightbox" id="lightbox" onclick="if(event.target===this) closeLightbox()">
@@ -1263,6 +1254,16 @@
         setTimeout(() => locEl.classList.remove('loc-highlight'), 1800);
       }
     }, 50);
+  }
+
+  function jumpToDay(daySlug) {
+    const day = document.getElementById(daySlug);
+    if (!day) return;
+    day.open = true;
+    day.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    day.classList.remove('loc-highlight');
+    void day.offsetWidth;
+    day.classList.add('loc-highlight');
   }
 
   function showTab(tab) {
