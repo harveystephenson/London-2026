@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day layout mockup — banner + per-item photos (#47)</title>
+<style>
+  :root {
+    --bg:#0d0f14; --surface:#13161e; --card:#1a1e28; --card-alt:#1e2330;
+    --border:#2a2f3d; --gold:#c9a84c; --gold-dim:#8a6e2f; --sky:#5b9bd5;
+    --muted:#6b7585; --sub:#9aa0ae; --text:#e8eaf0; --white:#ffffff;
+    --serif:'Georgia','Times New Roman',serif;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:'Helvetica Neue',Arial,sans-serif; font-size:15px; line-height:1.6; }
+  .note {
+    background:#22273a; border-left:3px solid var(--gold); padding:12px 18px;
+    max-width:900px; margin:26px auto 8px; font-size:13.5px; color:var(--sub); border-radius:0 8px 8px 0;
+  }
+  .note b { color:var(--gold); }
+  .container { max-width:900px; margin:0 auto; padding:0 20px; }
+
+  /* hero + banner (identical across themes; terracotta photo selection) */
+  .hero { background:linear-gradient(160deg,#0d1520 0%,#0d0f14 60%); border-bottom:1px solid var(--border); padding:52px 24px 40px; text-align:center; }
+  .hero-eyebrow { font-size:11px; letter-spacing:.25em; color:var(--gold); font-weight:600; text-transform:uppercase; margin-bottom:14px; }
+  .hero h1 { font-family:var(--serif); font-size:clamp(44px,8vw,76px); font-weight:normal; color:var(--white); line-height:1.05; margin-bottom:12px; }
+  .hero-dates { font-family:var(--serif); font-size:clamp(17px,3vw,24px); color:var(--gold); margin-bottom:8px; }
+  .hero-sub { color:var(--muted); font-size:14px; }
+  .banner-wrap { max-width:900px; margin:0 auto; padding:18px 20px 0; }
+  .banner { display:grid; grid-template-columns:2fr 1fr 1fr; grid-template-rows:150px 150px; gap:5px; }
+  .banner img { width:100%; height:100%; object-fit:cover; border-radius:8px; border:1px solid var(--border); display:block; }
+  .banner img:first-child { grid-row:span 2; }
+  @media (max-width:600px){ .banner { grid-template-rows:90px 90px; } }
+
+  .map-hint {
+    height:130px; border:1px dashed var(--border); border-radius:16px; margin-top:18px;
+    display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:13px; gap:8px;
+  }
+
+  .opt-label { font-family:var(--serif); font-size:22px; color:var(--white); margin:44px 0 4px; }
+  .opt-desc { color:var(--sub); font-size:13.5px; margin-bottom:14px; max-width:70ch; }
+
+  /* shared day-block visuals (from the real site) */
+  .day-block { border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:10px; }
+  .day-header { display:flex; align-items:center; background:var(--card); }
+  .day-date-strip { background:linear-gradient(135deg,#1a2035 0%,#141829 100%); border-right:3px solid var(--gold); padding:16px 18px; min-width:110px; text-align:center; }
+  .day-name { font-size:10px; letter-spacing:.15em; color:var(--gold); text-transform:uppercase; font-weight:700; }
+  .day-num { font-family:var(--serif); font-size:26px; color:var(--white); line-height:1.1; }
+  .day-month { font-size:11px; color:var(--muted); letter-spacing:.08em; text-transform:uppercase; }
+  .day-title-area { padding:16px 18px; flex:1; }
+  .day-theme { font-size:16px; font-weight:600; color:var(--white); }
+  .day-body { background:var(--surface); }
+  .schedule { width:100%; border-collapse:collapse; }
+  .schedule tr { border-bottom:1px solid var(--border); }
+  .schedule tr:last-child { border-bottom:none; }
+  .sch-act { padding:13px 18px 13px 16px; font-size:14px; vertical-align:middle; }
+  .act-link { color:var(--text); text-decoration:none; border-bottom:1px dotted var(--gold-dim); padding-bottom:1px; }
+  .cam-icon { font-size:11px; margin-left:6px; opacity:.75; }
+  .site-link { font-size:12px; margin-left:8px; text-decoration:none; opacity:.7; }
+
+  /* OPTION A: 3-4 thumbs in the day header, next to date+title */
+  .hdr-thumbs { display:flex; gap:5px; padding:0 16px; flex-shrink:0; }
+  .hdr-thumbs img { width:56px; height:56px; object-fit:cover; border-radius:6px; border:1px solid var(--border); display:block; }
+
+  /* OPTION B: one photo beside each schedule item */
+  .item-photo { width:96px; padding:8px 16px 8px 0; vertical-align:middle; }
+  .item-photo img { width:88px; height:64px; object-fit:cover; border-radius:6px; border:1px solid var(--border); display:block; }
+
+  /* mobile simulation frame */
+  .phone-frame {
+    width:390px; max-width:100%; margin:10px 0 30px; border:2px solid var(--border);
+    border-radius:18px; overflow:hidden; background:var(--bg);
+  }
+  .phone-frame .day-date-strip { min-width:92px; padding:12px; }
+  .phone-frame .day-theme { font-size:14px; }
+  .phone-frame .mob-thumb { padding:10px 14px 4px; }
+  .phone-frame .mob-thumb img { width:100%; height:110px; object-fit:cover; border-radius:8px; border:1px solid var(--border); display:block; }
+  .phone-frame .sch-act { font-size:13px; }
+</style>
+</head>
+<body>
+
+<p class="note"><b>Mockup for #47 — not the live site.</b> Top section = what every theme would share (hero, terracotta-pick banner, map). Below: two ways to put photos in the itinerary, shown on the real Richmond day, plus the phone treatment. React and we'll build the winner.</p>
+
+<div class="hero">
+  <p class="hero-eyebrow">A Trip Remembered</p>
+  <h1>London</h1>
+  <p class="hero-dates">June 29 – July 7, 2026</p>
+  <p class="hero-sub">Betty &amp; Hugh</p>
+</div>
+<div class="banner-wrap">
+  <div class="banner">
+    <img src="../photos/day-30-jun/full/img_2830.jpg" alt="Richmond Hill view">
+    <img src="../photos/day-03-jul/thumbs/img_3374.jpg" alt="Broadway courtyard">
+    <img src="../photos/day-29-jun/thumbs/img_2493.jpg" alt="Rose plate at Peggy Porschen">
+    <img src="../photos/day-01-jul/thumbs/img_3027.jpg" alt="Skyline from Sky Garden">
+    <img src="../photos/day-29-jun/thumbs/img_2536.jpg" alt="Leadenhall Market">
+  </div>
+</div>
+
+<div class="container">
+  <div class="map-hint">🗺 the interactive map sits here, unchanged</div>
+
+  <h2 class="opt-label">Option A — thumbnails beside the date &amp; title</h2>
+  <p class="opt-desc">3–4 photos ride in the day header. Compact; rows below stay text-only. (Header photos come from your <code>featured_photos.csv</code>.)</p>
+  <div class="day-block">
+    <div class="day-header">
+      <div class="day-date-strip">
+        <div class="day-name">Tuesday</div><div class="day-num">30</div><div class="day-month">June</div>
+      </div>
+      <div class="day-title-area"><div class="day-theme">Richmond Day — Kew Gardens &amp; Petersham</div></div>
+      <div class="hdr-thumbs">
+        <img src="../photos/day-30-jun/thumbs/img_2663.jpg" alt="">
+        <img src="../photos/day-30-jun/thumbs/img_2773.jpg" alt="">
+        <img src="../photos/day-30-jun/thumbs/img_2830.jpg" alt="">
+      </div>
+    </div>
+    <div class="day-body">
+      <table class="schedule">
+        <tr><td class="sch-act"><a class="act-link" href="#">Royal Botanic Gardens, Kew — the Pagoda &amp; Great Broad Walk<span class="cam-icon">📷</span></a><a class="site-link" href="#">🔗</a></td></tr>
+        <tr><td class="sch-act"><a class="act-link" href="#">Petersham Nurseries Restaurant<span class="cam-icon">📷</span></a><a class="site-link" href="#">🔗</a></td></tr>
+        <tr><td class="sch-act"><a class="act-link" href="#">Walk along Richmond riverside<span class="cam-icon">📷</span></a></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <h2 class="opt-label">Option B — one photo beside each item</h2>
+  <p class="opt-desc">No header photos; every schedule item gets its own picture (also CSV-chosen, falling back to that location's first photo). Richer, taller; each photo opens that item's grid.</p>
+  <div class="day-block">
+    <div class="day-header">
+      <div class="day-date-strip">
+        <div class="day-name">Tuesday</div><div class="day-num">30</div><div class="day-month">June</div>
+      </div>
+      <div class="day-title-area"><div class="day-theme">Richmond Day — Kew Gardens &amp; Petersham</div></div>
+    </div>
+    <div class="day-body">
+      <table class="schedule">
+        <tr>
+          <td class="sch-act"><a class="act-link" href="#">Royal Botanic Gardens, Kew — the Pagoda &amp; Great Broad Walk<span class="cam-icon">📷</span></a><a class="site-link" href="#">🔗</a></td>
+          <td class="item-photo"><img src="../photos/day-30-jun/thumbs/img_2663.jpg" alt=""></td>
+        </tr>
+        <tr>
+          <td class="sch-act"><a class="act-link" href="#">Petersham Nurseries Restaurant<span class="cam-icon">📷</span></a><a class="site-link" href="#">🔗</a></td>
+          <td class="item-photo"><img src="../photos/day-30-jun/thumbs/img_2773.jpg" alt=""></td>
+        </tr>
+        <tr>
+          <td class="sch-act"><a class="act-link" href="#">Walk along Richmond riverside<span class="cam-icon">📷</span></a></td>
+          <td class="item-photo"><img src="../photos/day-30-jun/thumbs/img_2830.jpg" alt=""></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <h2 class="opt-label">Phones — one photo per day, below the date &amp; title</h2>
+  <p class="opt-desc">Narrow screens get the full banner up top, then a single day photo under each day header (per your direction). Shown at iPhone width:</p>
+  <div class="phone-frame">
+    <div class="day-header">
+      <div class="day-date-strip">
+        <div class="day-name">Tuesday</div><div class="day-num">30</div><div class="day-month">June</div>
+      </div>
+      <div class="day-title-area"><div class="day-theme">Richmond Day — Kew &amp; Petersham</div></div>
+    </div>
+    <div class="day-body">
+      <div class="mob-thumb"><img src="../photos/day-30-jun/thumbs/img_2830.jpg" alt=""></div>
+      <table class="schedule">
+        <tr><td class="sch-act"><a class="act-link" href="#">Royal Botanic Gardens, Kew<span class="cam-icon">📷</span></a></td></tr>
+        <tr><td class="sch-act"><a class="act-link" href="#">Petersham Nurseries Restaurant<span class="cam-icon">📷</span></a></td></tr>
+        <tr><td class="sch-act"><a class="act-link" href="#">Walk along Richmond riverside<span class="cam-icon">📷</span></a></td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
