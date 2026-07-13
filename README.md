@@ -7,10 +7,10 @@ dinner in DC).
 **Live site: https://harveystephenson.github.io/London-2026/**
 
 ## Structure
-- `index.html` — the whole site: itinerary + Leaflet map + photo gallery, in one file
-- `index-rose.html` / `index-green.html` / `index-terracotta.html` — full-site palette previews (design decision pending)
+- `index.html` — the whole site: itinerary + Leaflet map + photo gallery, in one file. Four switchable color themes (Terracotta Memoir is the default); a hero photo banner and per-item photos are picked via `scripts/make_featured_picker.py`, not hand-edited.
 - `photos/` — web-ready thumbnails and full-size JPEGs, one folder per day
 - `data/flag_locations.csv` — map pin positions
+- `data/featured_photos.csv` — which photos fill the banner / day / per-item photo slots
 - `scripts/` — the Python pipeline that turns a raw iPhone photo dump into the gallery
 - `design/` — visual-direction mockups
 

@@ -1,12 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+  /* Restore the saved theme before first paint to avoid a flash of the
+     default (terracotta) theme for visitors who picked something else. */
+  try {
+    var savedTheme = localStorage.getItem('site-theme');
+    if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
+  } catch (e) {}
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>London 2026 — Betty &amp; Hugh</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
-  :root {
+  /* Theme variable sets (#47) — terracotta is the default; the others apply
+     via [data-theme] on <html>, set by the picker and persisted to
+     localStorage. Each theme also carries its own hero/day-strip gradient
+     stops (--hero-grad-1/2, --strip-grad-1/2) since those were hand-tuned
+     per palette rather than derivable from the flat colors above. */
+  :root, :root[data-theme="terracotta"] {
+    --bg:        #f7efe1;
+    --surface:   #fdf8ec;
+    --card:      #fffcf2;
+    --card-alt:  #f2e7d0;
+    --border:    #e3d3b4;
+    --gold:      #b45f3c;
+    --gold-dim:  #d4a289;
+    --sage:      #7c7c4a;
+    --coral:     #a84b2f;
+    --sky:       #767646;
+    --muted:     #9b8a68;
+    --sub:       #7d6f52;
+    --text:      #3c2f24;
+    --white:     #33271d;
+    --hero-grad-1: #f2e7d0;
+    --hero-grad-2: #f7efe1;
+    --strip-grad-1: #f2e7d0;
+    --strip-grad-2: #ecdfc2;
+    --row-hover: #ece0c6;
+    --font-serif: 'Georgia', 'Times New Roman', serif;
+    --font-sans:  'Helvetica Neue', 'Arial', sans-serif;
+    --radius:    10px;
+    --radius-lg: 16px;
+  }
+  :root[data-theme="dark"] {
     --bg:        #0d0f14;
     --surface:   #13161e;
     --card:      #1a1e28;
@@ -21,10 +59,56 @@
     --sub:       #9aa0ae;
     --text:      #e8eaf0;
     --white:     #ffffff;
+    --hero-grad-1: #0d1520;
+    --hero-grad-2: #0d0f14;
+    --strip-grad-1: #1a2035;
+    --strip-grad-2: #141829;
+    --row-hover: #22273a;
     --font-serif: 'Georgia', 'Times New Roman', serif;
-    --font-sans:  'Helvetica Neue', 'Arial', sans-serif;
-    --radius:    10px;
-    --radius-lg: 16px;
+  }
+  :root[data-theme="rose"] {
+    --bg:        #f9edec;
+    --surface:   #fdf7f4;
+    --card:      #ffffff;
+    --card-alt:  #f7e9e7;
+    --border:    #e8d2cf;
+    --gold:      #b06069;
+    --gold-dim:  #cf9ba1;
+    --sage:      #667a55;
+    --coral:     #c25b4a;
+    --sky:       #6e8a5c;
+    --muted:     #a08a84;
+    --sub:       #7c6660;
+    --text:      #43332f;
+    --white:     #3a2b27;
+    --hero-grad-1: #f5e3e2;
+    --hero-grad-2: #f9edec;
+    --strip-grad-1: #f5e3e2;
+    --strip-grad-2: #efd8d6;
+    --row-hover: #f0dcda;
+    --font-serif: 'Baskerville', 'Baskerville Old Face', 'Palatino Linotype', Georgia, serif;
+  }
+  :root[data-theme="green"] {
+    --bg:        #1b2a21;
+    --surface:   #1f2e24;
+    --card:      #233529;
+    --card-alt:  #273a2d;
+    --border:    #38503f;
+    --gold:      #c2a35e;
+    --gold-dim:  #8a7440;
+    --sage:      #7fae8e;
+    --coral:     #c96f5b;
+    --sky:       #a9c5b4;
+    --muted:     #8a9a85;
+    --sub:       #aab5a2;
+    --text:      #ece5d3;
+    --white:     #f5efdf;
+    --hero-grad-1: #16231b;
+    --hero-grad-2: #1b2a21;
+    --strip-grad-1: #223428;
+    --strip-grad-2: #1a2820;
+    --row-hover: #2c4232;
+    --font-serif: 'Georgia', 'Times New Roman', serif;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -42,7 +126,7 @@
   a:hover { color: var(--gold); text-decoration: underline; }
 
   .hero {
-    background: linear-gradient(160deg, #0d1520 0%, #0d0f14 60%);
+    background: linear-gradient(160deg, var(--hero-grad-1) 0%, var(--hero-grad-2) 60%);
     border-bottom: 1px solid var(--border);
     padding: 72px 24px 56px;
     text-align: center;
@@ -92,6 +176,83 @@
     border: none;
   }
 
+  /* theme picker (#47) — small swatch strip under the hero */
+  .theme-picker {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .theme-swatch {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: 5px 12px 5px 6px;
+    font-size: 11px;
+    color: var(--sub);
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .theme-swatch:hover { color: var(--text); }
+  .theme-swatch.active { border-color: var(--gold); color: var(--gold); }
+  .theme-swatch-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.15);
+    flex-shrink: 0;
+  }
+
+  /* hero photo banner (#47) — same 5 photos across every theme */
+  .hero-mosaic-wrap { max-width: 900px; margin: 0 auto; padding: 18px 20px 0; }
+  .hero-mosaic {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-rows: 150px 150px;
+    gap: 5px;
+  }
+  .hero-mosaic img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .hero-mosaic img:first-child { grid-row: span 2; }
+  @media (max-width: 600px) { .hero-mosaic { grid-template-rows: 90px 90px; } }
+
+  /* per-day mobile photo (#47) — one photo under the day header, phones only */
+  .mob-thumb { display: none; padding: 12px 20px 0; }
+  .mob-thumb img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    display: block;
+  }
+  /* per-schedule-item photo (#47 Option B) — desktop/tablet only */
+  .item-photo { width: 96px; padding: 8px 20px 8px 0; vertical-align: middle; }
+  .item-photo a { display: block; }
+  .item-photo img {
+    width: 88px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    display: block;
+  }
+  @media (max-width: 600px) {
+    .item-photo { display: none; }
+    .mob-thumb { display: block; }
+  }
+
   .container {
     max-width: 900px;
     margin: 0 auto;
@@ -122,7 +283,7 @@
     cursor: pointer;
   }
   .overview-row:nth-child(even) { background: var(--card-alt); }
-  .overview-row:hover { background: #22273a; }
+  .overview-row:hover { background: var(--row-hover); }
   .ov-date {
     min-width: 130px;
     padding: 12px 16px;
@@ -211,7 +372,7 @@
   .day-header::-webkit-details-marker { display: none; }
 
   .day-date-strip {
-    background: linear-gradient(135deg, #1a2035 0%, #141829 100%);
+    background: linear-gradient(135deg, var(--strip-grad-1) 0%, var(--strip-grad-2) 100%);
     border-right: 3px solid var(--gold);
     padding: 18px 20px;
     min-width: 120px;
@@ -623,11 +784,20 @@
 <body>
 
 <div class="hero">
-  <p class="hero-eyebrow">A Private Travel Itinerary</p>
+  <p class="hero-eyebrow">A Trip Remembered</p>
   <h1>London</h1>
   <p class="hero-dates">June 29 – July 7, 2026</p>
   <p class="hero-sub">Betty &amp; Hugh</p>
   <hr class="hero-rule">
+</div>
+
+<div class="hero-mosaic-wrap"><div class="hero-mosaic"><!--BANNER--><img src="photos/day-30-jun/full/img_2830.jpg?v=2" alt="" loading="eager"><img src="photos/day-03-jul/thumbs/img_3374.jpg?v=2" alt="" loading="eager"><img src="photos/day-29-jun/thumbs/img_2493.jpg?v=2" alt="" loading="eager"><img src="photos/day-01-jul/thumbs/img_3027.jpg?v=2" alt="" loading="eager"><img src="photos/day-29-jun/thumbs/img_2536.jpg?v=2" alt="" loading="eager"><!--END_BANNER--></div></div>
+
+<div class="theme-picker" id="theme-picker">
+  <div class="theme-swatch" data-theme="terracotta"><span class="theme-swatch-dot" style="background:#b45f3c"></span>Terracotta</div>
+  <div class="theme-swatch" data-theme="rose"><span class="theme-swatch-dot" style="background:#b06069"></span>English Rose</div>
+  <div class="theme-swatch" data-theme="green"><span class="theme-swatch-dot" style="background:#233529"></span>Racing Green</div>
+  <div class="theme-swatch" data-theme="dark"><span class="theme-swatch-dot" style="background:#0d0f14"></span>Dark</div>
 </div>
 
 <nav class="tab-nav">
@@ -687,14 +857,15 @@
       <div class="day-chevron">▾</div>
     </summary>
     <div class="day-body">
+      <div class="mob-thumb"><!--DAYFEATURE:day-29-jun--><img src="photos/day-29-jun/thumbs/img_2486.jpg?v=2" alt="" loading="lazy"><!--END_DAYFEATURE--></div>
       <table class="schedule">
-        <tr id="loc-clermont-victoria"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('clermont-victoria');return false;">Check in — The Clermont, Victoria<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-peggy-porschen"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('peggy-porschen');return false;">Peggy Porschen Belgravia — Morning Tea<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-bank-of-england"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('bank-of-england');return false;">Bank of England<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-royal-exchange"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('royal-exchange');return false;">The Royal Exchange<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-leadenhall-market"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('leadenhall-market');return false;">Leadenhall Market<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-london-bridge"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('london-bridge');return false;">Crossed London Bridge<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-borough-market-river-walk"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('borough-market-river-walk');return false;">River walk: Borough Market → South Bank → London Eye<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr id="loc-clermont-victoria"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('clermont-victoria');return false;">Check in — The Clermont, Victoria<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('clermont-victoria');return false;"><img src="photos/day-01-jul/thumbs/img_2868.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-peggy-porschen"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('peggy-porschen');return false;">Peggy Porschen Belgravia — Morning Tea<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('peggy-porschen');return false;"><img src="photos/day-29-jun/thumbs/img_2486.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-bank-of-england"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('bank-of-england');return false;">Bank of England<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('bank-of-england');return false;"><img src="photos/day-29-jun/thumbs/img_2521.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-royal-exchange"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('royal-exchange');return false;">The Royal Exchange<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('royal-exchange');return false;"><img src="photos/day-29-jun/thumbs/img_2531.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-leadenhall-market"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('leadenhall-market');return false;">Leadenhall Market<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('leadenhall-market');return false;"><img src="photos/day-29-jun/thumbs/img_2535.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-london-bridge"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('london-bridge');return false;">Crossed London Bridge<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('london-bridge');return false;"><img src="photos/day-29-jun/thumbs/img_2544.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-borough-market-river-walk"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('borough-market-river-walk');return false;">River walk: Borough Market → South Bank → London Eye<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('borough-market-river-walk');return false;"><img src="photos/day-29-jun/thumbs/img_2548.jpg?v=2" alt="" loading="lazy"></a></td></tr>
       </table>
       <div class="video-strip">
         <div class="video-strip-label">📺 Videos by Others</div>
@@ -722,10 +893,11 @@
       <div class="day-chevron">▾</div>
     </summary>
     <div class="day-body">
+      <div class="mob-thumb"><!--DAYFEATURE:day-30-jun--><img src="photos/day-30-jun/thumbs/img_2580.jpg?v=2" alt="" loading="lazy"><!--END_DAYFEATURE--></div>
       <table class="schedule">
-        <tr id="loc-kew-gardens"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('kew-gardens');return false;">Royal Botanic Gardens, Kew — the Pagoda &amp; Great Broad Walk<span class="cam-icon">📷</span></a><a class="site-link" href="https://www.kew.org" target="_blank" title="Official website">🔗</a></div></td></tr>
-        <tr id="loc-petersham-nurseries"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('petersham-nurseries');return false;">Petersham Nurseries Restaurant<span class="cam-icon">📷</span></a><a class="site-link" href="https://www.petershamnurseries.com" target="_blank" title="Official website">🔗</a></div></td></tr>
-        <tr id="loc-richmond"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('richmond');return false;">Walk along Richmond riverside<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr id="loc-kew-gardens"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('kew-gardens');return false;">Royal Botanic Gardens, Kew — the Pagoda &amp; Great Broad Walk<span class="cam-icon">📷</span></a><a class="site-link" href="https://www.kew.org" target="_blank" title="Official website">🔗</a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('kew-gardens');return false;"><img src="photos/day-30-jun/thumbs/img_2580.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-petersham-nurseries"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('petersham-nurseries');return false;">Petersham Nurseries Restaurant<span class="cam-icon">📷</span></a><a class="site-link" href="https://www.petershamnurseries.com" target="_blank" title="Official website">🔗</a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('petersham-nurseries');return false;"><img src="photos/day-30-jun/thumbs/img_2745.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-richmond"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('richmond');return false;">Walk along Richmond riverside<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('richmond');return false;"><img src="photos/day-30-jun/thumbs/img_2816.jpg?v=2" alt="" loading="lazy"></a></td></tr>
       </table>
       <div class="video-strip">
         <div class="video-strip-label">📺 Videos by Others</div>
@@ -754,14 +926,15 @@
       <div class="day-chevron">▾</div>
     </summary>
     <div class="day-body">
+      <div class="mob-thumb"><!--DAYFEATURE:day-01-jul--><img src="photos/day-01-jul/thumbs/img_2868.jpg?v=2" alt="" loading="lazy"><!--END_DAYFEATURE--></div>
       <table class="schedule">
-        <tr id="loc-churchill-war-rooms"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('churchill-war-rooms');return false;">Churchill War Rooms<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-downing-street"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('downing-street');return false;">10 Downing Street<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-st-james-park"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('st-james-park');return false;">St James&#39;s Park<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-piccadilly-circus"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('piccadilly-circus');return false;">Piccadilly Circus<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-ambassadors-clubhouse"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('ambassadors-clubhouse');return false;">Lunch — Ambassadors Clubhouse, Heddon Street<span class="cam-icon">📷</span></a><a class="site-link" href="https://ambassadorsclubhouse.com" target="_blank" title="Official website">🔗</a></div></td></tr>
-        <tr id="loc-dominion-theatre"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('dominion-theatre');return false;">🎭 Devil Wears Prada — Dominion Theatre<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-sky-garden"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('sky-garden');return false;">Fenchurch Restaurant, Sky Garden<span class="cam-icon">📷</span></a><a class="site-link" href="https://skygarden.london" target="_blank" title="Official website">🔗</a></div></td></tr>
+        <tr id="loc-churchill-war-rooms"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('churchill-war-rooms');return false;">Churchill War Rooms<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('churchill-war-rooms');return false;"><img src="photos/day-01-jul/thumbs/img_2874.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-downing-street"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('downing-street');return false;">10 Downing Street<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('downing-street');return false;"><img src="photos/day-01-jul/thumbs/img_2871.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-st-james-park"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('st-james-park');return false;">St James&#39;s Park<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('st-james-park');return false;"><img src="photos/day-01-jul/thumbs/img_2939.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-piccadilly-circus"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('piccadilly-circus');return false;">Piccadilly Circus<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('piccadilly-circus');return false;"><img src="photos/day-01-jul/thumbs/img_2943.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-ambassadors-clubhouse"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('ambassadors-clubhouse');return false;">Lunch — Ambassadors Clubhouse, Heddon Street<span class="cam-icon">📷</span></a><a class="site-link" href="https://ambassadorsclubhouse.com" target="_blank" title="Official website">🔗</a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('ambassadors-clubhouse');return false;"><img src="photos/day-01-jul/thumbs/img_2954.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-dominion-theatre"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('dominion-theatre');return false;">🎭 Devil Wears Prada — Dominion Theatre<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('dominion-theatre');return false;"><img src="photos/day-01-jul/thumbs/img_2994.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-sky-garden"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('sky-garden');return false;">Fenchurch Restaurant, Sky Garden<span class="cam-icon">📷</span></a><a class="site-link" href="https://skygarden.london" target="_blank" title="Official website">🔗</a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('sky-garden');return false;"><img src="photos/day-01-jul/thumbs/img_3022.jpg?v=2" alt="" loading="lazy"></a></td></tr>
       </table>
       <div class="video-strip">
         <div class="video-strip-label">📺 Videos by Others</div>
@@ -788,13 +961,14 @@
       <div class="day-chevron">▾</div>
     </summary>
     <div class="day-body">
+      <div class="mob-thumb"><!--DAYFEATURE:day-02-jul--><img src="photos/day-02-jul/thumbs/img_3045.jpg?v=2" alt="" loading="lazy"><!--END_DAYFEATURE--></div>
       <table class="schedule">
-        <tr id="loc-harrods"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('harrods');return false;">Lunch: The Georgian at Harrods<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-harrods-store"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('harrods-store');return false;">Harrods<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-coffee-cup"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('coffee-cup');return false;">Hampstead — Coffee Cup café<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-hampstead-village"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('hampstead-village');return false;">Hampstead Village<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-hampstead-heath"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('hampstead-heath');return false;">Parliament Hill / Hampstead Heath<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-hampstead-hill-garden"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('hampstead-hill-garden');return false;">The Hill Garden &amp; Pergola, Hampstead<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr id="loc-harrods"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('harrods');return false;">Lunch: The Georgian at Harrods<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('harrods');return false;"><img src="photos/day-02-jul/thumbs/img_3047.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-harrods-store"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('harrods-store');return false;">Harrods<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('harrods-store');return false;"><img src="photos/day-02-jul/thumbs/img_3078.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-coffee-cup"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('coffee-cup');return false;">Hampstead — Coffee Cup café<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('coffee-cup');return false;"><img src="photos/day-02-jul/thumbs/img_3113.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-hampstead-village"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('hampstead-village');return false;">Hampstead Village<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('hampstead-village');return false;"><img src="photos/day-02-jul/thumbs/img_3119.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-hampstead-heath"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('hampstead-heath');return false;">Parliament Hill / Hampstead Heath<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('hampstead-heath');return false;"><img src="photos/day-02-jul/thumbs/img_3128.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-hampstead-hill-garden"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('hampstead-hill-garden');return false;">The Hill Garden &amp; Pergola, Hampstead<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('hampstead-hill-garden');return false;"><img src="photos/day-02-jul/thumbs/img_3163.jpg?v=2" alt="" loading="lazy"></a></td></tr>
       </table>
       <div class="video-strip">
         <div class="video-strip-label">📺 Videos by Others</div>
@@ -823,18 +997,19 @@
       <div class="day-chevron">▾</div>
     </summary>
     <div class="day-body">
+      <div class="mob-thumb"><!--DAYFEATURE:day-03-jul--><img src="photos/day-03-jul/thumbs/img_3237.jpg?v=2" alt="" loading="lazy"><!--END_DAYFEATURE--></div>
       <table class="schedule">
         <tr><td class="sch-act"><div class="sch-act-title">GWR departs London Paddington → Moreton-in-Marsh — 1st Class</div></td></tr>
         <tr><td class="sch-act"><div class="sch-act-title">Arrive Moreton-in-Marsh</div></td></tr>
-        <tr id="loc-broad-campden"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('broad-campden');return false;">Broad Campden<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-broadway-tower"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('broadway-tower');return false;">Broadway Tower<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-broadway"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('broadway');return false;">Broadway<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-snowshill"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('snowshill');return false;">Snowshill<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-upper-slaughter"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('upper-slaughter');return false;">Upper Slaughter<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-lower-slaughter"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('lower-slaughter');return false;">Lower Slaughter<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-cotswolds-lunch"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('cotswolds-lunch');return false;">Lunch — The Feathered Nest Inn<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-burford"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('burford');return false;">Burford<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-bourton-on-the-water"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('bourton-on-the-water');return false;">Bourton-on-the-Water<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr id="loc-broad-campden"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('broad-campden');return false;">Broad Campden<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('broad-campden');return false;"><img src="photos/day-03-jul/thumbs/img_3256.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-broadway-tower"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('broadway-tower');return false;">Broadway Tower<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('broadway-tower');return false;"><img src="photos/day-03-jul/thumbs/img_3264.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-broadway"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('broadway');return false;">Broadway<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('broadway');return false;"><img src="photos/day-03-jul/thumbs/img_3331.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-snowshill"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('snowshill');return false;">Snowshill<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('snowshill');return false;"><img src="photos/day-03-jul/thumbs/img_3403.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-upper-slaughter"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('upper-slaughter');return false;">Upper Slaughter<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('upper-slaughter');return false;"><img src="photos/day-03-jul/thumbs/img_3430.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-lower-slaughter"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('lower-slaughter');return false;">Lower Slaughter<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('lower-slaughter');return false;"><img src="photos/day-03-jul/thumbs/img_3471.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-cotswolds-lunch"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('cotswolds-lunch');return false;">Lunch — The Feathered Nest Inn<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('cotswolds-lunch');return false;"><img src="photos/day-03-jul/thumbs/photo-2026-07-08-16-39-01-10.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-burford"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('burford');return false;">Burford<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('burford');return false;"><img src="photos/day-03-jul/thumbs/img_3538.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-bourton-on-the-water"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('bourton-on-the-water');return false;">Bourton-on-the-Water<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('bourton-on-the-water');return false;"><img src="photos/day-03-jul/thumbs/img_3585.jpg?v=2" alt="" loading="lazy"></a></td></tr>
       </table>
       <div class="video-strip">
         <div class="video-strip-label">📺 Videos by Others</div>
@@ -866,12 +1041,13 @@
       <div class="day-chevron">▾</div>
     </summary>
     <div class="day-body">
+      <div class="mob-thumb"><!--DAYFEATURE:day-04-jul--><img src="photos/day-04-jul/thumbs/img_3708.jpg?v=2" alt="" loading="lazy"><!--END_DAYFEATURE--></div>
       <table class="schedule">
-        <tr id="loc-notting-hill-portobello"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('notting-hill-portobello');return false;">Portobello Road &amp; Notting Hill<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-notting-hill-bookshop"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('notting-hill-bookshop');return false;">The Notting Hill Bookshop — the movie&#39;s bookstore<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr id="loc-notting-hill-portobello"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('notting-hill-portobello');return false;">Portobello Road &amp; Notting Hill<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('notting-hill-portobello');return false;"><img src="photos/day-04-jul/thumbs/img_3641.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-notting-hill-bookshop"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('notting-hill-bookshop');return false;">The Notting Hill Bookshop — the movie&#39;s bookstore<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('notting-hill-bookshop');return false;"><img src="photos/day-04-jul/thumbs/img_3637.jpg?v=2" alt="" loading="lazy"></a></td></tr>
         <tr id="loc-dishoom-portobello"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('dishoom-portobello');return false;">Lunch — Dishoom Permit Room, Portobello Road<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-notting-hill"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('notting-hill');return false;">Notting Hill<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-kensington-gardens"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('kensington-gardens');return false;">Kensington Gardens<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr id="loc-notting-hill"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('notting-hill');return false;">Notting Hill<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('notting-hill');return false;"><img src="photos/day-04-jul/thumbs/img_3634.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-kensington-gardens"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('kensington-gardens');return false;">Kensington Gardens<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('kensington-gardens');return false;"><img src="photos/day-04-jul/thumbs/img_3708.jpg?v=2" alt="" loading="lazy"></a></td></tr>
       </table>
       <div class="video-strip">
         <div class="video-strip-label">📺 Videos by Others</div>
@@ -900,13 +1076,14 @@
       <div class="day-chevron">▾</div>
     </summary>
     <div class="day-body">
+      <div class="mob-thumb"><!--DAYFEATURE:day-05-jul--><img src="photos/day-05-jul/thumbs/img_3734.jpg?v=2" alt="" loading="lazy"><!--END_DAYFEATURE--></div>
       <table class="schedule">
-        <tr id="loc-cambridge-station"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('cambridge-station');return false;">Arrive Cambridge Station<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-ccss"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('ccss');return false;">CCSS — Hugh's old school<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-coe-fen"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('coe-fen');return false;">Coe Fen — cows grazing by the river<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-scudamores-punting"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('scudamores-punting');return false;">Chauffeured punt on the Cam with Cutie — the Backs route<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-university-arms-hotel"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('university-arms-hotel');return false;">Cambridge University Arms Hotel<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-cambridge-centre"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('cambridge-centre');return false;">Walk Cambridge city centre<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr id="loc-cambridge-station"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('cambridge-station');return false;">Arrive Cambridge Station<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('cambridge-station');return false;"><img src="photos/day-05-jul/thumbs/img_3734.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-ccss"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('ccss');return false;">CCSS — Hugh's old school<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('ccss');return false;"><img src="photos/day-05-jul/thumbs/photo-2026-07-08-16-40-24-2.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-coe-fen"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('coe-fen');return false;">Coe Fen — cows grazing by the river<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('coe-fen');return false;"><img src="photos/day-05-jul/thumbs/photo-2026-07-08-16-40-26-4.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-scudamores-punting"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('scudamores-punting');return false;">Chauffeured punt on the Cam with Cutie — the Backs route<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('scudamores-punting');return false;"><img src="photos/day-05-jul/thumbs/img_3750.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-university-arms-hotel"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('university-arms-hotel');return false;">Cambridge University Arms Hotel<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('university-arms-hotel');return false;"><img src="photos/day-05-jul/thumbs/photo-2026-07-08-16-41-56-2.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-cambridge-centre"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('cambridge-centre');return false;">Walk Cambridge city centre<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('cambridge-centre');return false;"><img src="photos/day-05-jul/thumbs/img_3863.jpg?v=2" alt="" loading="lazy"></a></td></tr>
       </table>
     </div>
   </details>
@@ -925,9 +1102,10 @@
       <div class="day-chevron">▾</div>
     </summary>
     <div class="day-body">
+      <div class="mob-thumb"><!--DAYFEATURE:day-06-jul--><img src="photos/day-06-jul/thumbs/img_3915.jpg?v=2" alt="" loading="lazy"><!--END_DAYFEATURE--></div>
       <table class="schedule">
-        <tr id="loc-chancery-rosewood"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('chancery-rosewood');return false;">High Tea — Jacqueline, The Chancery Rosewood<span class="cam-icon">📷</span></a></div></td></tr>
-        <tr id="loc-battersea-power-station"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('battersea-power-station');return false;">Battersea Power Station<span class="cam-icon">📷</span></a></div></td></tr>
+        <tr id="loc-chancery-rosewood"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('chancery-rosewood');return false;">High Tea — Jacqueline, The Chancery Rosewood<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('chancery-rosewood');return false;"><img src="photos/day-06-jul/thumbs/img_3915.jpg?v=2" alt="" loading="lazy"></a></td></tr>
+        <tr id="loc-battersea-power-station"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openLocationGrid('battersea-power-station');return false;">Battersea Power Station<span class="cam-icon">📷</span></a></div></td><td class="item-photo"><a href="#" onclick="openLocationGrid('battersea-power-station');return false;"><img src="photos/day-06-jul/thumbs/img_3944.jpg?v=2" alt="" loading="lazy"></a></td></tr>
         <tr><td class="sch-act"><div class="sch-act-title">Dinner — Italian restaurant at Battersea Power Station <span style="font-size:11px;color:var(--muted)">· name to confirm from photos</span></div></td></tr>
       </table>
     </div>
@@ -947,6 +1125,7 @@
       <div class="day-chevron">▾</div>
     </summary>
     <div class="day-body">
+      <div class="mob-thumb"><!--DAYFEATURE:day-07-jul--><img src="photos/day-07-jul/thumbs/img_3965.jpg?v=2" alt="" loading="lazy"><!--END_DAYFEATURE--></div>
       <table class="schedule">
         <tr><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openDayGrid('day-07-jul');return false;">BA291 departs Heathrow Terminal 5<span class="cam-icon">📷</span></a></div></td></tr>
         <tr><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openDayGrid('day-07-jul');return false;">Arrive Dulles International (IAD) <span style="font-size:11px;color:var(--muted)">· EDT (UTC−4)</span><span class="cam-icon">📷</span></a></div></td></tr>
@@ -976,6 +1155,7 @@
       <div class="day-chevron">▾</div>
     </summary>
     <div class="day-body">
+      <div class="mob-thumb"><!--DAYFEATURE:day-10-jul--><img src="photos/day-10-jul/thumbs/img_3971.jpg?v=2" alt="" loading="lazy"><!--END_DAYFEATURE--></div>
       <table class="schedule">
         <tr id="loc-rania"><td class="sch-act"><div class="sch-act-title"><a class="act-link" href="#" onclick="openDayGrid('day-10-jul');return false;">Dinner at Rania, Washington DC<span class="cam-icon">📷</span></a></div></td></tr>
       </table>
@@ -1307,9 +1487,22 @@
     }
   }
 
+  function setTheme(name) {
+    document.documentElement.setAttribute('data-theme', name);
+    try { localStorage.setItem('site-theme', name); } catch (e) {}
+    document.querySelectorAll('.theme-swatch').forEach(el => {
+      el.classList.toggle('active', el.dataset.theme === name);
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     buildGalleryTab();
     initTripMap();
+    const current = document.documentElement.getAttribute('data-theme') || 'terracotta';
+    setTheme(current);
+    document.querySelectorAll('.theme-swatch').forEach(el => {
+      el.addEventListener('click', () => setTheme(el.dataset.theme));
+    });
   });
 </script>
 </body>
