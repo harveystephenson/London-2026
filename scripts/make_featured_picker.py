@@ -60,7 +60,23 @@ def load_flags():
         return list(csv.DictReader(f))
 
 
+def crop_of(row):
+    """crop_x/crop_y (#84), defaulting to a center crop for rows written
+    before this column existed."""
+    try:
+        x = float(row.get("crop_x") or 50)
+    except (TypeError, ValueError):
+        x = 50.0
+    try:
+        y = float(row.get("crop_y") or 50)
+    except (TypeError, ValueError):
+        y = 50.0
+    return {"x": x, "y": y}
+
+
 def load_featured_photos():
+    """Each pick is {filename, crop} or None. crop is the object-position
+    the user dragged to in a previous picker session (#84)."""
     picks = {"banner_lead": None, "banner": [], "day_feature": {}, "item_feature": {}}
     if not FEATURED_CSV.exists():
         return picks
@@ -71,15 +87,16 @@ def load_featured_photos():
         role, filename = row.get("role"), row.get("filename")
         if not role or not filename:
             continue
+        pick = {"filename": filename, "crop": crop_of(row)}
         if role == "banner_lead":
-            picks["banner_lead"] = filename
+            picks["banner_lead"] = pick
         elif role == "banner":
-            banner.append((int(row.get("sort") or 0), filename))
+            banner.append((int(row.get("sort") or 0), pick))
         elif role == "day_feature" and row.get("day"):
-            picks["day_feature"][row["day"]] = filename
+            picks["day_feature"][row["day"]] = pick
         elif role == "item_feature" and row.get("location_id"):
-            picks["item_feature"][row["location_id"]] = filename
-    picks["banner"] = [f for _, f in sorted(banner)]
+            picks["item_feature"][row["location_id"]] = pick
+    picks["banner"] = [p for _, p in sorted(banner, key=lambda t: t[0])]
     return picks
 
 
@@ -101,10 +118,18 @@ def main():
     def slug(name):
         return re.sub(r"[^a-z0-9_-]+", "-", Path(name).stem.lower()).strip("-")
 
-    def resolve(filename):
-        if not filename:
+    DEFAULT_CROP = {"x": 50, "y": 50}
+
+    def with_crop(photo, crop):
+        return {**photo, "crop": crop} if photo else None
+
+    def resolve(pick):
+        """pick is {filename, crop} or None. Returns the candidate photo
+        dict with that crop attached, or None if unresolvable."""
+        if not pick:
             return None
-        return filename_to_photo.get(slug(filename))
+        photo = filename_to_photo.get(slug(pick["filename"]))
+        return with_crop(photo, pick["crop"]) if photo else None
 
     # Banner candidates: every live photo, across the whole trip.
     all_photos = []
@@ -112,8 +137,8 @@ def main():
         for p in gallery_data.get(day, []):
             all_photos.append({**p, "day": day})
 
-    banner_lead_current = resolve(picks["banner_lead"]) or (all_photos[0] if all_photos else None)
-    banner_current = [resolve(f) for f in picks["banner"]]
+    banner_lead_current = resolve(picks["banner_lead"]) or with_crop(all_photos[0] if all_photos else None, DEFAULT_CROP)
+    banner_current = [resolve(p) for p in picks["banner"]]
     banner_current = [p for p in banner_current if p]
 
     day_slots = []
@@ -121,7 +146,7 @@ def main():
         photos = gallery_data.get(day, [])
         if not photos:
             continue
-        current = resolve(picks["day_feature"].get(day)) or photos[0]
+        current = resolve(picks["day_feature"].get(day)) or with_crop(photos[0], DEFAULT_CROP)
         day_slots.append({
             "key": day,
             "label": DAY_LABELS[day],
@@ -140,7 +165,7 @@ def main():
             photos = gallery_by_location.get(loc_id, [])
             if not photos:
                 continue
-            current = resolve(picks["item_feature"].get(loc_id)) or photos[0]
+            current = resolve(picks["item_feature"].get(loc_id)) or with_crop(photos[0], DEFAULT_CROP)
             item_slots.append({
                 "key": loc_id,
                 "label": flag["name"],
@@ -189,11 +214,24 @@ PAGE_TEMPLATE = """<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
   .slot { background:#1a1e28; border:1px solid #2a2f3d; border-radius:10px; padding:10px; width:170px; }
   .slot.day-group-heading { width:100%; background:none; border:none; padding:4px 0 0; }
   .slot-label { font-size:12px; color:#c9a84c; margin-bottom:6px; min-height:2.6em; }
-  .slot img { width:100%; height:110px; object-fit:cover; border-radius:6px; display:block; background:#0d0f14; }
-  .slot .empty-ph { width:100%; height:110px; border-radius:6px; background:#0d0f14; display:flex;
+  /* crop frame (#84): shows the photo at (roughly) the real box aspect ratio
+     it renders at on the site, and lets you drag it to choose what part of
+     the photo shows instead of the browser's arbitrary center crop. */
+  .crop-frame { position:relative; width:100%; border-radius:6px; overflow:hidden;
+                background:#0d0f14; cursor:grab; touch-action:none; }
+  .crop-frame.dragging { cursor:grabbing; }
+  .crop-frame[data-role="bannerLead"] { aspect-ratio: 1.4; }
+  .crop-frame[data-role="banner"] { aspect-ratio: 1.43; }
+  .crop-frame[data-role="day"] { aspect-ratio: 2.23; }
+  .crop-frame[data-role="item"] { aspect-ratio: 1.375; }
+  .crop-frame img { width:100%; height:100%; object-fit:cover; display:block; pointer-events:none; }
+  .crop-hint { font-size:10px; color:#6b7585; margin-top:3px; text-align:center; }
+  .slot .empty-ph { width:100%; aspect-ratio:1.4; border-radius:6px; background:#0d0f14; display:flex;
                      align-items:center; justify-content:center; color:#6b7585; font-size:11px; }
   .slot button.choose { width:100%; margin-top:8px; background:#22252e; color:#e8eaf0; border:1px solid #3a4050;
                          border-radius:6px; padding:6px; font-size:12px; cursor:pointer; }
+  .slot button.reset-crop { width:100%; margin-top:4px; background:none; color:#6b7585; border:none;
+                             font-size:11px; cursor:pointer; text-decoration:underline; padding:2px; }
   .slot.changed { border-color:#c9a84c; }
   .slot.changed .slot-label { color:#4a9e7f; }
   .day-heading { font-family:Georgia,serif; font-size:15px; color:#e8eaf0; margin:18px 0 8px; width:100%; }
@@ -223,8 +261,10 @@ PAGE_TEMPLATE = """<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
 <main>
 <p class="note">Pick which photo goes in each fixed spot on the site: the <b>hero banner</b> (same across
 every theme), one <b>day photo</b> per day (used on phones), and one <b>item photo</b> beside each schedule
-entry (desktop Option B). Anything left unset keeps using the automatic default shown now. Choices save in
-this browser automatically — close and resume anytime. When done, <b>Export picks</b> downloads
+entry (desktop Option B). Anything left unset keeps using the automatic default shown now. Each preview box
+is (roughly) the real shape the photo renders at on the site — <b>drag the photo inside its box to choose
+what part shows</b> instead of an arbitrary center crop. Choices save in this browser automatically — close
+and resume anytime. When done, <b>Export picks</b> downloads
 <code>featured_photo_decisions.json</code>; hand it to Claude (or run
 <code>python scripts/apply_featured_photos.py &lt;path&gt;</code> then
 <code>python scripts/build_gallery.py</code>).</p>
@@ -256,14 +296,21 @@ this browser automatically — close and resume anytime. When done, <b>Export pi
 
 <script>
 const DATA = __DATA__;
+const DEFAULT_CROP = { x: 50, y: 50 };
 const store = JSON.parse(localStorage.getItem('featured-photo-picks') || '{}');
 function save() { localStorage.setItem('featured-photo-picks', JSON.stringify(store)); }
 
+function defaultFor(kind, key) {
+  if (kind === 'bannerLead') return DATA.bannerLead;
+  if (kind === 'banner') return DATA.banner[key] || null;
+  if (kind === 'day') return DATA.daySlots.find(d => d.key === key).current;
+  if (kind === 'item') return DATA.itemSlots.find(d => d.key === key).current;
+}
 function currentFor(kind, key) {
-  if (kind === 'bannerLead') return store.bannerLead || DATA.bannerLead;
-  if (kind === 'banner') return (store.banner && store.banner[key]) || DATA.banner[key] || null;
-  if (kind === 'day') return (store.day && store.day[key]) || DATA.daySlots.find(d => d.key === key).current;
-  if (kind === 'item') return (store.item && store.item[key]) || DATA.itemSlots.find(d => d.key === key).current;
+  if (kind === 'bannerLead') return store.bannerLead || defaultFor(kind, key);
+  if (kind === 'banner') return (store.banner && store.banner[key]) || defaultFor(kind, key);
+  if (kind === 'day') return (store.day && store.day[key]) || defaultFor(kind, key);
+  if (kind === 'item') return (store.item && store.item[key]) || defaultFor(kind, key);
 }
 function isChanged(kind, key) {
   if (kind === 'bannerLead') return !!store.bannerLead;
@@ -273,6 +320,36 @@ function isChanged(kind, key) {
 }
 function stemOf(photo) { return photo ? photo.thumb.split('/').pop().replace(/\.[^.]+$/, '') : null; }
 
+// Ensure store holds a mutable pick for this slot (cloning the current
+// default the first time it's touched, e.g. a crop-only drag with no photo
+// re-pick yet) and return it, so drag edits persist the same way a Choose
+// pick does (#84).
+function ensureStoreEntry(kind, key) {
+  const current = currentFor(kind, key);
+  if (!current) return null;
+  if (kind === 'bannerLead') {
+    if (!store.bannerLead) store.bannerLead = { ...current };
+    return store.bannerLead;
+  }
+  if (kind === 'banner') {
+    store.banner = store.banner || {};
+    if (!store.banner[key]) store.banner[key] = { ...current };
+    return store.banner[key];
+  }
+  if (kind === 'day') {
+    store.day = store.day || {};
+    if (!store.day[key]) store.day[key] = { ...current };
+    return store.day[key];
+  }
+  if (kind === 'item') {
+    store.item = store.item || {};
+    if (!store.item[key]) store.item[key] = { ...current };
+    return store.item[key];
+  }
+}
+
+const ROLE_BY_KIND = { bannerLead: 'bannerLead', banner: 'banner', day: 'day', item: 'item' };
+
 function slotEl(kind, key, label, current, changed) {
   const div = document.createElement('div');
   div.className = 'slot' + (changed ? ' changed' : '');
@@ -281,10 +358,28 @@ function slotEl(kind, key, label, current, changed) {
   labelEl.textContent = label;
   div.appendChild(labelEl);
   if (current) {
+    const frame = document.createElement('div');
+    frame.className = 'crop-frame';
+    frame.dataset.role = ROLE_BY_KIND[kind];
     const img = document.createElement('img');
     img.src = '../../photos/' + current.thumb;
     img.loading = 'lazy';
-    div.appendChild(img);
+    const crop = current.crop || DEFAULT_CROP;
+    img.style.objectPosition = crop.x + '% ' + crop.y + '%';
+    frame.appendChild(img);
+    div.appendChild(frame);
+    attachDrag(frame, img, kind, key);
+    const hint = document.createElement('div');
+    hint.className = 'crop-hint';
+    hint.textContent = 'drag to reposition';
+    div.appendChild(hint);
+    if (crop.x !== DEFAULT_CROP.x || crop.y !== DEFAULT_CROP.y) {
+      const resetBtn = document.createElement('button');
+      resetBtn.className = 'reset-crop';
+      resetBtn.textContent = 'Reset crop';
+      resetBtn.onclick = () => { setCrop(kind, key, DEFAULT_CROP.x, DEFAULT_CROP.y); renderAll(); };
+      div.appendChild(resetBtn);
+    }
   } else {
     const ph = document.createElement('div');
     ph.className = 'empty-ph';
@@ -298,6 +393,60 @@ function slotEl(kind, key, label, current, changed) {
   div.appendChild(btn);
   return div;
 }
+
+function setCrop(kind, key, x, y) {
+  const entry = ensureStoreEntry(kind, key);
+  if (!entry) return;
+  entry.crop = { x, y };
+  save();
+}
+
+// Drag-to-reposition (#84): converts a pixel drag delta into the
+// object-position percentage change that would produce it, using the same
+// object-fit:cover math the browser itself uses, so what you see while
+// dragging in the picker matches what the real site will render.
+function attachDrag(frame, img, kind, key) {
+  let dragging = null;
+  function onPointerDown(e) {
+    if (!img.naturalWidth) return;
+    const rect = frame.getBoundingClientRect();
+    const boxW = rect.width, boxH = rect.height;
+    const scale = Math.max(boxW / img.naturalWidth, boxH / img.naturalHeight);
+    const excessW = img.naturalWidth * scale - boxW;
+    const excessH = img.naturalHeight * scale - boxH;
+    const current = currentFor(kind, key);
+    const crop = (current && current.crop) || DEFAULT_CROP;
+    dragging = { startX: e.clientX, startY: e.clientY, startCropX: crop.x, startCropY: crop.y, excessW, excessH };
+    frame.classList.add('dragging');
+    frame.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  }
+  function onPointerMove(e) {
+    if (!dragging) return;
+    const dx = e.clientX - dragging.startX;
+    const dy = e.clientY - dragging.startY;
+    const x = dragging.excessW ? clamp(dragging.startCropX - (dx / dragging.excessW) * 100, 0, 100) : 50;
+    const y = dragging.excessH ? clamp(dragging.startCropY - (dy / dragging.excessH) * 100, 0, 100) : 50;
+    img.style.objectPosition = x + '% ' + y + '%';
+    dragging.x = x;
+    dragging.y = y;
+  }
+  function onPointerUp(e) {
+    if (!dragging) return;
+    frame.classList.remove('dragging');
+    if (dragging.x !== undefined) {
+      setCrop(kind, key, Math.round(dragging.x * 10) / 10, Math.round(dragging.y * 10) / 10);
+      renderAll();
+    }
+    dragging = null;
+  }
+  frame.addEventListener('pointerdown', onPointerDown);
+  frame.addEventListener('pointermove', onPointerMove);
+  frame.addEventListener('pointerup', onPointerUp);
+  frame.addEventListener('pointercancel', onPointerUp);
+}
+
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
 function renderBanner() {
   const wrap = document.getElementById('banner-slots');
@@ -380,21 +529,24 @@ function renderGrid(candidates) {
 }
 
 function choosePhoto(photo) {
-  // Store the full {thumb,full} object (not just its slug) so re-rendering
-  // the slot after picking doesn't need to look anything back up -- the
-  // slug is only derived, via stemOf(), at export time.
+  // Store the full {thumb,full,crop} object (not just its slug) so
+  // re-rendering the slot after picking doesn't need to look anything back
+  // up -- the slug is only derived, via stemOf(), at export time. A newly
+  // chosen photo resets to a center crop (#84) -- the old crop was framed
+  // for a different photo and won't mean anything on this one.
   const { kind, key } = activePicker;
+  const picked = { ...photo, crop: { ...DEFAULT_CROP } };
   if (kind === 'bannerLead') {
-    store.bannerLead = stemOf(photo) === stemOf(DATA.bannerLead) ? null : photo;
+    store.bannerLead = stemOf(photo) === stemOf(DATA.bannerLead) ? null : picked;
   } else if (kind === 'banner') {
     store.banner = store.banner || {};
-    store.banner[key] = photo;
+    store.banner[key] = picked;
   } else if (kind === 'day') {
     store.day = store.day || {};
-    store.day[key] = photo;
+    store.day[key] = picked;
   } else if (kind === 'item') {
     store.item = store.item || {};
-    store.item[key] = photo;
+    store.item[key] = picked;
   }
   save();
   closePicker();
@@ -408,17 +560,23 @@ function closePicker() {
 document.getElementById('panel-close').onclick = closePicker;
 document.getElementById('overlay').onclick = (e) => { if (e.target.id === 'overlay') closePicker(); };
 
+// Convert a stored {thumb,full,crop} object to {filename,crop_x,crop_y} --
+// that's the format apply_featured_photos.py / build_gallery.py expect
+// (see the FEATURED_CSV comment in build_gallery.py and #84).
+function exportPick(photo) {
+  if (!photo) return null;
+  const crop = photo.crop || DEFAULT_CROP;
+  return { filename: stemOf(photo), crop_x: crop.x, crop_y: crop.y };
+}
+
 document.getElementById('export').onclick = () => {
-  // Convert the stored {thumb,full} objects to slugs only at the last
-  // moment -- that's the format apply_featured_photos.py / build_gallery.py
-  // expect (see the FEATURED_CSV comment in build_gallery.py).
   const dayOut = {};
-  Object.keys(store.day || {}).forEach(k => { dayOut[k] = stemOf(store.day[k]); });
+  Object.keys(store.day || {}).forEach(k => { dayOut[k] = exportPick(store.day[k]); });
   const itemOut = {};
-  Object.keys(store.item || {}).forEach(k => { itemOut[k] = stemOf(store.item[k]); });
+  Object.keys(store.item || {}).forEach(k => { itemOut[k] = exportPick(store.item[k]); });
   const out = {
-    banner_lead: store.bannerLead ? stemOf(store.bannerLead) : null,
-    banner: [0, 1, 2, 3].map(i => (store.banner && store.banner[i]) ? stemOf(store.banner[i]) : null),
+    banner_lead: exportPick(store.bannerLead),
+    banner: [0, 1, 2, 3].map(i => exportPick(store.banner && store.banner[i])),
     day_feature: dayOut,
     item_feature: itemOut,
   };
