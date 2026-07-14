@@ -1,0 +1,781 @@
+<title>London 2026 — Layout Explorations</title>
+<style>
+  /* ============================================================
+     DECK CHROME — the neutral studio wrapper around four bold,
+     structurally distinct concepts. Kept quiet on purpose so the
+     four "worlds" inside do the talking. Theme-aware; each inner
+     concept is a committed single visual world and stays fixed.
+     ============================================================ */
+  :root {
+    --deck-bg:      #eeece3;
+    --deck-surface: #ffffff;
+    --deck-border:  #d9d4c5;
+    --deck-ink:     #201f1a;
+    --deck-muted:   #726c5c;
+    --deck-accent:  #3d5546;
+    --deck-accent-soft: #e2e6dd;
+    --deck-font-display: Charter, 'Iowan Old Style', Georgia, serif;
+    --deck-font-sans: -apple-system, 'Neue Haas Grotesk', 'Helvetica Neue', Arial, sans-serif;
+    --deck-font-mono: 'iA Writer Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --deck-bg:      #15171a;
+      --deck-surface: #1c1f22;
+      --deck-border:  #33362f;
+      --deck-ink:     #e9e6dc;
+      --deck-muted:   #9a9587;
+      --deck-accent:  #8fae9b;
+      --deck-accent-soft: #202722;
+    }
+  }
+  :root[data-theme="dark"] {
+    --deck-bg:      #15171a;
+    --deck-surface: #1c1f22;
+    --deck-border:  #33362f;
+    --deck-ink:     #e9e6dc;
+    --deck-muted:   #9a9587;
+    --deck-accent:  #8fae9b;
+    --deck-accent-soft: #202722;
+  }
+  :root[data-theme="light"] {
+    --deck-bg:      #eeece3;
+    --deck-surface: #ffffff;
+    --deck-border:  #d9d4c5;
+    --deck-ink:     #201f1a;
+    --deck-muted:   #726c5c;
+    --deck-accent:  #3d5546;
+    --deck-accent-soft: #e2e6dd;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { overflow-x: hidden; }
+  body {
+    background: var(--deck-bg);
+    color: var(--deck-ink);
+    font-family: var(--deck-font-sans);
+    line-height: 1.55;
+  }
+
+  .deck { max-width: 1080px; margin: 0 auto; padding: 56px 24px 120px; }
+
+  .deck-intro { max-width: 680px; margin-bottom: 40px; }
+  .eyebrow {
+    font-size: 11.5px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--deck-accent); font-weight: 600; margin-bottom: 12px;
+  }
+  .deck-title {
+    font-family: var(--deck-font-display); font-size: clamp(30px, 4.6vw, 42px);
+    font-weight: 500; text-wrap: balance; margin-bottom: 14px; letter-spacing: -0.01em;
+  }
+  .deck-sub { color: var(--deck-muted); font-size: 15.5px; max-width: 62ch; }
+  .deck-sub + .deck-sub { margin-top: 10px; }
+
+  /* jump nav */
+  .toc {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin: 32px 0 8px; padding: 16px;
+    background: var(--deck-surface); border: 1px solid var(--deck-border);
+    border-radius: 10px;
+  }
+  .toc a {
+    font-size: 12.5px; color: var(--deck-ink); text-decoration: none;
+    border: 1px solid var(--deck-border); border-radius: 99px;
+    padding: 6px 14px; transition: border-color .15s, color .15s;
+  }
+  .toc a:hover { border-color: var(--deck-accent); color: var(--deck-accent); }
+  .toc-num { color: var(--deck-accent); font-weight: 700; margin-right: 6px; }
+
+  .concept {
+    margin-top: 88px; padding-top: 40px; border-top: 1px solid var(--deck-border);
+    scroll-margin-top: 24px;
+  }
+  .concept-head { max-width: 720px; margin-bottom: 28px; }
+  .concept-kicker {
+    font-size: 11.5px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--deck-accent); font-weight: 700; margin-bottom: 10px;
+  }
+  .concept-name {
+    font-family: var(--deck-font-display); font-size: clamp(24px, 3.4vw, 32px);
+    margin-bottom: 10px;
+  }
+  .concept-pitch { font-size: 15px; color: var(--deck-muted); }
+  .concept-meta {
+    display: flex; gap: 22px; flex-wrap: wrap; margin-top: 16px;
+    font-size: 12.5px; color: var(--deck-muted);
+  }
+  .concept-meta b { color: var(--deck-ink); font-weight: 600; }
+
+  .frame-label {
+    font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--deck-muted); font-weight: 700; margin: 28px 0 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .frame-label::after { content: ''; flex: 1; height: 1px; background: var(--deck-border); }
+  .frame-wrap {
+    border: 1px solid var(--deck-border); border-radius: 12px; overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+  .frame-wrap.no-clip { overflow: visible; border: none; box-shadow: none; }
+
+  /* trade-off matrix */
+  .matrix-wrap { overflow-x: auto; margin-top: 20px; }
+  table.matrix { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 13px; }
+  table.matrix th, table.matrix td {
+    text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--deck-border);
+    vertical-align: top;
+  }
+  table.matrix th {
+    font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--deck-muted); font-weight: 700;
+  }
+  table.matrix td.label { color: var(--deck-ink); font-weight: 600; white-space: nowrap; }
+  table.matrix tbody tr:hover { background: var(--deck-accent-soft); }
+
+  .deck-footer {
+    margin-top: 90px; padding-top: 24px; border-top: 1px solid var(--deck-border);
+    font-size: 12.5px; color: var(--deck-muted);
+  }
+
+  /* ============================================================
+     Shared "placeholder photo" utility — every concept uses this
+     instead of real images (per brief: mockups, not photos). Each
+     concept re-skins it with its own gradient palette + label style.
+     ============================================================ */
+  .ph {
+    position: relative; overflow: hidden; display: flex; align-items: flex-end;
+    background-size: cover; color: #fff;
+  }
+  .ph-cap {
+    font-size: 10.5px; letter-spacing: 0.03em; position: relative; z-index: 1;
+    padding: 8px 10px; text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  }
+  .ph::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.45), rgba(0,0,0,0) 55%);
+  }
+
+  /* ============================================================
+     1 — THE ROUTE (transit-map spine)
+     ============================================================ */
+  .mock-route {
+    --r-bg: #f6f4ec; --r-ink: #1c2a22; --r-line: #2f4a3d; --r-brass: #a9822f;
+    --r-slate: #5c7280; --r-card: #ffffff; --r-border: #dcd6c4;
+    background: var(--r-bg); color: var(--r-ink);
+    font-family: Charter, Georgia, serif;
+    padding: 0;
+  }
+  .mock-route .r-inner { max-width: 760px; margin: 0 auto; padding: 40px 28px 56px; }
+  .mock-route .r-eyebrow {
+    font-family: var(--deck-font-sans); font-size: 10.5px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--r-slate); font-weight: 700; margin-bottom: 10px;
+  }
+  .mock-route h1 { font-size: 40px; font-weight: 500; line-height: 1.08; margin-bottom: 6px; }
+  .mock-route .r-dates { color: var(--r-brass); font-size: 16px; margin-bottom: 24px; }
+
+  .mock-route .r-spine {
+    position: relative; padding-left: 34px; margin-top: 30px;
+  }
+  .mock-route .r-spine::before {
+    content: ''; position: absolute; left: 9px; top: 6px; bottom: 6px; width: 2px;
+    background: repeating-linear-gradient(to bottom, var(--r-line) 0 6px, transparent 6px 10px);
+  }
+  .mock-route .r-stop { position: relative; margin-bottom: 22px; }
+  .mock-route .r-stop::before {
+    content: ''; position: absolute; left: -34px; top: 3px; width: 12px; height: 12px;
+    border-radius: 50%; background: var(--r-card); border: 3px solid var(--r-brass);
+  }
+  .mock-route .r-stop.is-branch::before { border-color: var(--r-slate); width: 9px; height: 9px; left: -32.5px; }
+  .mock-route .r-stop-date {
+    font-family: var(--deck-font-sans); font-size: 10.5px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--r-slate); font-weight: 700; margin-bottom: 3px;
+  }
+  .mock-route .r-stop-title { font-size: 17px; margin-bottom: 3px; }
+  .mock-route .r-stop-sub { font-family: var(--deck-font-sans); font-size: 12.5px; color: #5b5647; }
+
+  .mock-route .r-branch-card {
+    background: var(--r-card); border: 1px solid var(--r-border); border-radius: 8px;
+    padding: 16px 18px; margin-top: 10px;
+  }
+  .mock-route .r-branch-head {
+    font-family: var(--deck-font-sans); font-size: 10.5px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--r-brass); font-weight: 700; margin-bottom: 10px;
+  }
+  .mock-route .r-branch-line { position: relative; padding-left: 20px; }
+  .mock-route .r-branch-line::before {
+    content: ''; position: absolute; left: 5px; top: 4px; bottom: 4px; width: 1.5px; background: var(--r-slate); opacity: .5;
+  }
+  .mock-route .r-halt {
+    position: relative; display: flex; align-items: baseline; gap: 10px;
+    padding: 5px 0; font-family: var(--deck-font-sans); font-size: 12.5px;
+  }
+  .mock-route .r-halt::before {
+    content: ''; position: absolute; left: -19px; top: 10px; width: 7px; height: 7px;
+    border-radius: 50%; background: var(--r-slate);
+  }
+  .mock-route .r-halt b { font-weight: 600; }
+  .mock-route .r-halt span { color: #85806f; font-size: 11px; }
+  .mock-route .r-halt.r-lunch::before { background: var(--r-brass); }
+
+  .mock-route .r-map {
+    margin-top: 14px; border-radius: 6px; overflow: hidden; height: 130px;
+    background:
+      radial-gradient(circle at 22% 35%, rgba(169,130,47,.35) 0 4px, transparent 5px),
+      radial-gradient(circle at 40% 30%, rgba(169,130,47,.35) 0 4px, transparent 5px),
+      radial-gradient(circle at 55% 55%, rgba(169,130,47,.35) 0 4px, transparent 5px),
+      radial-gradient(circle at 68% 42%, rgba(169,130,47,.35) 0 4px, transparent 5px),
+      radial-gradient(circle at 78% 62%, rgba(169,130,47,.35) 0 4px, transparent 5px),
+      linear-gradient(135deg, #e7e2d0, #d7dfd2);
+    position: relative;
+  }
+  .mock-route .r-map-label {
+    position: absolute; bottom: 8px; left: 10px; font-family: var(--deck-font-sans);
+    font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--r-line);
+    background: rgba(255,255,255,.75); padding: 3px 7px; border-radius: 4px;
+  }
+
+  /* ============================================================
+     2 — FIELD NOTES (editorial magazine spread)
+     ============================================================ */
+  .mock-fieldnotes {
+    --f-bg: #efece2; --f-ink: #221f1a; --f-red: #a83a2c; --f-rule: #c9c2ad; --f-sub: #6b6656;
+    background: var(--f-bg); color: var(--f-ink); padding: 0;
+  }
+  .mock-fieldnotes .f-inner { max-width: 780px; margin: 0 auto; padding: 34px 30px 54px; }
+  .mock-fieldnotes .f-masthead {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    border-bottom: 3px solid var(--f-ink); padding-bottom: 10px; margin-bottom: 6px;
+  }
+  .mock-fieldnotes .f-masthead-title {
+    font-family: Georgia, serif; font-size: 22px; font-weight: 700; letter-spacing: -0.01em;
+  }
+  .mock-fieldnotes .f-masthead-meta {
+    font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--f-sub);
+    text-align: right; line-height: 1.6;
+  }
+  .mock-fieldnotes .f-issue-line {
+    font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--f-red);
+    font-weight: 700; margin: 10px 0 26px;
+  }
+
+  .mock-fieldnotes .f-day-num {
+    font-family: Georgia, serif; font-size: 96px; line-height: .8; font-weight: 700;
+    color: var(--f-ink); opacity: .09; position: absolute; top: -6px; right: 0;
+  }
+  .mock-fieldnotes .f-story { position: relative; margin-bottom: 40px; }
+  .mock-fieldnotes .f-kicker {
+    font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--f-red);
+    font-weight: 700; margin-bottom: 6px;
+  }
+  .mock-fieldnotes .f-headline {
+    font-family: Georgia, serif; font-size: 28px; font-weight: 700; line-height: 1.08;
+    max-width: 11ch; margin-bottom: 16px;
+  }
+  .mock-fieldnotes .f-columns { display: grid; grid-template-columns: 1.3fr 1fr; gap: 26px; }
+  .mock-fieldnotes .f-dropcap:first-letter {
+    font-family: Georgia, serif; font-size: 46px; float: left; line-height: .8;
+    padding: 4px 6px 0 0; font-weight: 700; color: var(--f-red);
+  }
+  .mock-fieldnotes .f-body { font-size: 13.5px; line-height: 1.7; }
+  .mock-fieldnotes .f-body p { margin-bottom: 12px; }
+  .mock-fieldnotes .f-pull {
+    font-family: Georgia, serif; font-style: italic; font-size: 17px; line-height: 1.4;
+    border-top: 1px solid var(--f-ink); border-bottom: 1px solid var(--f-ink);
+    padding: 12px 0; margin: 16px 0; color: var(--f-red);
+  }
+  .mock-fieldnotes .f-margin {
+    border-left: 1px solid var(--f-rule); padding-left: 18px;
+    font-size: 11.5px; color: var(--f-sub);
+  }
+  .mock-fieldnotes .f-margin-label {
+    font-size: 10px; letter-spacing: .12em; text-transform: uppercase; font-weight: 700;
+    color: var(--f-ink); margin-bottom: 8px;
+  }
+  .mock-fieldnotes .f-stoplist { list-style: none; }
+  .mock-fieldnotes .f-stoplist li {
+    padding: 5px 0; border-bottom: 1px dotted var(--f-rule); display: flex; justify-content: space-between; gap: 8px;
+  }
+  .mock-fieldnotes .f-masonry {
+    display: grid; grid-template-columns: repeat(6, 1fr); grid-auto-rows: 46px; gap: 6px; margin-top: 4px;
+  }
+  .mock-fieldnotes .ph { border-radius: 2px; }
+  .mock-fieldnotes .ph1 { grid-column: span 4; grid-row: span 4; }
+  .mock-fieldnotes .ph2 { grid-column: span 2; grid-row: span 2; }
+  .mock-fieldnotes .ph3 { grid-column: span 2; grid-row: span 2; }
+  .mock-fieldnotes .ph4 { grid-column: span 3; grid-row: span 3; }
+  .mock-fieldnotes .ph5 { grid-column: span 3; grid-row: span 3; }
+
+  /* ============================================================
+     3 — CORKBOARD (scrapbook / pinboard)
+     ============================================================ */
+  .mock-corkboard {
+    --c-cork1: #8a6a48; --c-cork2: #7c5d3e; --c-card: #faf6ea; --c-ink: #2c2418;
+    --c-tape: #e3d2a0; --c-tape2: #cf9a9a; --c-string: #ad3a34; --c-pin: #b23b3b;
+    background:
+      radial-gradient(rgba(0,0,0,.16) 1px, transparent 1.4px) 0 0/7px 7px,
+      radial-gradient(rgba(255,255,255,.05) 1px, transparent 1.4px) 3px 3px/7px 7px,
+      linear-gradient(160deg, var(--c-cork1), var(--c-cork2));
+    color: var(--c-ink);
+    padding: 40px 26px 50px;
+    font-family: Georgia, serif;
+  }
+  .mock-corkboard .cb-inner { max-width: 780px; margin: 0 auto; position: relative; }
+  .mock-corkboard .cb-title-card {
+    background: var(--c-card); display: inline-block; padding: 14px 22px;
+    transform: rotate(-1.4deg); box-shadow: 0 6px 14px rgba(0,0,0,.28);
+    border-radius: 2px; position: relative; margin-bottom: 34px;
+  }
+  .mock-corkboard .cb-title-card::before {
+    content: ''; position: absolute; top: -10px; left: 50%; transform: translateX(-50%) rotate(-1.4deg);
+    width: 46px; height: 20px; background: var(--c-tape); opacity: .85;
+  }
+  .mock-corkboard .cb-eyebrow {
+    font-family: var(--deck-font-sans); font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+    color: #8a4a3a; font-weight: 700; margin-bottom: 4px;
+  }
+  .mock-corkboard .cb-title { font-size: 26px; font-weight: 700; }
+  .mock-corkboard .cb-dates { font-style: italic; font-size: 13px; color: #5c5340; }
+
+  .mock-corkboard .cb-scatter { position: relative; min-height: 480px; }
+  .mock-corkboard .cb-polaroid {
+    position: absolute; background: #fff; padding: 8px 8px 30px; border-radius: 2px;
+    box-shadow: 0 8px 16px rgba(0,0,0,.32); width: 148px;
+  }
+  .mock-corkboard .cb-polaroid .ph { height: 108px; border-radius: 1px; }
+  .mock-corkboard .cb-polaroid .cb-cap {
+    position: absolute; bottom: 8px; left: 10px; right: 10px; font-size: 12px;
+    text-align: center; color: #3a3327; font-family: 'Segoe Print', 'Bradley Hand', cursive, Georgia, serif; font-style: italic;
+  }
+  .mock-corkboard .cb-pin {
+    position: absolute; top: -7px; left: 50%; transform: translateX(-50%);
+    width: 13px; height: 13px; border-radius: 50%; background: var(--c-pin);
+    box-shadow: 0 2px 3px rgba(0,0,0,.5), inset -2px -2px 3px rgba(0,0,0,.3), inset 2px 2px 3px rgba(255,150,150,.6);
+    z-index: 3;
+  }
+  .mock-corkboard .cb-tapepiece {
+    position: absolute; width: 54px; height: 20px; opacity: .82;
+  }
+  .mock-corkboard .cb-index {
+    position: absolute; background: var(--c-card); padding: 14px 16px; width: 190px;
+    box-shadow: 0 8px 16px rgba(0,0,0,.32); font-family: var(--deck-font-mono); font-size: 11px;
+    line-height: 1.7; border-radius: 2px;
+  }
+  .mock-corkboard .cb-index-title {
+    font-family: Georgia, serif; font-weight: 700; font-size: 13px; margin-bottom: 6px; font-style: italic;
+  }
+  .mock-corkboard .cb-map-scrap {
+    position: absolute; background: #ece3cf; padding: 10px; width: 220px; box-shadow: 0 8px 18px rgba(0,0,0,.3);
+    clip-path: polygon(2% 4%, 40% 0%, 78% 3%, 100% 10%, 97% 55%, 100% 92%, 60% 100%, 22% 97%, 0% 85%, 4% 40%);
+  }
+  .mock-corkboard .cb-map-scrap svg { width: 100%; height: 130px; display: block; }
+  .mock-corkboard .cb-map-label {
+    font-family: var(--deck-font-sans); font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase;
+    color: #6b5a3a; margin-top: 4px; text-align: center;
+  }
+
+  /* ============================================================
+     4 — NIGHT REEL (cinematic full-bleed scroll)
+     ============================================================ */
+  .mock-nightreel {
+    --n-bg: #0a0a0b; --n-amber: #d8a13c; --n-sub: #8b8880; --n-line: #2a2a2a;
+    background: var(--n-bg); color: #ece8df; padding: 0; font-family: var(--deck-font-sans);
+    position: relative;
+  }
+  .mock-nightreel .nr-sprockets {
+    position: absolute; top: 0; bottom: 0; width: 22px; z-index: 2;
+    background: repeating-linear-gradient(to bottom, #000 0 10px, transparent 10px 26px);
+  }
+  .mock-nightreel .nr-sprockets::before, .mock-nightreel .nr-sprockets::after {
+    content: ''; position: absolute; left: 7px; top: 8px; bottom: 8px; width: 8px;
+    background: repeating-linear-gradient(to bottom, #1a1a1a 0 12px, transparent 12px 26px);
+    border-radius: 2px;
+  }
+  .mock-nightreel .nr-left { left: 0; }
+  .mock-nightreel .nr-right { right: 0; }
+  .mock-nightreel .nr-inner { padding: 30px 40px; position: relative; }
+  .mock-nightreel .nr-rail {
+    position: absolute; right: 40px; top: 30px; bottom: 30px; width: 10px; z-index: 3;
+    display: flex; flex-direction: column; justify-content: space-between; align-items: center;
+  }
+  .mock-nightreel .nr-rail::before {
+    content: ''; position: absolute; top: 4px; bottom: 4px; width: 1px; background: var(--n-line);
+  }
+  .mock-nightreel .nr-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--n-line); position: relative; z-index: 1;
+  }
+  .mock-nightreel .nr-dot.is-active { background: var(--n-amber); width: 9px; height: 9px; box-shadow: 0 0 8px rgba(216,161,60,.7); }
+
+  .mock-nightreel .nr-frame {
+    height: 480px; border-radius: 3px; position: relative; overflow: hidden;
+    display: flex; flex-direction: column; justify-content: space-between;
+    background: linear-gradient(160deg, #24211a 0%, #100e0b 55%, #050506 100%);
+  }
+  .mock-nightreel .nr-frame::after {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 20%, rgba(216,161,60,.14), transparent 55%),
+                radial-gradient(ellipse at 80% 90%, rgba(0,0,0,.6), transparent 60%);
+    pointer-events: none;
+  }
+  .mock-nightreel .nr-top { display: flex; justify-content: space-between; padding: 22px 26px; position: relative; z-index: 1; }
+  .mock-nightreel .nr-timecode {
+    font-family: var(--deck-font-mono); font-size: 11px; letter-spacing: .08em; color: var(--n-sub);
+  }
+  .mock-nightreel .nr-reelno {
+    font-family: var(--deck-font-mono); font-size: 11px; letter-spacing: .08em; color: var(--n-amber);
+  }
+  .mock-nightreel .nr-titlecard { padding: 0 26px 30px; position: relative; z-index: 1; }
+  .mock-nightreel .nr-eyebrow {
+    font-size: 10.5px; letter-spacing: .28em; text-transform: uppercase; color: var(--n-amber);
+    margin-bottom: 10px; font-weight: 600;
+  }
+  .mock-nightreel .nr-title {
+    font-size: clamp(30px, 5vw, 46px); font-weight: 800; letter-spacing: -0.01em;
+    text-transform: uppercase; line-height: .96; margin-bottom: 14px; max-width: 12ch;
+  }
+  .mock-nightreel .nr-stops {
+    display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 12px; color: var(--n-sub);
+  }
+  .mock-nightreel .nr-stops b { color: #ece8df; font-weight: 600; }
+  .mock-nightreel .nr-stops span.sep { color: var(--n-amber); }
+
+  .mock-nightreel .nr-strip { display: grid; grid-template-columns: repeat(8, 1fr); gap: 3px; margin-top: 3px; }
+  .mock-nightreel .nr-strip .ph { height: 64px; filter: saturate(.75) brightness(.85); }
+</style>
+
+<div class="deck">
+
+  <div class="deck-intro">
+    <div class="eyebrow">London 2026 — Structural Studies</div>
+    <h1 class="deck-title">Four ways to lay the trip out that aren't a stack of cards</h1>
+    <p class="deck-sub">The live site's palette work (four themes, one grid) is done. This is a different question: what if the <em>shape</em> of the page changed, not just its colors? Same information throughout — hero, day-by-day, map, photos, bookings — reorganized around four different structural ideas.</p>
+    <p class="deck-sub">Every "photo" below is a placeholder gradient with a caption, not a real image — these are shape studies, not content-ready pages. The Cotswolds day (3 Jul, eight stops plus lunch) is used as the stress test throughout, since it's the busiest day on the itinerary.</p>
+  </div>
+
+  <nav class="toc">
+    <a href="#c1"><span class="toc-num">01</span>The Route</a>
+    <a href="#c2"><span class="toc-num">02</span>Field Notes</a>
+    <a href="#c3"><span class="toc-num">03</span>Corkboard</a>
+    <a href="#c4"><span class="toc-num">04</span>Night Reel</a>
+    <a href="#matrix"><span class="toc-num">—</span>Comparison</a>
+  </nav>
+
+  <!-- ============================================================ 1. THE ROUTE ============================================================ -->
+  <section class="concept" id="c1">
+    <div class="concept-head">
+      <div class="concept-kicker">01 · Cartographic</div>
+      <div class="concept-name">The Route</div>
+      <p class="concept-pitch">The itinerary becomes a transit line: one vertical spine running the length of the trip, each day a brass station stop. Busy days — like the Cotswolds — branch off the main line into their own local route with every stop as a halt. The map stops being a separate section and becomes the entire skeleton of the page.</p>
+      <div class="concept-meta">
+        <span><b>Replaces:</b> At a Glance + Map + day list, as one continuous diagram</span>
+        <span><b>Keeps:</b> every stop, in strict order, at a glance</span>
+      </div>
+    </div>
+
+    <div class="frame-label">Hero → spine begins</div>
+    <div class="frame-wrap">
+      <div class="mock-route">
+        <div class="r-inner">
+          <div class="r-eyebrow">A Trip Remembered</div>
+          <h1>London 2026</h1>
+          <div class="r-dates">Betty &amp; Hugh · 29 Jun – 7 Jul</div>
+
+          <div class="r-spine">
+            <div class="r-stop">
+              <div class="r-stop-date">Mon 29 Jun</div>
+              <div class="r-stop-title">Landed Heathrow</div>
+              <div class="r-stop-sub">Notting Hill Bookshop · arrival evening</div>
+            </div>
+            <div class="r-stop">
+              <div class="r-stop-date">Tue 30 Jun</div>
+              <div class="r-stop-title">Tower &amp; Borough Market</div>
+              <div class="r-stop-sub">City &amp; river day</div>
+            </div>
+            <div class="r-stop is-branch">
+              <div class="r-stop-date">Fri 3 Jul — Branch Line</div>
+              <div class="r-stop-title">The Cotswolds</div>
+              <div class="r-branch-card">
+                <div class="r-branch-head">9 halts, single day</div>
+                <div class="r-branch-line">
+                  <div class="r-halt"><b>Broad Campden</b><span>first stop</span></div>
+                  <div class="r-halt"><b>Broadway Tower</b><span>16-min cluster</span></div>
+                  <div class="r-halt"><b>Broadway</b><span>village walk</span></div>
+                  <div class="r-halt"><b>Snowshill</b><span>7 photos</span></div>
+                  <div class="r-halt"><b>Upper Slaughter</b><span>6 photos</span></div>
+                  <div class="r-halt"><b>Lower Slaughter</b><span>1 photo</span></div>
+                  <div class="r-halt r-lunch"><b>The Feathered Nest Inn</b><span>lunch · Nether Westcote</span></div>
+                  <div class="r-halt"><b>Burford</b><span>2 photos</span></div>
+                  <div class="r-halt"><b>Bourton-on-the-Water</b><span>38 photos · final stop</span></div>
+                </div>
+                <div class="r-map">
+                  <div class="r-map-label">Route centroid, Fri 3 Jul</div>
+                </div>
+              </div>
+            </div>
+            <div class="r-stop">
+              <div class="r-stop-date">Sun 5 Jul — Branch Line</div>
+              <div class="r-stop-title">Cambridge</div>
+              <div class="r-stop-sub">Station → punting → University Arms</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 2. FIELD NOTES ============================================================ -->
+  <section class="concept" id="c2">
+    <div class="concept-head">
+      <div class="concept-kicker">02 · Editorial</div>
+      <div class="concept-name">Field Notes</div>
+      <p class="concept-pitch">Each day reads like a page torn from a travel magazine, not a database row: an oversized ghost numeral, a real headline instead of a schedule label, a dropped cap, a pull-quote lifted from the day. Photos run as an asymmetric masonry rather than a uniform grid — some stops earn a big frame, some a small one, the way an editor would actually lay out a spread.</p>
+      <div class="concept-meta">
+        <span><b>Replaces:</b> the schedule table with headline + running text + margin facts</span>
+        <span><b>Keeps:</b> stop list (moved to the margin), photo links, booking-style facts</span>
+      </div>
+    </div>
+
+    <div class="frame-label">A day, laid out as a magazine spread</div>
+    <div class="frame-wrap">
+      <div class="mock-fieldnotes">
+        <div class="f-inner">
+          <div class="f-masthead">
+            <div class="f-masthead-title">London 2026</div>
+            <div class="f-masthead-meta">Betty &amp; Hugh's Journal<br>Nine Days, One Home Base</div>
+          </div>
+          <div class="f-issue-line">Dispatch No. 3 — Friday, 3 July</div>
+
+          <div class="f-story" style="position:relative;">
+            <div class="f-day-num">03</div>
+            <div class="f-kicker">Day Trip · The Cotswolds</div>
+            <div class="f-headline">Nine Villages Before Dinner</div>
+            <div class="f-columns">
+              <div>
+                <div class="f-body f-dropcap">
+                  <p>Out of London before eight, the coach climbed out of the M40 haze and into a different country entirely — one built from honey-colored stone and hedgerows. Broadway Tower came first, caught in a tight sixteen-minute cluster of photographs at the top of the hill.</p>
+                </div>
+                <div class="f-pull">"Every village looked like the last, and somehow that was the whole point."</div>
+                <div class="f-body">
+                  <p>Lunch broke the day at The Feathered Nest Inn, tucked into Nether Westcote — a two-hour pause between Lower Slaughter's single quiet photo and the long golden light of Bourton-on-the-Water, where the cameras came out thirty-eight times before anyone noticed the hour.</p>
+                </div>
+                <div class="f-masonry">
+                  <div class="ph ph1" style="background:linear-gradient(155deg,#d9c48a,#8fae83);"><span class="ph-cap">Broadway Tower</span></div>
+                  <div class="ph ph2" style="background:linear-gradient(155deg,#c9a06a,#efe0b8);"><span class="ph-cap">Snowshill</span></div>
+                  <div class="ph ph3" style="background:linear-gradient(155deg,#9fb89a,#e2dcc0);"><span class="ph-cap">Lower Slaughter</span></div>
+                  <div class="ph ph4" style="background:linear-gradient(155deg,#c98a6a,#e8c98f);"><span class="ph-cap">Feathered Nest Inn</span></div>
+                  <div class="ph ph5" style="background:linear-gradient(155deg,#7ea0a8,#cfe0c9);"><span class="ph-cap">Bourton-on-the-Water</span></div>
+                </div>
+              </div>
+              <div class="f-margin">
+                <div class="f-margin-label">Nine Stops, In Order</div>
+                <ul class="f-stoplist">
+                  <li><span>Broad Campden</span><span>1</span></li>
+                  <li><span>Broadway Tower</span><span>22</span></li>
+                  <li><span>Broadway</span><span>32</span></li>
+                  <li><span>Snowshill</span><span>7</span></li>
+                  <li><span>Upper Slaughter</span><span>6</span></li>
+                  <li><span>Lower Slaughter</span><span>1</span></li>
+                  <li><span>Feathered Nest Inn</span><span>lunch</span></li>
+                  <li><span>Burford</span><span>2</span></li>
+                  <li><span>Bourton-on-the-Water</span><span>38</span></li>
+                </ul>
+                <div class="f-margin-label" style="margin-top:18px;">On This Page</div>
+                <p>109 photographs, one lunch reservation, zero regrets about the coach seating chart.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 3. CORKBOARD ============================================================ -->
+  <section class="concept" id="c3">
+    <div class="concept-head">
+      <div class="concept-kicker">03 · Analog / Scrapbook</div>
+      <div class="concept-name">Corkboard</div>
+      <p class="concept-pitch">The whole day gets pinned to a corkboard like the trip planning wall it probably started as: tilted polaroids taped down at odd angles, a torn-paper map scrap with the route inked in red string, and the day's facts on a typewritten index card. Nothing lines up to a grid on purpose — it should feel handled, not laid out.</p>
+      <div class="concept-meta">
+        <span><b>Replaces:</b> the day block entirely with a pinboard scene</span>
+        <span><b>Keeps:</b> stop order (via the string route), photo count, location names</span>
+      </div>
+    </div>
+
+    <div class="frame-label">A day, pinned to the board</div>
+    <div class="frame-wrap">
+      <div class="mock-corkboard">
+        <div class="cb-inner">
+          <div class="cb-title-card">
+            <div class="cb-eyebrow">Friday</div>
+            <div class="cb-title">The Cotswolds</div>
+            <div class="cb-dates">3 July — nine stops, one lunch</div>
+          </div>
+
+          <div class="cb-scatter">
+            <div class="cb-polaroid" style="left:0; top:10px; transform:rotate(-6deg);">
+              <div class="cb-pin"></div>
+              <div class="ph" style="background:linear-gradient(155deg,#d9c48a,#8fae83);"></div>
+              <div class="cb-cap">Broadway Tower</div>
+            </div>
+            <div class="cb-polaroid" style="left:168px; top:-6px; transform:rotate(4deg);">
+              <div class="cb-pin"></div>
+              <div class="ph" style="background:linear-gradient(155deg,#c9a06a,#efe0b8);"></div>
+              <div class="cb-cap">Snowshill</div>
+            </div>
+            <div class="cb-tapepiece" style="left:150px; top:170px; background:var(--c-tape2); transform:rotate(-12deg);"></div>
+            <div class="cb-polaroid" style="left:340px; top:20px; transform:rotate(-3deg);">
+              <div class="cb-pin"></div>
+              <div class="ph" style="background:linear-gradient(155deg,#9fb89a,#e2dcc0);"></div>
+              <div class="cb-cap">Lower Slaughter</div>
+            </div>
+
+            <div class="cb-map-scrap" style="left:8px; top:220px; transform:rotate(-2deg);">
+              <svg viewBox="0 0 220 140">
+                <polyline points="14,20 40,32 60,26 84,52 100,48 118,70 132,66 150,96 176,110 200,120"
+                  fill="none" stroke="#ad3a34" stroke-width="2" stroke-dasharray="1 7" stroke-linecap="round"/>
+                <circle cx="14" cy="20" r="3.5" fill="#ad3a34"/>
+                <circle cx="60" cy="26" r="3.5" fill="#ad3a34"/>
+                <circle cx="100" cy="48" r="3.5" fill="#ad3a34"/>
+                <circle cx="132" cy="66" r="5" fill="#7a5230"/>
+                <circle cx="200" cy="120" r="4.5" fill="#ad3a34"/>
+              </svg>
+              <div class="cb-map-label">Route scrap, Fri 3 Jul</div>
+            </div>
+
+            <div class="cb-index" style="left:250px; top:200px; transform:rotate(2.5deg);">
+              <div class="cb-index-title">Day 3 — Cotswolds</div>
+              1. Broad Campden<br>
+              2. Broadway Tower<br>
+              3. Broadway<br>
+              4. Snowshill<br>
+              5. Upper Slaughter<br>
+              6. Lower Slaughter<br>
+              — lunch: Feathered Nest —<br>
+              7. Burford<br>
+              8. Bourton-on-the-Water
+            </div>
+            <div class="cb-tapepiece" style="left:290px; top:186px; background:var(--c-tape); transform:rotate(8deg);"></div>
+
+            <div class="cb-polaroid" style="left:470px; top:60px; transform:rotate(5deg);">
+              <div class="cb-pin"></div>
+              <div class="ph" style="background:linear-gradient(155deg,#c98a6a,#e8c98f);"></div>
+              <div class="cb-cap">Feathered Nest Inn</div>
+            </div>
+            <div class="cb-polaroid" style="left:470px; top:250px; transform:rotate(-5deg);">
+              <div class="cb-pin"></div>
+              <div class="ph" style="background:linear-gradient(155deg,#7ea0a8,#cfe0c9);"></div>
+              <div class="cb-cap">Bourton-on-the-Water</div>
+            </div>
+            <div class="cb-tapepiece" style="left:495px; top:412px; background:var(--c-tape2); transform:rotate(-4deg);"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 4. NIGHT REEL ============================================================ -->
+  <section class="concept" id="c4">
+    <div class="concept-head">
+      <div class="concept-kicker">04 · Cinematic</div>
+      <div class="concept-name">Night Reel</div>
+      <p class="concept-pitch">Each day is its own full-bleed title card, like a documentary chapter — a timecode, a reel number, a big cropped headline, and a filmstrip of that day's shots underneath. A sprocket-holed reel counter runs down the right edge as the only persistent navigation: ten dots, one lit at a time, the whole trip visible as a single strip of film.</p>
+      <div class="concept-meta">
+        <span><b>Replaces:</b> the collapsible day list with one full-viewport chapter per day</span>
+        <span><b>Keeps:</b> stop order (as a chaptered run-list), photo emphasis, day-to-day navigation</span>
+      </div>
+    </div>
+
+    <div class="frame-label">Reel 03 — a day as a title card</div>
+    <div class="frame-wrap">
+      <div class="mock-nightreel">
+        <div class="nr-sprockets nr-left"></div>
+        <div class="nr-sprockets nr-right"></div>
+        <div class="nr-inner">
+          <div class="nr-rail">
+            <div class="nr-dot"></div><div class="nr-dot"></div><div class="nr-dot is-active"></div>
+            <div class="nr-dot"></div><div class="nr-dot"></div><div class="nr-dot"></div>
+            <div class="nr-dot"></div><div class="nr-dot"></div><div class="nr-dot"></div><div class="nr-dot"></div>
+          </div>
+          <div class="nr-frame">
+            <div class="nr-top">
+              <div class="nr-timecode">03 JUL 2026 · 08:14 — 19:40</div>
+              <div class="nr-reelno">REEL 03 / 10</div>
+            </div>
+            <div>
+              <div class="nr-titlecard">
+                <div class="nr-eyebrow">Day Trip</div>
+                <div class="nr-title">The Cotswolds</div>
+                <div class="nr-stops">
+                  <span><b>Broad Campden</b></span><span class="sep">·</span>
+                  <span><b>Broadway Tower</b></span><span class="sep">·</span>
+                  <span><b>Broadway</b></span><span class="sep">·</span>
+                  <span><b>Snowshill</b></span><span class="sep">·</span>
+                  <span><b>Upper &amp; Lower Slaughter</b></span><span class="sep">·</span>
+                  <span><b>Feathered Nest Inn</b></span><span class="sep">·</span>
+                  <span><b>Burford</b></span><span class="sep">·</span>
+                  <span><b>Bourton-on-the-Water</b></span>
+                </div>
+              </div>
+              <div class="nr-strip">
+                <div class="ph" style="background:linear-gradient(155deg,#443a26,#1a1a14);"></div>
+                <div class="ph" style="background:linear-gradient(155deg,#3a3a26,#141414);"></div>
+                <div class="ph" style="background:linear-gradient(155deg,#4a3a2a,#1a1410);"></div>
+                <div class="ph" style="background:linear-gradient(155deg,#2e3a2a,#101410);"></div>
+                <div class="ph" style="background:linear-gradient(155deg,#4a2e26,#1a100e);"></div>
+                <div class="ph" style="background:linear-gradient(155deg,#3a2e3a,#141018);"></div>
+                <div class="ph" style="background:linear-gradient(155deg,#2a3a3a,#0e1414);"></div>
+                <div class="ph" style="background:linear-gradient(155deg,#4a4426,#181608);"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ COMPARISON ============================================================ -->
+  <section class="concept" id="matrix">
+    <div class="concept-head">
+      <div class="concept-kicker">Weighing the Four</div>
+      <div class="concept-name">Comparison</div>
+      <p class="concept-pitch">None of these are drop-in replacements for the live grid — each is a real rebuild of <code>index.html</code>'s structure, not a CSS tweak. This is a rough sense of what each one costs and what it's actually good at.</p>
+    </div>
+    <div class="matrix-wrap">
+      <table class="matrix">
+        <thead>
+          <tr><th>Concept</th><th>Best at</th><th>Costs you</th><th>Mobile</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="label">The Route</td>
+            <td>Making the whole trip's shape scannable in one scroll; busy days branch instead of overwhelming.</td>
+            <td>The spine has to be hand-tuned so branch days don't dwarf light ones.</td>
+            <td>Naturally narrow — collapses well.</td>
+          </tr>
+          <tr>
+            <td class="label">Field Notes</td>
+            <td>Photo storytelling; days with a strong narrative arc (Cotswolds, Cambridge) shine.</td>
+            <td>Masonry + margin column is the most layout work of the four; quieter days may feel over-written.</td>
+            <td>Two-column spread has to fully stack; drop cap/pull-quote need simplifying.</td>
+          </tr>
+          <tr>
+            <td class="label">Corkboard</td>
+            <td>Warmth and personality — feels handmade, matches a family retrospective tone.</td>
+            <td>Absolute-positioned scatter is the hardest to make responsive and accessible; needs a real reflow strategy per breakpoint.</td>
+            <td>Hardest of the four — the "scattered" layout likely becomes a simple stack on phones, losing the effect.</td>
+          </tr>
+          <tr>
+            <td class="label">Night Reel</td>
+            <td>Drama and pacing for a slideshow-style read-through; strong on a big screen.</td>
+            <td>Full-viewport chapters make skimming (the current "At a Glance" habit) slower — needs the reel rail to double as a jump-nav.</td>
+            <td>Sprocket chrome likely drops; still works as stacked full-bleed sections.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="deck-footer">
+    Structural mockups only — no photo pipeline, theme variables, or build script changes implied. Say the word on any direction (or a hybrid) and it can move to a real <code>day_layout_mockup.html</code>-style pass against actual site data.
+  </div>
+
+</div>
