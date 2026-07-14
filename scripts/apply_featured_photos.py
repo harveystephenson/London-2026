@@ -5,10 +5,14 @@ Reads the featured_photo_decisions.json downloaded from the picker page
 a full rewrite, not a merge, since the picker's localStorage already holds
 the complete current state (seeded from the CSV when it was generated).
 
-Each pick in the export is a slug (e.g. "img_2830"), not a raw filename —
-see the comment on FEATURED_CSV in build_gallery.py for why. Unset slots
-(null in the export) simply don't get a row, which is fine: build_gallery.py
-falls back automatically for anything unpicked.
+Each pick in the export is {filename, crop_x, crop_y} (#84) — filename is
+a slug (e.g. "img_2830"), not a raw filename, see the comment on
+FEATURED_CSV in build_gallery.py for why. crop_x/crop_y (0-100, default 50)
+is the object-position the user dragged to in the picker's crop-frame
+preview, so the site crops the same part of the photo the user chose
+instead of an arbitrary center crop. Unset slots (null in the export)
+simply don't get a row, which is fine: build_gallery.py falls back
+automatically for anything unpicked.
 
 Run build_gallery.py afterwards to bake the picks into index.html — no
 photos need re-encoding for this, so it's the fast, data-only path (~3s).
@@ -27,7 +31,19 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 FEATURED_CSV = ROOT / "data" / "featured_photos.csv"
 
-FIELDS = ["role", "filename", "day", "location_id", "sort"]
+FIELDS = ["role", "filename", "day", "location_id", "sort", "crop_x", "crop_y"]
+
+
+def crop_of(pick):
+    """Each pick is {filename, crop_x, crop_y} — default to a center crop
+    (50, 50) if crop fields are missing, e.g. from a manually-edited JSON."""
+    x = pick.get("crop_x") if isinstance(pick, dict) else None
+    y = pick.get("crop_y") if isinstance(pick, dict) else None
+    return (round(x, 1) if x is not None else 50, round(y, 1) if y is not None else 50)
+
+
+def filename_of(pick):
+    return pick.get("filename") if isinstance(pick, dict) else pick
 
 
 def main():
@@ -42,17 +58,22 @@ def main():
     data = json.loads(src.read_text(encoding="utf-8-sig"))
 
     rows = []
-    if data.get("banner_lead"):
-        rows.append({"role": "banner_lead", "filename": data["banner_lead"], "day": "", "location_id": "", "sort": 1})
-    for i, filename in enumerate(data.get("banner") or []):
-        if filename:
-            rows.append({"role": "banner", "filename": filename, "day": "", "location_id": "", "sort": i + 2})
-    for day, filename in (data.get("day_feature") or {}).items():
-        if filename:
-            rows.append({"role": "day_feature", "filename": filename, "day": day, "location_id": "", "sort": ""})
-    for location_id, filename in (data.get("item_feature") or {}).items():
-        if filename:
-            rows.append({"role": "item_feature", "filename": filename, "day": "", "location_id": location_id, "sort": ""})
+    lead = data.get("banner_lead")
+    if lead and filename_of(lead):
+        cx, cy = crop_of(lead)
+        rows.append({"role": "banner_lead", "filename": filename_of(lead), "day": "", "location_id": "", "sort": 1, "crop_x": cx, "crop_y": cy})
+    for i, pick in enumerate(data.get("banner") or []):
+        if pick and filename_of(pick):
+            cx, cy = crop_of(pick)
+            rows.append({"role": "banner", "filename": filename_of(pick), "day": "", "location_id": "", "sort": i + 2, "crop_x": cx, "crop_y": cy})
+    for day, pick in (data.get("day_feature") or {}).items():
+        if pick and filename_of(pick):
+            cx, cy = crop_of(pick)
+            rows.append({"role": "day_feature", "filename": filename_of(pick), "day": day, "location_id": "", "sort": "", "crop_x": cx, "crop_y": cy})
+    for location_id, pick in (data.get("item_feature") or {}).items():
+        if pick and filename_of(pick):
+            cx, cy = crop_of(pick)
+            rows.append({"role": "item_feature", "filename": filename_of(pick), "day": "", "location_id": location_id, "sort": "", "crop_x": cx, "crop_y": cy})
 
     with open(FEATURED_CSV, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=FIELDS)

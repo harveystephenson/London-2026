@@ -69,6 +69,10 @@ EDITS_CSV = ROOT / "data" / "photo_edits.csv"
 # banner (up to 4, ordered by sort), day_feature (0-1 per day), item_feature
 # (0-1 per schedule-linked location). Unpicked slots fall back automatically
 # (see resolve_featured_photos) so a missing/empty CSV never breaks the build.
+# crop_x,crop_y (#84): the object-position (0-100, default 50/50 = center)
+# the user dragged to in the picker's crop-frame preview, so a photo whose
+# subject isn't centered doesn't get an arbitrary center crop in the fixed
+# banner/day/item boxes (object-fit: cover).
 FEATURED_CSV = ROOT / "data" / "featured_photos.csv"
 OUT_DIR = ROOT / "photos"
 GALLERY_MANIFEST = OUT_DIR / "manifest.json"
@@ -169,9 +173,28 @@ def inject_html(html, start_marker, end_marker, content, search_from=0):
     return html[:start_idx] + content + html[end_idx:]
 
 
+DEFAULT_CROP = (50.0, 50.0)
+
+
+def _crop_of(row):
+    """Parse crop_x/crop_y off a featured_photos.csv row, defaulting to a
+    center crop for rows written before #84 (no crop columns) or left blank."""
+    try:
+        x = float(row.get("crop_x") or 50)
+    except (TypeError, ValueError):
+        x = 50.0
+    try:
+        y = float(row.get("crop_y") or 50)
+    except (TypeError, ValueError):
+        y = 50.0
+    return (x, y)
+
+
 def load_featured_photos():
     """Read data/featured_photos.csv into {role: ...} buckets. Missing file
-    (picker never run yet) is treated as empty — everything falls back."""
+    (picker never run yet) is treated as empty — everything falls back.
+    Each pick is (filename, (crop_x, crop_y)) — see the crop_x/crop_y
+    comment on FEATURED_CSV above (#84)."""
     banner_lead = None
     banner = []
     day_feature = {}
@@ -184,34 +207,47 @@ def load_featured_photos():
             filename = row.get("filename", "")
             if not role or not filename:
                 continue
+            crop = _crop_of(row)
             if role == "banner_lead":
-                banner_lead = filename
+                banner_lead = (filename, crop)
             elif role == "banner":
-                banner.append((int(row.get("sort") or 0), filename))
+                banner.append((int(row.get("sort") or 0), filename, crop))
             elif role == "day_feature" and row.get("day"):
-                day_feature[row["day"]] = filename
+                day_feature[row["day"]] = (filename, crop)
             elif role == "item_feature" and row.get("location_id"):
-                item_feature[row["location_id"]] = filename
-    banner = [f for _, f in sorted(banner)]
+                item_feature[row["location_id"]] = (filename, crop)
+    banner = [(f, c) for _, f, c in sorted(banner)]
     return banner_lead, banner, day_feature, item_feature
 
 
 def resolve_featured_photos(filename_to_paths, gallery, gallery_by_location):
-    """Turn the featured_photos.csv picks into actual {thumb,full} paths,
-    falling back to sensible defaults for anything unpicked (or picked but
-    no longer live, e.g. a since-deleted photo) so the build never breaks:
-    banner falls back to the terracotta-mockup seed photos, day_feature to
-    that day's first (chronological) photo, item_feature to that location's
-    first photo."""
+    """Turn the featured_photos.csv picks into actual {thumb,full,cropX,cropY}
+    dicts, falling back to sensible defaults for anything unpicked (or picked
+    but no longer live, e.g. a since-deleted photo) so the build never
+    breaks: banner falls back to the terracotta-mockup seed photos (centered),
+    day_feature to that day's first (chronological) photo (centered),
+    item_feature to that location's first photo (centered)."""
     picked_lead, picked_banner, picked_day, picked_item = load_featured_photos()
 
-    def lookup(filename):
-        return filename_to_paths.get(filename) if filename else None
+    def lookup(pick):
+        """pick is (filename, crop) or None. Returns a {..., cropX, cropY}
+        dict, or None if the filename isn't a live photo."""
+        if not pick:
+            return None
+        filename, crop = pick
+        photo = filename_to_paths.get(filename) if filename else None
+        if not photo:
+            return None
+        return {**photo, "cropX": crop[0], "cropY": crop[1]}
+
+    def centered(photo):
+        return {**photo, "cropX": DEFAULT_CROP[0], "cropY": DEFAULT_CROP[1]} if photo else None
 
     banner_seed = ["img_2830", "img_3374", "img_2493", "img_3027", "img_2536"]
-    lead_paths = lookup(picked_lead) or lookup(banner_seed[0])
-    banner_rest = [lookup(f) for f in picked_banner] or []
-    banner_rest = [p for p in banner_rest if p] or [lookup(f) for f in banner_seed[1:]]
+    lead_paths = lookup(picked_lead) or centered(filename_to_paths.get(banner_seed[0]))
+    banner_rest = [lookup(p) for p in picked_banner] or []
+    banner_rest = [p for p in banner_rest if p] or [centered(filename_to_paths.get(f)) for f in banner_seed[1:]]
+    banner_rest = [p for p in banner_rest if p]
     banner_resolved = [p for p in ([lead_paths] + banner_rest) if p][:5]
 
     day_feature_resolved = {}
@@ -220,7 +256,7 @@ def resolve_featured_photos(filename_to_paths, gallery, gallery_by_location):
         if explicit:
             day_feature_resolved[day] = explicit
         elif photos:
-            day_feature_resolved[day] = photos[0]
+            day_feature_resolved[day] = centered(photos[0])
 
     item_feature_resolved = {}
     for location_id, photos in gallery_by_location.items():
@@ -228,7 +264,7 @@ def resolve_featured_photos(filename_to_paths, gallery, gallery_by_location):
         if explicit:
             item_feature_resolved[location_id] = explicit
         elif photos:
-            item_feature_resolved[location_id] = photos[0]
+            item_feature_resolved[location_id] = centered(photos[0])
 
     return banner_resolved, day_feature_resolved, item_feature_resolved
 
@@ -245,13 +281,23 @@ def read_photo_v(html):
     return m.group(1) if m else "?v=2"
 
 
+def crop_style_attr(photo):
+    """style="object-position: X% Y%" for a resolved photo dict, omitted
+    when it's just the default center crop (#84) to keep untouched slots'
+    HTML byte-identical to before this feature existed."""
+    cx, cy = photo.get("cropX", DEFAULT_CROP[0]), photo.get("cropY", DEFAULT_CROP[1])
+    if (cx, cy) == DEFAULT_CROP:
+        return ""
+    return f' style="object-position:{cx:g}% {cy:g}%"'
+
+
 def update_banner(html, banner_resolved, photo_v):
     if BANNER_START_MARKER not in html or BANNER_END_MARKER not in html:
         raise RuntimeError(f"Could not find {BANNER_START_MARKER} / {BANNER_END_MARKER} markers in index.html")
     imgs = []
     for i, photo in enumerate(banner_resolved):
         src = photo["full"] if i == 0 else photo["thumb"]
-        imgs.append(f'<img src="photos/{src}{photo_v}" alt="" loading="eager">')
+        imgs.append(f'<img src="photos/{src}{photo_v}" alt=""{crop_style_attr(photo)} loading="eager">')
     return inject_html(html, BANNER_START_MARKER, BANNER_END_MARKER, "".join(imgs))
 
 
@@ -261,7 +307,7 @@ def update_day_features(html, day_feature_resolved, photo_v):
         end_marker = "<!--END_DAYFEATURE-->"
         if start_marker not in html:
             continue
-        img = f'<img src="photos/{photo["thumb"]}{photo_v}" alt="" loading="lazy">'
+        img = f'<img src="photos/{photo["thumb"]}{photo_v}" alt=""{crop_style_attr(photo)} loading="lazy">'
         start_idx = html.index(start_marker)
         html = inject_html(html, start_marker, end_marker, img, search_from=start_idx)
     return html
@@ -280,7 +326,7 @@ def update_item_photos(html, item_feature_resolved, photo_v):
             body += (
                 f'<td class="item-photo"><a href="#" '
                 f"onclick=\"openLocationGrid('{location_id}');return false;\">"
-                f'<img src="photos/{photo["thumb"]}{photo_v}" alt="" loading="lazy"></a></td>'
+                f'<img src="photos/{photo["thumb"]}{photo_v}" alt=""{crop_style_attr(photo)} loading="lazy"></a></td>'
             )
         return open_tag + body + close_tag
 
