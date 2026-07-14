@@ -1,8 +1,8 @@
 role,filename,day,location_id,sort,crop_x,crop_y
-banner_lead,img_2839,,,1,50,30.7
+banner_lead,img_2833,,,1,50,50
 banner,img_2507,,,2,50,23.1
 banner,img_3873,,,3,50,50
-banner,img_3321,,,4,50,29.8
+banner,img_2839,,,4,50,10.3
 banner,photo-2026-07-08-16-41-55,,,5,50,42.5
 day_feature,img_2514,day-29-jun,,,50,50
 day_feature,img_2585,day-30-jun,,,50,30.3
