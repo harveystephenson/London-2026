@@ -1,0 +1,555 @@
+<title>London 2026 — Layout Explorations, Vol. 2</title>
+<style>
+  /* Deck chrome — same studio tokens as layout_explorations.html, so this
+     reads as a continuation rather than a new pitch. */
+  :root {
+    --deck-bg:      #eeece3;
+    --deck-surface: #ffffff;
+    --deck-border:  #d9d4c5;
+    --deck-ink:     #201f1a;
+    --deck-muted:   #726c5c;
+    --deck-accent:  #3d5546;
+    --deck-accent-soft: #e2e6dd;
+    --deck-font-display: Charter, 'Iowan Old Style', Georgia, serif;
+    --deck-font-sans: -apple-system, 'Neue Haas Grotesk', 'Helvetica Neue', Arial, sans-serif;
+    --deck-font-mono: 'iA Writer Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --deck-bg:#15171a; --deck-surface:#1c1f22; --deck-border:#33362f; --deck-ink:#e9e6dc; --deck-muted:#9a9587; --deck-accent:#8fae9b; --deck-accent-soft:#202722; }
+  }
+  :root[data-theme="dark"]  { --deck-bg:#15171a; --deck-surface:#1c1f22; --deck-border:#33362f; --deck-ink:#e9e6dc; --deck-muted:#9a9587; --deck-accent:#8fae9b; --deck-accent-soft:#202722; }
+  :root[data-theme="light"] { --deck-bg:#eeece3; --deck-surface:#ffffff; --deck-border:#d9d4c5; --deck-ink:#201f1a; --deck-muted:#726c5c; --deck-accent:#3d5546; --deck-accent-soft:#e2e6dd; }
+
+  * { box-sizing: border-box; }
+  html, body { overflow-x: hidden; }
+  body { background: var(--deck-bg); color: var(--deck-ink); font-family: var(--deck-font-sans); line-height: 1.55; }
+  .deck { max-width: 1080px; margin: 0 auto; padding: 56px 24px 120px; }
+  .deck-intro { max-width: 700px; margin-bottom: 40px; }
+  .eyebrow { font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--deck-accent); font-weight: 600; margin-bottom: 12px; }
+  .deck-title { font-family: var(--deck-font-display); font-size: clamp(28px,4.4vw,40px); font-weight: 500; text-wrap: balance; margin-bottom: 14px; letter-spacing: -0.01em; }
+  .deck-sub { color: var(--deck-muted); font-size: 15px; max-width: 64ch; }
+  .deck-sub + .deck-sub { margin-top: 10px; }
+  .back-link { display: inline-block; margin-top: 14px; font-size: 12.5px; color: var(--deck-accent); }
+
+  .toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 28px 0 8px; padding: 16px; background: var(--deck-surface); border: 1px solid var(--deck-border); border-radius: 10px; }
+  .toc a { font-size: 12.5px; color: var(--deck-ink); text-decoration: none; border: 1px solid var(--deck-border); border-radius: 99px; padding: 6px 14px; }
+  .toc a:hover { border-color: var(--deck-accent); color: var(--deck-accent); }
+  .toc-num { color: var(--deck-accent); font-weight: 700; margin-right: 6px; }
+
+  .concept { margin-top: 88px; padding-top: 40px; border-top: 1px solid var(--deck-border); scroll-margin-top: 24px; }
+  .concept-head { max-width: 720px; margin-bottom: 28px; }
+  .concept-kicker { font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--deck-accent); font-weight: 700; margin-bottom: 10px; }
+  .concept-name { font-family: var(--deck-font-display); font-size: clamp(24px,3.4vw,32px); margin-bottom: 10px; }
+  .concept-pitch { font-size: 15px; color: var(--deck-muted); }
+  .concept-meta { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 16px; font-size: 12.5px; color: var(--deck-muted); }
+  .concept-meta b { color: var(--deck-ink); font-weight: 600; }
+
+  .frame-label { font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--deck-muted); font-weight: 700; margin: 28px 0 10px; display: flex; align-items: center; gap: 8px; }
+  .frame-label::after { content: ''; flex: 1; height: 1px; background: var(--deck-border); }
+  .frame-wrap { border: 1px solid var(--deck-border); border-radius: 12px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+
+  .idea-list { margin-top: 18px; }
+  .idea-list-label { font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--deck-muted); font-weight: 700; margin-bottom: 10px; }
+  .idea-row { display: grid; grid-template-columns: 180px 1fr; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--deck-border); font-size: 13px; }
+  .idea-row b { font-family: var(--deck-font-display); font-size: 15px; font-weight: 600; }
+  .idea-row span { color: var(--deck-muted); }
+
+  .deck-footer { margin-top: 90px; padding-top: 24px; border-top: 1px solid var(--deck-border); font-size: 12.5px; color: var(--deck-muted); }
+
+  .ph { position: relative; overflow: hidden; display: flex; align-items: flex-end; background-size: cover; color: #fff; }
+  .ph-cap { font-size: 10.5px; letter-spacing: .03em; position: relative; z-index: 1; padding: 8px 10px; text-shadow: 0 1px 3px rgba(0,0,0,.5); }
+  .ph::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.45), rgba(0,0,0,0) 55%); }
+
+  /* ============================================================
+     1b — THE ROUTE, FULL TRIP (long spine, all ten days)
+     ============================================================ */
+  .mock-route {
+    --r-bg:#f6f4ec; --r-ink:#1c2a22; --r-line:#2f4a3d; --r-brass:#a9822f; --r-slate:#5c7280; --r-card:#fff; --r-border:#dcd6c4;
+    background: var(--r-bg); color: var(--r-ink); font-family: Charter, Georgia, serif; padding: 0;
+  }
+  .mock-route .r-shell { display: grid; grid-template-columns: 1fr 40px; max-width: 800px; margin: 0 auto; }
+  .mock-route .r-inner { padding: 40px 28px 56px; min-width: 0; }
+  .mock-route .r-eyebrow { font-family: var(--deck-font-sans); font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--r-slate); font-weight: 700; margin-bottom: 10px; }
+  .mock-route h1 { font-size: 36px; font-weight: 500; line-height: 1.08; margin-bottom: 6px; }
+  .mock-route .r-dates { color: var(--r-brass); font-size: 15px; margin-bottom: 8px; }
+  .mock-route .r-scale-note { font-family: var(--deck-font-sans); font-size: 11.5px; color: #7c7660; margin-bottom: 26px; }
+
+  .mock-route .r-rail {
+    position: sticky; top: 40px; align-self: start; height: 560px; padding: 8px 0;
+    display: flex; flex-direction: column; justify-content: space-between; align-items: center;
+    border-left: 1px solid var(--r-border);
+  }
+  .mock-route .r-rail-dot { width: 5px; height: 5px; border-radius: 50%; background: #c9c2ac; }
+  .mock-route .r-rail-dot.is-major { width: 8px; height: 8px; background: var(--r-brass); }
+  .mock-route .r-rail-label { font-family: var(--deck-font-sans); font-size: 9px; color: #a39c85; writing-mode: vertical-rl; letter-spacing: .06em; }
+
+  .mock-route .r-spine { position: relative; padding-left: 34px; }
+  .mock-route .r-spine::before { content: ''; position: absolute; left: 9px; top: 6px; bottom: 6px; width: 2px; background: repeating-linear-gradient(to bottom, var(--r-line) 0 6px, transparent 6px 10px); }
+  .mock-route .r-stop { position: relative; margin-bottom: 20px; }
+  .mock-route .r-stop::before { content: ''; position: absolute; left: -34px; top: 3px; width: 12px; height: 12px; border-radius: 50%; background: var(--r-card); border: 3px solid var(--r-brass); }
+  .mock-route .r-stop.is-branch::before { border-color: var(--r-slate); }
+  .mock-route .r-stop.is-postscript::before { border-color: #b9b2a0; border-style: dashed; }
+  .mock-route .r-stop-date { font-family: var(--deck-font-sans); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--r-slate); font-weight: 700; margin-bottom: 2px; }
+  .mock-route .r-stop-title { font-size: 16px; margin-bottom: 2px; }
+  .mock-route .r-stop-sub { font-family: var(--deck-font-sans); font-size: 12px; color: #5b5647; }
+  .mock-route .r-stop.is-light { margin-bottom: 12px; }
+  .mock-route .r-stop.is-light .r-stop-title { font-size: 14.5px; }
+
+  .mock-route .r-branch-card { background: var(--r-card); border: 1px solid var(--r-border); border-radius: 8px; padding: 14px 16px; margin-top: 8px; }
+  .mock-route .r-branch-head { font-family: var(--deck-font-sans); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--r-brass); font-weight: 700; margin-bottom: 8px; }
+  .mock-route .r-branch-line { position: relative; padding-left: 18px; }
+  .mock-route .r-branch-line::before { content: ''; position: absolute; left: 5px; top: 4px; bottom: 4px; width: 1.5px; background: var(--r-slate); opacity: .5; }
+  .mock-route .r-halt { position: relative; display: flex; align-items: baseline; gap: 8px; padding: 4px 0; font-family: var(--deck-font-sans); font-size: 12px; }
+  .mock-route .r-halt::before { content: ''; position: absolute; left: -17px; top: 9px; width: 6px; height: 6px; border-radius: 50%; background: var(--r-slate); }
+  .mock-route .r-halt b { font-weight: 600; }
+  .mock-route .r-halt span { color: #85806f; font-size: 10.5px; }
+  .mock-route .r-halt.r-lunch::before { background: var(--r-brass); }
+
+  .mock-route .r-gap-note {
+    font-family: var(--deck-font-sans); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase;
+    color: #a39c85; margin: 18px 0 18px -34px; padding-left: 34px; position: relative;
+  }
+  .mock-route .r-gap-note::before { content: ''; position: absolute; left: 9px; top: 50%; width: 2px; height: 34px; transform: translateY(-50%); background: repeating-linear-gradient(to bottom, #c9c2ac 0 4px, transparent 4px 8px); }
+
+  /* ============================================================
+     1c — THE UNDERGROUND (schematic branch-line diagram)
+     ============================================================ */
+  .mock-underground {
+    --u-bg: #fbfaf6; --u-ink: #26241d; --u-home: #2c3e6b; --u-cots: #55712f; --u-cam: #b5592f; --u-off: #9a9486;
+    background: var(--u-bg); color: var(--u-ink); font-family: var(--deck-font-sans); padding: 34px 28px 30px;
+  }
+  .mock-underground .u-head { margin-bottom: 6px; }
+  .mock-underground .u-eyebrow { font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--u-off); font-weight: 700; margin-bottom: 6px; }
+  .mock-underground h2 { font-family: var(--deck-font-display); font-size: 24px; font-weight: 600; margin-bottom: 18px; }
+  .mock-underground .u-legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 11px; margin-top: 14px; }
+  .mock-underground .u-legend-item { display: flex; align-items: center; gap: 6px; }
+  .mock-underground .u-legend-swatch { width: 18px; height: 3px; border-radius: 2px; }
+  .mock-underground .u-legend-swatch.dashed { background: repeating-linear-gradient(to right, var(--u-off) 0 4px, transparent 4px 7px); }
+  .mock-underground svg { display: block; width: 100%; height: auto; aspect-ratio: 960 / 400; }
+  .mock-underground svg text { font-family: var(--deck-font-sans); }
+
+  /* ============================================================
+     2b — POSTCARDS
+     ============================================================ */
+  .mock-postcards { --p-bg:#c9c1a8; --p-card:#f8f4e9; --p-ink:#2c2820; --p-stamp:#8a7a4e; --p-mark:#4a5568;
+    background:
+      radial-gradient(rgba(0,0,0,.05) 1px, transparent 1.4px) 0 0/6px 6px, var(--p-bg);
+    padding: 40px 28px 46px; font-family: Georgia, serif; color: var(--p-ink);
+  }
+  .mock-postcards .pc-head { max-width: 640px; margin: 0 auto 26px; }
+  .mock-postcards .pc-eyebrow { font-family: var(--deck-font-sans); font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: #6b6248; font-weight: 700; margin-bottom: 6px; }
+  .mock-postcards h2 { font-size: 24px; font-weight: 600; }
+
+  .mock-postcards .pc-row { display: flex; gap: 26px; flex-wrap: wrap; justify-content: center; padding: 10px 0 30px; }
+  .mock-postcards .pc-card { width: 260px; height: 172px; background: var(--p-card); border-radius: 3px; box-shadow: 0 10px 20px rgba(0,0,0,.28); position: relative; }
+  .mock-postcards .pc-card.rot-l { transform: rotate(-2.4deg); }
+  .mock-postcards .pc-card.rot-r { transform: rotate(2deg); }
+  .mock-postcards .pc-front { padding: 8px; height: 100%; }
+  .mock-postcards .pc-front .ph { height: 100%; border-radius: 1px; }
+  .mock-postcards .pc-stamp {
+    position: absolute; top: 12px; right: 12px; width: 40px; height: 48px; background: #efe6cc;
+    border: 2px dashed #c9bd94; display: flex; align-items: center; justify-content: center;
+    font-family: var(--deck-font-sans); font-size: 15px; font-weight: 700; color: var(--p-stamp);
+  }
+  .mock-postcards .pc-postmark {
+    position: absolute; top: 26px; right: 44px; width: 52px; height: 52px; border-radius: 50%;
+    border: 2px solid rgba(74,85,104,.55); display: flex; align-items: center; justify-content: center;
+    font-family: var(--deck-font-mono); font-size: 8px; color: var(--p-mark); text-align: center; line-height: 1.3;
+    transform: rotate(-14deg);
+  }
+  .mock-postcards .pc-cap {
+    position: absolute; bottom: 8px; left: 10px; font-style: italic; font-size: 13px; color: #efe9d8;
+    text-shadow: 0 1px 3px rgba(0,0,0,.6); z-index: 1;
+  }
+
+  .mock-postcards .pc-back { padding: 14px 16px; height: 100%; display: flex; flex-direction: column; }
+  .mock-postcards .pc-back-top { display: flex; flex: 1; gap: 12px; }
+  .mock-postcards .pc-note { flex: 1.3; font-style: italic; font-size: 12.5px; line-height: 1.6; color: #3a3327; padding-right: 8px; }
+  .mock-postcards .pc-addr { flex: 1; border-left: 1px solid #cfc6ac; padding-left: 12px; }
+  .mock-postcards .pc-addr-line { border-bottom: 1px solid #d8d0b8; height: 15px; margin-bottom: 8px; }
+  .mock-postcards .pc-stats {
+    font-family: var(--deck-font-sans); font-size: 9.5px; letter-spacing: .04em; color: #6b6248;
+    border-top: 1px solid #d8d0b8; padding-top: 8px; margin-top: 6px;
+  }
+
+  /* ============================================================
+     2c — EXHIBITION PLACARD
+     ============================================================ */
+  .mock-placard { --pl-wall:#e9e5db; --pl-card:#faf8f2; --pl-ink:#211f1b; --pl-muted:#6e6a5f; --pl-accent:#6b2b3a;
+    background: var(--pl-wall); color: var(--pl-ink); padding: 44px 30px 50px; font-family: Georgia, serif;
+  }
+  .mock-placard .pl-panel { max-width: 620px; margin: 0 auto; background: var(--pl-card); border: 1px solid #ddd7c8; padding: 34px 38px; box-shadow: 0 2px 10px rgba(0,0,0,.06); }
+  .mock-placard .pl-plate-no { font-family: var(--deck-font-sans); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--pl-accent); font-weight: 700; margin-bottom: 10px; }
+  .mock-placard .pl-title { font-size: 25px; font-weight: 600; margin-bottom: 4px; }
+  .mock-placard .pl-subtitle { font-style: italic; font-size: 14px; color: var(--pl-muted); margin-bottom: 16px; }
+  .mock-placard .pl-medium {
+    font-family: var(--deck-font-sans); font-size: 11px; letter-spacing: .06em; color: var(--pl-muted);
+    border-top: 1px solid #ddd7c8; border-bottom: 1px solid #ddd7c8; padding: 10px 0; margin-bottom: 16px;
+    text-transform: uppercase;
+  }
+  .mock-placard .pl-desc { font-size: 14px; line-height: 1.75; text-align: justify; margin-bottom: 22px; }
+  .mock-placard .pl-desc b { font-weight: 700; }
+  .mock-placard .pl-plates { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .mock-placard .pl-plate-cap { font-family: var(--deck-font-sans); font-size: 10px; color: var(--pl-muted); margin-top: 5px; text-align: center; }
+  .mock-placard .pl-plate-cap b { color: var(--pl-ink); font-weight: 700; display: block; font-size: 10.5px; }
+  .mock-placard .pl-plate .ph { height: 90px; border-radius: 1px; }
+</style>
+
+<div class="deck">
+
+  <div class="deck-intro">
+    <div class="eyebrow">London 2026 — Structural Studies, Vol. 2</div>
+    <h1 class="deck-title">The Route and Field Notes, taken further</h1>
+    <p class="deck-sub">Two follow-ups on the pair from Vol. 1. First: what "The Route" looks like scaled up to the entire nine-day trip, spine and all — including how a page that long stays navigable. Second: two more skins built on the same underlying structures as The Route and Field Notes, plus a short list of further ideas in each family that aren't built yet.</p>
+    <p class="deck-sub">Same rules as before: placeholder gradients stand in for photos, nothing here is wired into <code>index.html</code>.</p>
+    <a class="back-link" href="layout_explorations.html">&larr; Back to Vol. 1 (all four original directions)</a>
+  </div>
+
+  <nav class="toc">
+    <a href="#c1b"><span class="toc-num">01b</span>The Route — Full Trip</a>
+    <a href="#c1c"><span class="toc-num">01c</span>The Underground</a>
+    <a href="#c2b"><span class="toc-num">02b</span>Postcards</a>
+    <a href="#c2c"><span class="toc-num">02c</span>Exhibition Placard</a>
+    <a href="#more"><span class="toc-num">—</span>Unbuilt ideas</a>
+  </nav>
+
+  <!-- ============================================================ 1b. ROUTE — FULL TRIP ============================================================ -->
+  <section class="concept" id="c1b">
+    <div class="concept-head">
+      <div class="concept-kicker">01b · Cartographic, Extended</div>
+      <div class="concept-name">The Route — Whole Trip</div>
+      <p class="concept-pitch">Yes — a long timeline, on purpose. All ten days on one continuous spine: light days collapse to a single compact stop, the two day-trip branches (Cotswolds, Cambridge) blow out into their full halt-by-halt detail, and the Rania dinner sits below a visibly broken connector, since it isn't really on this line at all. The page gets long; a slim sticky rail of ten ticks along the right edge tracks where you are in the trip as you scroll, so length doesn't mean getting lost.</p>
+      <div class="concept-meta">
+        <span><b>Length:</b> roughly 3–4x a single day's scroll depth</span>
+        <span><b>Answers:</b> "where am I in the trip" via the sticky rail, not a nav bar</span>
+      </div>
+    </div>
+
+    <div class="frame-label">Full spine, Mon 29 Jun → Fri 10 Jul</div>
+    <div class="frame-wrap">
+      <div class="mock-route">
+        <div class="r-shell">
+          <div class="r-inner">
+            <div class="r-eyebrow">A Trip Remembered</div>
+            <h1>London 2026</h1>
+            <div class="r-dates">Betty &amp; Hugh · 29 Jun – 7 Jul</div>
+            <div class="r-scale-note">Ten stops, two branch lines, one postscript — the whole trip as a single line.</div>
+
+            <div class="r-spine">
+              <div class="r-stop is-light">
+                <div class="r-stop-date">Mon 29 Jun</div>
+                <div class="r-stop-title">Landed Heathrow</div>
+                <div class="r-stop-sub">Notting Hill Bookshop · arrival evening</div>
+              </div>
+              <div class="r-stop is-light">
+                <div class="r-stop-date">Tue 30 Jun</div>
+                <div class="r-stop-title">Tower &amp; Borough Market</div>
+                <div class="r-stop-sub">City &amp; river day</div>
+              </div>
+              <div class="r-stop is-light">
+                <div class="r-stop-date">Wed 1 Jul</div>
+                <div class="r-stop-title">Westminster &amp; Sky Garden</div>
+                <div class="r-stop-sub">Royal London</div>
+              </div>
+              <div class="r-stop is-light">
+                <div class="r-stop-date">Thu 2 Jul</div>
+                <div class="r-stop-title">Kew Gardens &amp; Richmond</div>
+                <div class="r-stop-sub">Riverside afternoon</div>
+              </div>
+
+              <div class="r-stop is-branch">
+                <div class="r-stop-date">Fri 3 Jul — Branch Line</div>
+                <div class="r-stop-title">The Cotswolds</div>
+                <div class="r-branch-card">
+                  <div class="r-branch-head">9 halts, single day</div>
+                  <div class="r-branch-line">
+                    <div class="r-halt"><b>Broad Campden</b><span>first stop</span></div>
+                    <div class="r-halt"><b>Broadway Tower</b><span>16-min cluster</span></div>
+                    <div class="r-halt"><b>Broadway</b><span>village walk</span></div>
+                    <div class="r-halt"><b>Snowshill</b><span>7 photos</span></div>
+                    <div class="r-halt"><b>Upper Slaughter</b><span>6 photos</span></div>
+                    <div class="r-halt"><b>Lower Slaughter</b><span>1 photo</span></div>
+                    <div class="r-halt r-lunch"><b>The Feathered Nest Inn</b><span>lunch</span></div>
+                    <div class="r-halt"><b>Burford</b><span>2 photos</span></div>
+                    <div class="r-halt"><b>Bourton-on-the-Water</b><span>38 photos · final stop</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="r-stop is-light">
+                <div class="r-stop-date">Sat 4 Jul</div>
+                <div class="r-stop-title">London, at Leisure</div>
+                <div class="r-stop-sub">Markets &amp; neighborhoods</div>
+              </div>
+
+              <div class="r-stop is-branch">
+                <div class="r-stop-date">Sun 5 Jul — Branch Line</div>
+                <div class="r-stop-title">Cambridge</div>
+                <div class="r-branch-card">
+                  <div class="r-branch-head">6 halts, single day</div>
+                  <div class="r-branch-line">
+                    <div class="r-halt"><b>Cambridge Station</b><span>arrival</span></div>
+                    <div class="r-halt"><b>CCSS</b><span>The Perse School</span></div>
+                    <div class="r-halt"><b>Coe Fen</b><span>grazing common</span></div>
+                    <div class="r-halt"><b>Punting</b><span>Mill Lane</span></div>
+                    <div class="r-halt"><b>University Arms Hotel</b><span>stop</span></div>
+                    <div class="r-halt"><b>City Centre</b><span>walk</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="r-stop is-light">
+                <div class="r-stop-date">Mon 6 Jul</div>
+                <div class="r-stop-title">Battersea Power Station</div>
+                <div class="r-stop-sub">Italian dinner, evening</div>
+              </div>
+              <div class="r-stop is-light">
+                <div class="r-stop-date">Tue 7 Jul</div>
+                <div class="r-stop-title">Departed Heathrow</div>
+                <div class="r-stop-sub">Line ends here</div>
+              </div>
+
+              <div class="r-gap-note">Not on this line — no UK map pin</div>
+
+              <div class="r-stop is-postscript">
+                <div class="r-stop-date">Fri 10 Jul — Postscript</div>
+                <div class="r-stop-title">Dinner in DC at Rania</div>
+                <div class="r-stop-sub">Same trip, different city</div>
+              </div>
+            </div>
+          </div>
+          <div class="r-rail">
+            <div class="r-rail-dot is-major"></div>
+            <div class="r-rail-dot"></div>
+            <div class="r-rail-dot"></div>
+            <div class="r-rail-dot"></div>
+            <div class="r-rail-dot is-major"></div>
+            <div class="r-rail-dot"></div>
+            <div class="r-rail-dot is-major"></div>
+            <div class="r-rail-dot"></div>
+            <div class="r-rail-dot"></div>
+            <div class="r-rail-dot"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 1c. THE UNDERGROUND ============================================================ -->
+  <section class="concept" id="c1c">
+    <div class="concept-head">
+      <div class="concept-kicker">01c · Cartographic — Route sibling</div>
+      <div class="concept-name">The Underground</div>
+      <p class="concept-pitch">Same skeleton as The Route — a spine with branches — redrawn as a schematic transit diagram instead of a straight vertical line. A "Home Line" runs London's own days left to right; two colored branches peel off at 45° for the Cotswolds and Cambridge day trips, the way a real Tube branch splits from a trunk line. Rania sits off in a corner, deliberately not connected to any line — which happens to match the real reason it has no map pin.</p>
+      <div class="concept-meta">
+        <span><b>Best for:</b> a trip with clear day-trip "branches," like this one</span>
+        <span><b>Costs:</b> station spacing has to be hand-tuned; doesn't scale gracefully past ~3 branches</span>
+      </div>
+    </div>
+
+    <div class="frame-label">Whole trip as a line diagram</div>
+    <div class="frame-wrap">
+      <div class="mock-underground">
+        <div class="u-head">
+          <div class="u-eyebrow">Route Diagram — Not to Scale</div>
+          <h2>London 2026</h2>
+        </div>
+        <svg viewBox="0 0 960 400">
+          <!-- Home line -->
+          <polyline points="60,220 190,220 320,220 450,220 580,220 710,220 840,220 900,220" fill="none" stroke="#2c3e6b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Cotswolds branch -->
+          <polyline points="450,220 490,270 530,300 570,320 615,335" fill="none" stroke="#55712f" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Cambridge branch -->
+          <polyline points="710,220 680,170 710,140 745,113 780,92" fill="none" stroke="#b5592f" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+
+          <!-- Home line stations -->
+          <circle cx="60" cy="220" r="10" fill="#fff" stroke="#2c3e6b" stroke-width="4"/>
+          <circle cx="190" cy="220" r="6" fill="#2c3e6b"/>
+          <circle cx="320" cy="220" r="6" fill="#2c3e6b"/>
+          <circle cx="580" cy="220" r="6" fill="#2c3e6b"/>
+          <circle cx="840" cy="220" r="6" fill="#2c3e6b"/>
+          <circle cx="900" cy="220" r="10" fill="#fff" stroke="#2c3e6b" stroke-width="4"/>
+          <!-- Interchanges -->
+          <circle cx="450" cy="220" r="11" fill="#fff" stroke="#26241d" stroke-width="4"/>
+          <circle cx="710" cy="220" r="11" fill="#fff" stroke="#26241d" stroke-width="4"/>
+
+          <!-- Cotswolds stations -->
+          <circle cx="490" cy="270" r="5" fill="#55712f"/>
+          <circle cx="530" cy="300" r="5" fill="#55712f"/>
+          <circle cx="570" cy="320" r="5" fill="#55712f"/>
+          <circle cx="615" cy="335" r="9" fill="#fff" stroke="#55712f" stroke-width="4"/>
+
+          <!-- Cambridge stations -->
+          <circle cx="680" cy="170" r="5" fill="#b5592f"/>
+          <circle cx="710" cy="140" r="5" fill="#b5592f"/>
+          <circle cx="745" cy="113" r="5" fill="#b5592f"/>
+          <circle cx="780" cy="92" r="9" fill="#fff" stroke="#b5592f" stroke-width="4"/>
+
+          <!-- Rania — off-network -->
+          <circle cx="75" cy="345" r="7" fill="#fff" stroke="#9a9486" stroke-width="3" stroke-dasharray="3 3"/>
+
+          <!-- Labels: home line -->
+          <text x="60" y="245" font-size="11" font-weight="700" text-anchor="middle" fill="#26241d">HEATHROW</text>
+          <text x="60" y="257" font-size="8.5" text-anchor="middle" fill="#726c5c">29 JUN</text>
+          <text x="190" y="205" font-size="10.5" font-weight="600" text-anchor="middle" fill="#26241d">TOWER &amp; BOROUGH</text>
+          <text x="320" y="245" font-size="10.5" font-weight="600" text-anchor="middle" fill="#26241d">WESTMINSTER</text>
+          <text x="450" y="205" font-size="11" font-weight="700" text-anchor="middle" fill="#26241d">COTSWOLDS JCT</text>
+          <text x="450" y="192" font-size="8.5" text-anchor="middle" fill="#726c5c">FRI 3 JUL</text>
+          <text x="580" y="245" font-size="10.5" font-weight="600" text-anchor="middle" fill="#26241d">LONDON (LEISURE)</text>
+          <text x="710" y="205" font-size="11" font-weight="700" text-anchor="middle" fill="#26241d">CAMBRIDGE JCT</text>
+          <text x="710" y="192" font-size="8.5" text-anchor="middle" fill="#726c5c">SUN 5 JUL</text>
+          <text x="840" y="205" font-size="10.5" font-weight="600" text-anchor="middle" fill="#26241d">BATTERSEA</text>
+          <text x="900" y="245" font-size="11" font-weight="700" text-anchor="middle" fill="#26241d">HEATHROW · DEPART</text>
+
+          <!-- Labels: cotswolds branch -->
+          <text x="503" y="266" font-size="9" fill="#3f5622">Broadway Tower</text>
+          <text x="543" y="296" font-size="9" fill="#3f5622">Snowshill</text>
+          <text x="583" y="316" font-size="9" fill="#3f5622">Feathered Nest</text>
+          <text x="615" y="356" font-size="10" font-weight="700" text-anchor="middle" fill="#26241d">BOURTON</text>
+
+          <!-- Labels: cambridge branch -->
+          <text x="666" y="166" font-size="9" text-anchor="end" fill="#823e18">Station</text>
+          <text x="696" y="136" font-size="9" text-anchor="end" fill="#823e18">Coe Fen</text>
+          <text x="731" y="109" font-size="9" text-anchor="end" fill="#823e18">Punting</text>
+          <text x="780" y="80" font-size="10" font-weight="700" text-anchor="middle" fill="#26241d">UNIV. ARMS</text>
+
+          <!-- Rania label -->
+          <text x="90" y="342" font-size="9.5" font-weight="600" fill="#726c5c">Rania, DC — 10 Jul</text>
+          <text x="90" y="354" font-size="8" fill="#9a9486">not on this line</text>
+        </svg>
+        <div class="u-legend">
+          <div class="u-legend-item"><span class="u-legend-swatch" style="background:#2c3e6b;"></span>Home Line — London days</div>
+          <div class="u-legend-item"><span class="u-legend-swatch" style="background:#55712f;"></span>Cotswolds Branch</div>
+          <div class="u-legend-item"><span class="u-legend-swatch" style="background:#b5592f;"></span>Cambridge Branch</div>
+          <div class="u-legend-item"><span class="u-legend-swatch dashed"></span>Off-network (DC)</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 2b. POSTCARDS ============================================================ -->
+  <section class="concept" id="c2b">
+    <div class="concept-head">
+      <div class="concept-kicker">02b · Editorial — Field Notes sibling</div>
+      <div class="concept-name">Postcards</div>
+      <p class="concept-pitch">Same idea as Field Notes — a day is a written, designed thing, not a table row — pushed into a specific object: the postcard you'd actually send home. Front side is a photo with a mock stamp and postmark; flip it and the back has a short handwritten-feeling note on the left, an address-line grid on the right (repurposed to hold the day's photo/stop counts), the way a real postcard splits.</p>
+      <div class="concept-meta">
+        <span><b>Best for:</b> single strong-photo days, browsed as a set</span>
+        <span><b>Costs:</b> a flip interaction to implement; nine postcards is a lot of DOM for one page</span>
+      </div>
+    </div>
+
+    <div class="frame-label">A handful of days, as postcards — fronts, then a back</div>
+    <div class="frame-wrap">
+      <div class="mock-postcards">
+        <div class="pc-head">
+          <div class="pc-eyebrow">Wish You Were Here</div>
+          <h2>London 2026, By Post</h2>
+        </div>
+        <div class="pc-row">
+          <div class="pc-card rot-l">
+            <div class="pc-front">
+              <div class="ph" style="height:100%; background:linear-gradient(155deg,#d9c48a,#8fae83);">
+                <span class="pc-cap">The Cotswolds, 3 Jul</span>
+              </div>
+            </div>
+            <div class="pc-stamp">03</div>
+            <div class="pc-postmark">LONDON<br>3 JUL<br>2026</div>
+          </div>
+          <div class="pc-card rot-r">
+            <div class="pc-front">
+              <div class="ph" style="height:100%; background:linear-gradient(155deg,#7ea0a8,#cfe0c9);">
+                <span class="pc-cap">Cambridge, 5 Jul</span>
+              </div>
+            </div>
+            <div class="pc-stamp">05</div>
+            <div class="pc-postmark">CAMBRIDGE<br>5 JUL<br>2026</div>
+          </div>
+          <div class="pc-card rot-l">
+            <div class="pc-back">
+              <div class="pc-back-top">
+                <div class="pc-note">Bourton-on-the-Water at golden hour — thirty-eight photos and still not enough. Lunch at the Feathered Nest ran long, in the best way. Wish you'd seen Broadway Tower at sunrise.</div>
+                <div class="pc-addr">
+                  <div class="pc-addr-line"></div>
+                  <div class="pc-addr-line"></div>
+                  <div class="pc-addr-line"></div>
+                </div>
+              </div>
+              <div class="pc-stats">9 STOPS · 109 PHOTOS · 1 LUNCH RESERVATION</div>
+            </div>
+            <div class="pc-stamp">03</div>
+            <div class="pc-postmark">LONDON<br>3 JUL<br>2026</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 2c. EXHIBITION PLACARD ============================================================ -->
+  <section class="concept" id="c2c">
+    <div class="concept-head">
+      <div class="concept-kicker">02c · Editorial — Field Notes sibling</div>
+      <div class="concept-name">Exhibition Placard</div>
+      <p class="concept-pitch">Field Notes as a museum wall text instead of a magazine page: a plate number, a title, a "medium and dimensions" line repurposed for stop/photo counts, a curatorial paragraph, and a small numbered grid of "exhibited plates" below — each photo captioned like a catalog object rather than a caption under a picture.</p>
+      <div class="concept-meta">
+        <span><b>Best for:</b> a formal, retrospective tone — this is a trip being exhibited, not narrated</span>
+        <span><b>Costs:</b> the driest of the four; needs real restraint to not feel cold for a family audience</span>
+      </div>
+    </div>
+
+    <div class="frame-label">A day, as a wall placard</div>
+    <div class="frame-wrap">
+      <div class="mock-placard">
+        <div class="pl-panel">
+          <div class="pl-plate-no">Plate 03</div>
+          <div class="pl-title">The Cotswolds</div>
+          <div class="pl-subtitle">Friday, 3 July 2026</div>
+          <div class="pl-medium">Mixed itinerary · nine locations, one luncheon · 109 photographs</div>
+          <div class="pl-desc">A single day spent moving through the honey-stone villages northwest of the city: <b>Broad Campden</b>, <b>Broadway Tower</b>, and <b>Broadway</b> in the morning; <b>Snowshill</b>, <b>Upper</b> and <b>Lower Slaughter</b> before a two-hour pause for lunch at <b>The Feathered Nest Inn</b>, Nether Westcote; and <b>Burford</b> and <b>Bourton-on-the-Water</b> in the day's long golden light.</div>
+          <div class="pl-plates">
+            <div>
+              <div class="pl-plate"><div class="ph" style="background:linear-gradient(155deg,#d9c48a,#8fae83);"></div></div>
+              <div class="pl-plate-cap"><b>Pl. 1</b>Broadway Tower</div>
+            </div>
+            <div>
+              <div class="pl-plate"><div class="ph" style="background:linear-gradient(155deg,#c9a06a,#efe0b8);"></div></div>
+              <div class="pl-plate-cap"><b>Pl. 2</b>Snowshill</div>
+            </div>
+            <div>
+              <div class="pl-plate"><div class="ph" style="background:linear-gradient(155deg,#7ea0a8,#cfe0c9);"></div></div>
+              <div class="pl-plate-cap"><b>Pl. 3</b>Bourton-on-the-Water</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ MORE IDEAS, NOT BUILT ============================================================ -->
+  <section class="concept" id="more">
+    <div class="concept-head">
+      <div class="concept-kicker">Same Skeleton, Different Skin</div>
+      <div class="concept-name">Further Ideas, Not Yet Mocked Up</div>
+      <p class="concept-pitch">More variations on the two structures above — a linear/branching backbone (like The Route and The Underground) or a written, art-directed day (like Field Notes and Postcards). Say which one to build next.</p>
+    </div>
+
+    <div class="idea-list">
+      <div class="idea-list-label">Route Family — Linear / Branching Backbone</div>
+      <div class="idea-row"><b>Ticket Chain</b><span>Each day is a torn boarding-pass stub, chained edge to edge by a perforated line; branch days get a stapled second stub for the day trip.</span></div>
+      <div class="idea-row"><b>River &amp; Thread</b><span>The straight spine becomes a hand-drawn, winding river or embroidery thread; days sit as beads along the curve instead of stations on a line — warmer, more illustrated, less technical than The Underground.</span></div>
+      <div class="idea-row"><b>Flight Path</b><span>A dark night-sky arc (great pairing with Night Reel from Vol. 1) with each day as a lit waypoint along a great-circle route; branch days flare off as short side-arcs.</span></div>
+    </div>
+
+    <div class="idea-list">
+      <div class="idea-list-label">Field Notes Family — Written, Art-Directed Day</div>
+      <div class="idea-row"><b>Broadsheet</b><span>A full newspaper front page: masthead, multi-column text wrap, a "classifieds" box for Confirmed Bookings instead of a card.</span></div>
+      <div class="idea-row"><b>Travel Dossier</b><span>A vintage travel-agency ticket wallet — a die-cut folder holding "tickets" and a folded itinerary insert per day, opened like a booklet.</span></div>
+      <div class="idea-row"><b>Zine / Collage</b><span>Cut-paper torn edges, mixed type sizes and angles, photocopier-style high-contrast photo treatment — the most DIY and least formal of any direction so far.</span></div>
+    </div>
+  </section>
+
+  <div class="deck-footer">
+    Continues <a href="layout_explorations.html" style="color:var(--deck-accent);">layout_explorations.html</a> (Vol. 1). Structural mockups only — no photo pipeline, theme variables, or build script changes implied.
+  </div>
+
+</div>
