@@ -1,0 +1,373 @@
+<title>London 2026 — The Underground, Deep Dive</title>
+<style>
+  :root {
+    --deck-bg:#eeece3; --deck-surface:#ffffff; --deck-border:#d9d4c5; --deck-ink:#201f1a; --deck-muted:#726c5c;
+    --deck-accent:#3d5546; --deck-accent-soft:#e2e6dd;
+    --deck-font-display: Charter, 'Iowan Old Style', Georgia, serif;
+    --deck-font-sans: -apple-system, 'Neue Haas Grotesk', 'Helvetica Neue', Arial, sans-serif;
+    --deck-font-mono: 'iA Writer Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --deck-bg:#15171a; --deck-surface:#1c1f22; --deck-border:#33362f; --deck-ink:#e9e6dc; --deck-muted:#9a9587; --deck-accent:#8fae9b; --deck-accent-soft:#202722; }
+  }
+  :root[data-theme="dark"]  { --deck-bg:#15171a; --deck-surface:#1c1f22; --deck-border:#33362f; --deck-ink:#e9e6dc; --deck-muted:#9a9587; --deck-accent:#8fae9b; --deck-accent-soft:#202722; }
+  :root[data-theme="light"] { --deck-bg:#eeece3; --deck-surface:#ffffff; --deck-border:#d9d4c5; --deck-ink:#201f1a; --deck-muted:#726c5c; --deck-accent:#3d5546; --deck-accent-soft:#e2e6dd; }
+
+  * { box-sizing: border-box; }
+  html, body { overflow-x: hidden; }
+  body { background: var(--deck-bg); color: var(--deck-ink); font-family: var(--deck-font-sans); line-height: 1.55; }
+  .deck { max-width: 1120px; margin: 0 auto; padding: 56px 24px 120px; }
+  .deck-intro { max-width: 700px; margin-bottom: 40px; }
+  .eyebrow { font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--deck-accent); font-weight: 600; margin-bottom: 12px; }
+  .deck-title { font-family: var(--deck-font-display); font-size: clamp(28px,4.4vw,40px); font-weight: 500; text-wrap: balance; margin-bottom: 14px; letter-spacing: -0.01em; }
+  .deck-sub { color: var(--deck-muted); font-size: 15px; max-width: 66ch; }
+  .deck-sub + .deck-sub { margin-top: 10px; }
+  .back-link { display: inline-block; margin-top: 14px; font-size: 12.5px; color: var(--deck-accent); }
+
+  .toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 28px 0 8px; padding: 16px; background: var(--deck-surface); border: 1px solid var(--deck-border); border-radius: 10px; }
+  .toc a { font-size: 12.5px; color: var(--deck-ink); text-decoration: none; border: 1px solid var(--deck-border); border-radius: 99px; padding: 6px 14px; }
+  .toc a:hover { border-color: var(--deck-accent); color: var(--deck-accent); }
+  .toc-num { color: var(--deck-accent); font-weight: 700; margin-right: 6px; }
+
+  .concept { margin-top: 88px; padding-top: 40px; border-top: 1px solid var(--deck-border); scroll-margin-top: 24px; }
+  .concept-head { max-width: 760px; margin-bottom: 28px; }
+  .concept-kicker { font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--deck-accent); font-weight: 700; margin-bottom: 10px; }
+  .concept-name { font-family: var(--deck-font-display); font-size: clamp(24px,3.4vw,32px); margin-bottom: 10px; }
+  .concept-pitch { font-size: 15px; color: var(--deck-muted); }
+  .concept-meta { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 16px; font-size: 12.5px; color: var(--deck-muted); }
+  .concept-meta b { color: var(--deck-ink); font-weight: 600; }
+
+  .frame-label { font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--deck-muted); font-weight: 700; margin: 28px 0 10px; display: flex; align-items: center; gap: 8px; }
+  .frame-label::after { content: ''; flex: 1; height: 1px; background: var(--deck-border); }
+  .frame-wrap { border: 1px solid var(--deck-border); border-radius: 12px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+
+  .deck-footer { margin-top: 90px; padding-top: 24px; border-top: 1px solid var(--deck-border); font-size: 12.5px; color: var(--deck-muted); }
+
+  /* ============================================================
+     shared underground-diagram chrome
+     ============================================================ */
+  .mock-underground {
+    --u-bg:#fbfaf6; --u-ink:#26241d; --u-off:#9a9486;
+    background: var(--u-bg); color: var(--u-ink); font-family: var(--deck-font-sans); padding: 30px 30px 26px;
+  }
+  .mock-underground .u-head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 4px; flex-wrap: wrap; gap: 10px; }
+  .mock-underground .u-eyebrow { font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--u-off); font-weight: 700; margin-bottom: 6px; }
+  .mock-underground h2 { font-family: var(--deck-font-display); font-size: 22px; font-weight: 600; }
+  .mock-underground .u-cartouche { font-family: var(--deck-font-mono); font-size: 10px; letter-spacing: .04em; color: var(--u-off); text-align: right; line-height: 1.5; }
+  .mock-underground svg { display: block; width: 100%; height: auto; margin-top: 10px; }
+  .mock-underground svg text { font-family: var(--deck-font-sans); }
+  .mock-underground .u-legend-box {
+    margin-top: 14px; border: 1px solid #ddd7c4; border-radius: 6px; padding: 12px 16px;
+    display: flex; flex-wrap: wrap; gap: 18px 26px; background: #fff;
+  }
+  .mock-underground .u-legend-title { width: 100%; font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--u-off); font-weight: 700; margin-bottom: 2px; }
+  .mock-underground .u-legend-item { display: flex; align-items: center; gap: 7px; font-size: 11px; }
+  .mock-underground .u-legend-swatch { width: 20px; height: 4px; border-radius: 2px; flex-shrink: 0; }
+  .mock-underground .u-legend-swatch.dashed { background: repeating-linear-gradient(to right, var(--u-off) 0 4px, transparent 4px 7px); }
+  .mock-underground .u-legend-symbol { width: 16px; height: 16px; flex-shrink: 0; }
+
+  .compare-note { font-size: 13px; color: var(--deck-muted); margin-top: 16px; max-width: 70ch; }
+</style>
+
+<div class="deck">
+
+  <div class="deck-intro">
+    <div class="eyebrow">London 2026 — The Underground, Deep Dive</div>
+    <h1 class="deck-title">Two more serious attempts at a real tube-map grammar</h1>
+    <p class="deck-sub">The Underground concept from Vol. 2 tested well — this pushes it closer to how an actual Beck-style diagram is actually built: strict 45°/90° routing, small solid-colour stations vs. bullseye interchanges vs. capped termini, a key box in the corner, a hint of the Thames. It still can't map onto the real Piccadilly/Central network — Cambridge and the Cotswolds aren't on it — so both versions invent their own line names and geography-free routing, the way the real diagram invents its own geometry too.</p>
+    <a class="back-link" href="layout_explorations_2.html">&larr; Back to Vol. 2 (where the first Underground sketch lives)</a>
+  </div>
+
+  <nav class="toc">
+    <a href="#v1"><span class="toc-num">V1</span>Refined Network</a>
+    <a href="#v2"><span class="toc-num">V2</span>Full Network</a>
+    <a href="#compare"><span class="toc-num">—</span>Which one</a>
+  </nav>
+
+  <!-- ============================================================ V1 — REFINED NETWORK ============================================================ -->
+  <section class="concept" id="v1">
+    <div class="concept-head">
+      <div class="concept-kicker">Version 1</div>
+      <div class="concept-name">Refined Network</div>
+      <p class="concept-pitch">Same three strands as the Vol. 2 sketch — one Home Line, two branches — but drawn with real diagram grammar: small filled stations, bullseye interchanges at the two junctions, capped termini at both ends, a dashed "Greater London" boundary the branches visibly leave, and a pale Thames band under the Home Line. Busier in craft, not in structure.</p>
+      <div class="concept-meta">
+        <span><b>Lines:</b> 1 trunk + 2 branches</span>
+        <span><b>New this pass:</b> interchange/terminus symbols, zone ring, river band, key box</span>
+      </div>
+    </div>
+
+    <div class="frame-label">Whole trip, one trunk line</div>
+    <div class="frame-wrap">
+      <div class="mock-underground">
+        <div class="u-head">
+          <div>
+            <div class="u-eyebrow">Route Diagram — Not to Scale</div>
+            <h2>London 2026 &mdash; Refined Network</h2>
+          </div>
+          <div class="u-cartouche">SCHEMATIC ONLY<br>ALL DISTANCES DIAGRAMMATIC</div>
+        </div>
+
+        <svg viewBox="0 0 1000 560">
+          <!-- Thames band, under the Home Line -->
+          <path d="M 40,320 C 200,300 340,340 500,320 S 780,300 960,320 L 960,345 C 780,325 620,360 500,345 S 200,325 40,345 Z"
+                fill="#bcd4e0" opacity="0.55"/>
+
+          <!-- Greater London boundary -->
+          <ellipse cx="500" cy="260" rx="470" ry="95" fill="none" stroke="#c7c0ac" stroke-width="2" stroke-dasharray="2 8" stroke-linecap="round"/>
+          <text x="500" y="150" font-size="10" letter-spacing="2" text-anchor="middle" fill="#a39c85">GREATER LONDON</text>
+
+          <!-- Cotswolds branch (olive) -->
+          <polyline points="480,260 520,300 560,340 640,340 680,380 720,420"
+                     fill="none" stroke="#55712f" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Cambridge branch (rust) -->
+          <polyline points="680,260 720,220 760,180 800,180 840,140 880,100"
+                     fill="none" stroke="#b5592f" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Home Line (navy) -->
+          <polyline points="80,260 220,260 360,260 480,260 600,260 680,260 800,260 920,260"
+                     fill="none" stroke="#2c3e6b" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+
+          <!-- terminus caps -->
+          <line x1="80" y1="244" x2="80" y2="276" stroke="#2c3e6b" stroke-width="5" stroke-linecap="round"/>
+          <line x1="920" y1="244" x2="920" y2="276" stroke="#2c3e6b" stroke-width="5" stroke-linecap="round"/>
+          <line x1="712" y1="429" x2="728" y2="411" stroke="#55712f" stroke-width="5" stroke-linecap="round"/>
+          <line x1="872" y1="109" x2="888" y2="91" stroke="#b5592f" stroke-width="5" stroke-linecap="round"/>
+
+          <!-- Home Line minor stations -->
+          <circle cx="220" cy="260" r="6" fill="#fff" stroke="#2c3e6b" stroke-width="4"/>
+          <circle cx="360" cy="260" r="6" fill="#fff" stroke="#2c3e6b" stroke-width="4"/>
+          <circle cx="600" cy="260" r="6" fill="#fff" stroke="#2c3e6b" stroke-width="4"/>
+          <circle cx="800" cy="260" r="6" fill="#fff" stroke="#2c3e6b" stroke-width="4"/>
+          <!-- Home Line termini -->
+          <circle cx="80" cy="260" r="9" fill="#fff" stroke="#2c3e6b" stroke-width="4"/>
+          <circle cx="920" cy="260" r="9" fill="#fff" stroke="#2c3e6b" stroke-width="4"/>
+          <!-- interchanges (bullseye) -->
+          <circle cx="480" cy="260" r="12" fill="#fff" stroke="#26241d" stroke-width="4.5"/>
+          <circle cx="480" cy="260" r="4.5" fill="#26241d"/>
+          <circle cx="680" cy="260" r="12" fill="#fff" stroke="#26241d" stroke-width="4.5"/>
+          <circle cx="680" cy="260" r="4.5" fill="#26241d"/>
+
+          <!-- Cotswolds stations -->
+          <circle cx="520" cy="300" r="5" fill="#fff" stroke="#55712f" stroke-width="3.5"/>
+          <circle cx="560" cy="340" r="5" fill="#fff" stroke="#55712f" stroke-width="3.5"/>
+          <rect x="635" y="335" width="10" height="10" fill="#55712f" transform="rotate(45 640 340)"/>
+          <circle cx="680" cy="380" r="5" fill="#fff" stroke="#55712f" stroke-width="3.5"/>
+          <circle cx="720" cy="420" r="9" fill="#fff" stroke="#55712f" stroke-width="4"/>
+
+          <!-- Cambridge stations -->
+          <circle cx="720" cy="220" r="5" fill="#fff" stroke="#b5592f" stroke-width="3.5"/>
+          <circle cx="760" cy="180" r="5" fill="#fff" stroke="#b5592f" stroke-width="3.5"/>
+          <circle cx="800" cy="180" r="5" fill="#fff" stroke="#b5592f" stroke-width="3.5"/>
+          <circle cx="840" cy="140" r="5" fill="#fff" stroke="#b5592f" stroke-width="3.5"/>
+          <circle cx="880" cy="100" r="9" fill="#fff" stroke="#b5592f" stroke-width="4"/>
+
+          <!-- Off-network: Rania -->
+          <circle cx="90" cy="460" r="7" fill="#fff" stroke="#9a9486" stroke-width="3" stroke-dasharray="3 3"/>
+          <text x="106" y="457" font-size="9.5" font-weight="600" fill="#726c5c">Rania, DC — 10 Jul</text>
+          <text x="106" y="469" font-size="8" fill="#9a9486">not on this line, no connecting service</text>
+
+          <!-- Home line labels -->
+          <text x="80" y="234" font-size="11" font-weight="700" text-anchor="middle" fill="#26241d">HEATHROW</text>
+          <text x="80" y="222" font-size="8.5" text-anchor="middle" fill="#726c5c">29 JUN</text>
+          <text x="220" y="234" font-size="10" font-weight="600" text-anchor="middle" fill="#26241d">NOTTING HILL</text>
+          <text x="360" y="234" font-size="10" font-weight="600" text-anchor="middle" fill="#26241d">TOWER &amp; BOROUGH</text>
+          <text x="480" y="234" font-size="11" font-weight="700" text-anchor="middle" fill="#26241d">COTSWOLDS JCT</text>
+          <text x="610" y="312" font-size="10" font-weight="600" text-anchor="middle" fill="#26241d">KEW &amp; RICHMOND</text>
+          <text x="680" y="234" font-size="11" font-weight="700" text-anchor="middle" fill="#26241d">CAMBRIDGE JCT</text>
+          <text x="800" y="234" font-size="10" font-weight="600" text-anchor="middle" fill="#26241d">BATTERSEA</text>
+          <text x="920" y="234" font-size="10.5" font-weight="700" text-anchor="middle" fill="#26241d">HEATHROW · DEPART</text>
+
+          <!-- Cotswolds labels -->
+          <text x="533" y="296" font-size="9" fill="#3f5622">Broadway Tower</text>
+          <text x="573" y="336" font-size="9" fill="#3f5622">Snowshill</text>
+          <text x="640" y="328" font-size="9" text-anchor="middle" fill="#3f5622">Feathered Nest (lunch)</text>
+          <text x="693" y="376" font-size="9" fill="#3f5622">Burford</text>
+          <text x="734" y="424" font-size="10" font-weight="700" fill="#26241d">BOURTON</text>
+
+          <!-- Cambridge labels -->
+          <text x="705" y="212" font-size="9" text-anchor="end" fill="#823e18">Station</text>
+          <text x="745" y="172" font-size="9" text-anchor="end" fill="#823e18">CCSS</text>
+          <text x="815" y="176" font-size="9" fill="#823e18">Coe Fen</text>
+          <text x="855" y="136" font-size="9" fill="#823e18">Punting</text>
+          <text x="894" y="98" font-size="10" font-weight="700" fill="#26241d">UNIV. ARMS</text>
+        </svg>
+
+        <div class="u-legend-box">
+          <div class="u-legend-title">Key</div>
+          <div class="u-legend-item"><span class="u-legend-swatch" style="background:#2c3e6b;"></span>Home Line</div>
+          <div class="u-legend-item"><span class="u-legend-swatch" style="background:#55712f;"></span>Cotswolds Branch</div>
+          <div class="u-legend-item"><span class="u-legend-swatch" style="background:#b5592f;"></span>Cambridge Branch</div>
+          <div class="u-legend-item">
+            <svg class="u-legend-symbol" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="#fff" stroke="#26241d" stroke-width="2.5"/><circle cx="8" cy="8" r="2.2" fill="#26241d"/></svg>
+            Interchange station
+          </div>
+          <div class="u-legend-item">
+            <svg class="u-legend-symbol" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5" fill="#fff" stroke="#2c3e6b" stroke-width="2.5"/></svg>
+            Start / end of line
+          </div>
+          <div class="u-legend-item"><span class="u-legend-swatch dashed"></span>Off-network</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ V2 — FULL NETWORK ============================================================ -->
+  <section class="concept" id="v2">
+    <div class="concept-head">
+      <div class="concept-kicker">Version 2</div>
+      <div class="concept-name">Full Network</div>
+      <p class="concept-pitch">The London home-base days split into two crossing lines instead of one — a City Line and a Riverside Line that share two stations (Heathrow and a "West End" interchange), the way the real Central and Circle lines cross more than once. The two day-trip branches still peel off the City Line. Four colours, three interchanges, a proper key — this is the one that actually looks crowded the way Zone 1 does.</p>
+      <div class="concept-meta">
+        <span><b>Lines:</b> 2 trunk lines (crossing twice) + 2 branches</span>
+        <span><b>Trade-off:</b> the City/Riverside split is a layout device, not a real geographic distinction — reads as busier, not more accurate</span>
+      </div>
+    </div>
+
+    <div class="frame-label">Whole trip, two crossing lines</div>
+    <div class="frame-wrap">
+      <div class="mock-underground">
+        <div class="u-head">
+          <div>
+            <div class="u-eyebrow">Route Diagram — Not to Scale</div>
+            <h2>London 2026 &mdash; Full Network</h2>
+          </div>
+          <div class="u-cartouche">SCHEMATIC ONLY<br>ALL DISTANCES DIAGRAMMATIC</div>
+        </div>
+
+        <svg viewBox="0 0 1000 660">
+          <!-- Thames band, under the Riverside Line's dip -->
+          <path d="M 60,330 C 200,315 320,350 460,335 S 620,315 660,330 L 660,352 C 620,338 480,358 460,357 S 200,337 60,352 Z"
+                fill="#bcd4e0" opacity="0.5"/>
+
+          <!-- Cambridge branch (rust), top band -->
+          <polyline points="680,240 720,200 760,160 800,160 840,120 880,80"
+                     fill="none" stroke="#b5592f" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="880,80 920,60" fill="none" stroke="#b5592f" stroke-width="5" stroke-linecap="round"/>
+
+          <!-- City Line (maroon) -->
+          <polyline points="80,240 200,240 320,240 440,240 560,240 680,240 800,240 920,240"
+                     fill="none" stroke="#8b3a3a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+
+          <!-- Riverside Line (teal): shares Heathrow (80,240) and West End (560,240) -->
+          <polyline points="80,240 120,280 160,320 280,320 400,320 440,280 480,240 520,240 560,240"
+                     fill="none" stroke="#1f6e63" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="560,240 600,280 640,320"
+                     fill="none" stroke="#1f6e63" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+
+          <!-- Cotswolds branch (olive), bottom band -->
+          <polyline points="440,240 480,280 520,320 560,360 640,360 680,400 720,440"
+                     fill="none" stroke="#55712f" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+
+          <!-- termini caps -->
+          <line x1="920" y1="224" x2="920" y2="256" stroke="#8b3a3a" stroke-width="5" stroke-linecap="round"/>
+          <line x1="912" y1="69" x2="928" y2="51" stroke="#b5592f" stroke-width="5" stroke-linecap="round"/>
+          <line x1="632" y1="329" x2="648" y2="311" stroke="#1f6e63" stroke-width="5" stroke-linecap="round"/>
+          <line x1="712" y1="449" x2="728" y2="431" stroke="#55712f" stroke-width="5" stroke-linecap="round"/>
+
+          <!-- shared interchange: HEATHROW (City + Riverside) -->
+          <circle cx="80" cy="240" r="12" fill="#fff" stroke="#26241d" stroke-width="4.5"/>
+          <circle cx="80" cy="240" r="4.5" fill="#26241d"/>
+          <!-- shared interchange: WEST END (City + Riverside) -->
+          <circle cx="560" cy="240" r="12" fill="#fff" stroke="#26241d" stroke-width="4.5"/>
+          <circle cx="560" cy="240" r="4.5" fill="#26241d"/>
+          <!-- branch interchanges -->
+          <circle cx="440" cy="240" r="12" fill="#fff" stroke="#26241d" stroke-width="4.5"/>
+          <circle cx="440" cy="240" r="4.5" fill="#26241d"/>
+          <circle cx="680" cy="240" r="12" fill="#fff" stroke="#26241d" stroke-width="4.5"/>
+          <circle cx="680" cy="240" r="4.5" fill="#26241d"/>
+
+          <!-- City Line minor stations -->
+          <circle cx="200" cy="240" r="6" fill="#fff" stroke="#8b3a3a" stroke-width="4"/>
+          <circle cx="320" cy="240" r="6" fill="#fff" stroke="#8b3a3a" stroke-width="4"/>
+          <circle cx="800" cy="240" r="6" fill="#fff" stroke="#8b3a3a" stroke-width="4"/>
+          <circle cx="920" cy="240" r="9" fill="#fff" stroke="#8b3a3a" stroke-width="4"/>
+
+          <!-- Riverside stations -->
+          <circle cx="220" cy="320" r="5" fill="#fff" stroke="#1f6e63" stroke-width="3.5"/>
+          <circle cx="340" cy="320" r="5" fill="#fff" stroke="#1f6e63" stroke-width="3.5"/>
+          <circle cx="640" cy="320" r="9" fill="#fff" stroke="#1f6e63" stroke-width="4"/>
+
+          <!-- Cotswolds stations -->
+          <circle cx="480" cy="280" r="5" fill="#fff" stroke="#55712f" stroke-width="3.5"/>
+          <circle cx="520" cy="320" r="5" fill="#fff" stroke="#55712f" stroke-width="3.5"/>
+          <rect x="595" y="355" width="10" height="10" fill="#55712f" transform="rotate(45 600 360)"/>
+          <circle cx="680" cy="400" r="5" fill="#fff" stroke="#55712f" stroke-width="3.5"/>
+          <circle cx="720" cy="440" r="9" fill="#fff" stroke="#55712f" stroke-width="4"/>
+
+          <!-- Cambridge stations -->
+          <circle cx="720" cy="200" r="5" fill="#fff" stroke="#b5592f" stroke-width="3.5"/>
+          <circle cx="760" cy="160" r="5" fill="#fff" stroke="#b5592f" stroke-width="3.5"/>
+          <circle cx="800" cy="160" r="5" fill="#fff" stroke="#b5592f" stroke-width="3.5"/>
+          <circle cx="840" cy="120" r="5" fill="#fff" stroke="#b5592f" stroke-width="3.5"/>
+          <circle cx="880" cy="80" r="9" fill="#fff" stroke="#b5592f" stroke-width="4"/>
+          <circle cx="920" cy="60" r="4" fill="#fff" stroke="#b5592f" stroke-width="3"/>
+
+          <!-- Off-network: Rania -->
+          <circle cx="90" cy="560" r="7" fill="#fff" stroke="#9a9486" stroke-width="3" stroke-dasharray="3 3"/>
+          <text x="106" y="557" font-size="9.5" font-weight="600" fill="#726c5c">Rania, DC — 10 Jul</text>
+          <text x="106" y="569" font-size="8" fill="#9a9486">not on this network</text>
+
+          <!-- City Line labels -->
+          <text x="80" y="212" font-size="11" font-weight="700" text-anchor="middle" fill="#26241d">HEATHROW</text>
+          <text x="80" y="200" font-size="8.5" text-anchor="middle" fill="#726c5c">29 JUN · 7 JUL</text>
+          <text x="200" y="224" font-size="10" font-weight="600" text-anchor="middle" fill="#26241d">NOTTING HILL</text>
+          <text x="320" y="224" font-size="10" font-weight="600" text-anchor="middle" fill="#26241d">TOWER &amp; BOROUGH</text>
+          <text x="440" y="224" font-size="11" font-weight="700" text-anchor="middle" fill="#26241d">COTSWOLDS JCT</text>
+          <text x="560" y="224" font-size="11" font-weight="700" text-anchor="middle" fill="#26241d">WEST END</text>
+          <text x="680" y="224" font-size="11" font-weight="700" text-anchor="middle" fill="#26241d">CAMBRIDGE JCT</text>
+          <text x="800" y="224" font-size="10" font-weight="600" text-anchor="middle" fill="#26241d">LONDON (LEISURE)</text>
+          <text x="920" y="212" font-size="10" font-weight="700" text-anchor="middle" fill="#26241d">DEPART</text>
+
+          <!-- Riverside labels -->
+          <text x="220" y="338" font-size="9" text-anchor="middle" fill="#144d45">Westminster</text>
+          <text x="220" y="349" font-size="9" text-anchor="middle" fill="#144d45">&amp; Sky Garden</text>
+          <text x="340" y="338" font-size="9" text-anchor="middle" fill="#144d45">Kew &amp; Richmond</text>
+          <text x="654" y="316" font-size="10" font-weight="700" fill="#26241d">BATTERSEA</text>
+
+          <!-- Cotswolds labels -->
+          <text x="493" y="276" font-size="9" fill="#3f5622">Broadway Tower</text>
+          <text x="533" y="316" font-size="9" fill="#3f5622">Snowshill</text>
+          <text x="600" y="348" font-size="9" text-anchor="middle" fill="#3f5622">Feathered Nest</text>
+          <text x="693" y="396" font-size="9" fill="#3f5622">Burford</text>
+          <text x="734" y="444" font-size="10" font-weight="700" fill="#26241d">BOURTON</text>
+
+          <!-- Cambridge labels -->
+          <text x="705" y="192" font-size="9" text-anchor="end" fill="#823e18">Station</text>
+          <text x="745" y="152" font-size="9" text-anchor="end" fill="#823e18">CCSS</text>
+          <text x="815" y="156" font-size="9" fill="#823e18">Coe Fen</text>
+          <text x="855" y="116" font-size="9" fill="#823e18">Punting</text>
+          <text x="894" y="78" font-size="10" font-weight="700" fill="#26241d">UNIV. ARMS</text>
+          <text x="928" y="56" font-size="8.5" fill="#823e18">City Centre</text>
+        </svg>
+
+        <div class="u-legend-box">
+          <div class="u-legend-title">Key</div>
+          <div class="u-legend-item"><span class="u-legend-swatch" style="background:#8b3a3a;"></span>City Line</div>
+          <div class="u-legend-item"><span class="u-legend-swatch" style="background:#1f6e63;"></span>Riverside Line</div>
+          <div class="u-legend-item"><span class="u-legend-swatch" style="background:#55712f;"></span>Cotswolds Branch</div>
+          <div class="u-legend-item"><span class="u-legend-swatch" style="background:#b5592f;"></span>Cambridge Branch</div>
+          <div class="u-legend-item">
+            <svg class="u-legend-symbol" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="#fff" stroke="#26241d" stroke-width="2.5"/><circle cx="8" cy="8" r="2.2" fill="#26241d"/></svg>
+            Interchange station
+          </div>
+          <div class="u-legend-item"><span class="u-legend-swatch dashed"></span>Off-network</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ WHICH ONE ============================================================ -->
+  <section class="concept" id="compare">
+    <div class="concept-head">
+      <div class="concept-kicker">Weighing the Two</div>
+      <div class="concept-name">Which One</div>
+    </div>
+    <p class="compare-note"><b>Refined Network</b> is closer to what the site could actually ship: one line is enough information to build and maintain, the zone ring and river band do a lot of the "feels like a real tube map" work cheaply, and it stays legible at a glance.</p>
+    <p class="compare-note"><b>Full Network</b> looks the most like the real thing — genuinely busy, two lines crossing twice the way the Circle and District do — but the City/Riverside split doesn't correspond to anything real about the trip; it exists to create visual density. Worth it if the goal is "look like the Tube map," a needless complication if the goal is "represent this specific trip."</p>
+    <p class="compare-note">Either can carry the same interaction model: click a station to open that location's photo grid, same as the live map's flag pins do today.</p>
+  </section>
+
+  <div class="deck-footer">
+    Original schematic-diagram artwork inspired by the Beck-style grammar (straight/45° routing, bullseye interchanges, capped termini) — not a reproduction of the TfL map or roundel. Structural mockup only, no photo pipeline or build script changes implied.
+  </div>
+
+</div>
