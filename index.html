@@ -780,6 +780,27 @@
     padding: 24px 8px;
   }
 </style>
+<script>
+  /* GoatCounter self-visit exclude flag (#90): a one-time visit to
+     ?me=1 on a given browser sets a permanent localStorage flag so that
+     browser's future pageviews aren't counted as a visitor. */
+  (function() {
+    try {
+      var params = new URLSearchParams(window.location.search);
+      if (params.get('me') === '1') {
+        localStorage.setItem('skip-analytics', '1');
+        params.delete('me');
+        var newSearch = params.toString();
+        var newUrl = window.location.pathname + (newSearch ? '?' + newSearch : '') + window.location.hash;
+        history.replaceState(null, '', newUrl);
+      }
+    } catch (e) {}
+  })();
+</script>
+<script data-goatcounter="https://london2026.goatcounter.com/count"
+        data-goatcounter-settings='{"no_onload": true}'
+        async src="//gc.zgo.at/count.js"
+        onload="try { if (!localStorage.getItem('skip-analytics')) { window.goatcounter.count({}); } } catch (e) {}"></script>
 </head>
 <body>
 
